@@ -1,0 +1,25 @@
+<odoo>
+
+    <record id="view_employee_form_extra_fields" model="ir.ui.view">
+        <field name="name">hr.employee.form.extra.fields</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//sheet/notebook" position="inside">
+
+                <page string="Employee Info">
+                    <group>
+                        <field name="employee_code"/>
+                        <field name="blood_group"/>
+                        <field name="joining_date"/>
+                    </group>
+                </page>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
