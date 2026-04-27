@@ -16,17 +16,21 @@
         launcher.dataset.chatbotBound = "1";
 
         launcher.addEventListener("click", function () {
-            widget.classList.toggle("is-open");
+            if (widget.style.display === "none" || widget.style.display === "") {
+                widget.style.display = "block";
+            } else {
+                widget.style.display = "none";
+            }
             console.log("HR chatbot launcher clicked.");
         });
 
         closeBtn.addEventListener("click", function () {
-            widget.classList.remove("is-open");
+            widget.style.display = "none";
         });
 
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
-                widget.classList.remove("is-open");
+                widget.style.display = "none";
             }
         });
 

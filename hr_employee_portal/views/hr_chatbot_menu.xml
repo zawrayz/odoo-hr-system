@@ -1,18 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="action_hr_chatbot_external" model="ir.actions.act_url">
-        <field name="name">HR Chatbot</field>
+
+    <record id="action_hr_employee_chatbot_external" model="ir.actions.act_url">
+        <field name="name">Employee HR Chatbot</field>
         <field name="type">ir.actions.act_url</field>
-        <field name="url">http://192.168.1.20:8501</field>
+        <field name="url">http://192.168.1.14:8501</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_hr_admin_chatbot_external" model="ir.actions.act_url">
+        <field name="name">Admin HR Chatbot</field>
+        <field name="type">ir.actions.act_url</field>
+        <field name="url">http://192.168.1.14:8502</field>
         <field name="target">new</field>
     </record>
 
     <menuitem
-        id="menu_hr_chatbot_external"
-        name="HR Chatbot"
+        id="menu_hr_employee_chatbot_external"
+        name="Employee HR Chatbot"
         parent="hr.menu_hr_root"
-        action="action_hr_chatbot_external"
+        action="action_hr_employee_chatbot_external"
         sequence="90"
         groups="hr.group_hr_user,hr.group_hr_manager"
     />
+
+    <menuitem
+        id="menu_hr_admin_chatbot_external"
+        name="Admin HR Chatbot"
+        parent="hr.menu_hr_root"
+        action="action_hr_admin_chatbot_external"
+        sequence="91"
+        groups="hr.group_hr_manager"
+    />
+
 </odoo>

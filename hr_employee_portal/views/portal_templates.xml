@@ -3509,19 +3509,45 @@
     </template>
 
     <template id="hr_employee_chatbot_widget" name="HR Chatbot Widget">
-        <div id="hrPortalChatWidget" class="hr-chatbot-widget shadow-lg" style="position: fixed; bottom: 100px; right: 30px; width: 350px; border-radius: 12px; overflow: hidden; z-index: 9999; display: none; background: #fff; border: 1px solid #ececec;">
-            <div class="hr-chatbot-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%); padding: 15px; color: white;">
-                <div style="font-weight: 700; font-size: 16px;"><i class="fa fa-robot me-2"/> HR Assistant</div>
-                <button id="hrPortalChatClose" style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;">
-                    <i class="fa fa-times"/>
-                </button>
+    <div id="hrPortalChatWidget"
+         class="hr-chatbot-widget shadow-lg"
+         style="position: fixed; bottom: 100px; right: 30px; width: 350px; height: 520px; border-radius: 12px; overflow: hidden; z-index: 9999; display: none; background: #fff; border: 1px solid #ececec;">
+
+        <div class="hr-chatbot-header d-flex justify-content-between align-items-center"
+             style="background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%); padding: 15px; color: white;">
+            <div style="font-weight: 700; font-size: 16px;">
+                <i class="fa fa-robot me-2"/>
+                <t t-if="is_hr_manager">Admin HR Assistant</t>
+                <t t-else="">Employee HR Assistant</t>
             </div>
-            <div class="hr-chatbot-body" style="height: 450px;">
-                <iframe src="http://192.168.1.20:8501" class="hr-chatbot-frame" style="width: 100%; height: 100%; border: none;"></iframe>
-            </div>
+
+            <button id="hrPortalChatClose"
+                    type="button"
+                    style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;">
+                <i class="fa fa-times"/>
+            </button>
         </div>
-        <button id="hrPortalChatLauncher" class="hr-chatbot-launcher" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: #0d6fb8; color: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; cursor: pointer; transition: transform 0.2s;">
-            <i class="fa fa-comments" style="font-size: 26px; margin-top: 4px;"/>
-        </button>
+
+        <div class="hr-chatbot-body" style="height: 470px;">
+            <t t-if="is_hr_manager">
+                <iframe src="http://192.168.1.14:8502"
+                        class="hr-chatbot-frame"
+                        style="width: 100%; height: 100%; border: none;"></iframe>
+            </t>
+            <t t-else="">
+                <iframe src="http://192.168.1.14:8501"
+                        class="hr-chatbot-frame"
+                        style="width: 100%; height: 100%; border: none;"></iframe>
+            </t>
+        </div>
+    </div>
+
+    <button id="hrPortalChatLauncher"
+            class="hr-chatbot-launcher"
+            type="button"
+            style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: #0d6fb8; color: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; cursor: pointer; transition: transform 0.2s;">
+        <i class="fa fa-comments" style="font-size: 26px; margin-top: 4px;"/>
+    </button>
+</template>
     </template>
 </odoo>
