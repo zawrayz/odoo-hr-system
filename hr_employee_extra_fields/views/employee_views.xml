@@ -1,25 +1,55 @@
 <odoo>
-
     <record id="view_employee_form_extra_fields" model="ir.ui.view">
         <field name="name">hr.employee.form.extra.fields</field>
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
-
         <field name="arch" type="xml">
-
             <xpath expr="//sheet/notebook" position="inside">
-
                 <page string="Employee Info">
                     <group>
-                        <field name="employee_code"/>
-                        <field name="blood_group"/>
-                        <field name="joining_date"/>
+                        <group string="Main Information">
+                            <field name="employee_code" readonly="1"/>
+                            <field name="employment_status"/>
+                            <field name="joining_date"/>
+                            <field name="blood_group"/>
+                        </group>
+                        <group string="Employee Record">
+                            <field name="father_name"/>
+                            <field name="job_id"/>
+                            <field name="contract_start_date"/>
+                            <field name="contract_end_date"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Bank Account">
+                            <field name="bank_account_title"/>
+                            <field name="bank_name_custom"/>
+                            <field name="bank_account_number"/>
+                        </group>
+                        <group string="Personal Details">
+                            <field name="mobile_phone"/>
+                            <field name="residence_number"/>
+                            <field name="personal_email"/>
+                            <field name="work_email"/>
+                            <field name="cnic_number"/>
+                            <field name="ntn_number"/>
+                            <field name="date_of_birth_custom"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Address">
+                            <field name="street_address"/>
+                        </group>
+                        <group string="Emergency Contact">
+                            <field name="emergency_contact_name"/>
+                            <field name="emergency_contact_number"/>
+                            <field name="emergency_contact_relation"/>
+                        </group>
                     </group>
                 </page>
-
             </xpath>
-
         </field>
     </record>
-
 </odoo>

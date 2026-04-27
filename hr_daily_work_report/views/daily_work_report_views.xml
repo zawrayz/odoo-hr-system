@@ -1,0 +1,73 @@
+<odoo>
+    <record id="view_hr_daily_work_report_list" model="ir.ui.view">
+        <field name="name">hr.daily.work.report.list</field>
+        <field name="model">hr.daily.work.report</field>
+        <field name="arch" type="xml">
+            <list string="Daily Work Reports">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="report_date"/>
+                <field name="work_mode"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_daily_work_report_form" model="ir.ui.view">
+        <field name="name">hr.daily.work.report.form</field>
+        <field name="model">hr.daily.work.report</field>
+        <field name="arch" type="xml">
+            <form string="Daily Work Report">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="user_id"/>
+                            <field name="report_date"/>
+                        </group>
+                        <group>
+                            <field name="work_mode"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Task Report">
+                            <field name="task_report"/>
+                        </page>
+                        <page string="Remarks">
+                            <field name="remarks"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_daily_work_report_search" model="ir.ui.view">
+        <field name="name">hr.daily.work.report.search</field>
+        <field name="model">hr.daily.work.report</field>
+        <field name="arch" type="xml">
+            <search string="Daily Work Reports">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="report_date"/>
+                <field name="work_mode"/>
+                <field name="state"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_daily_work_report" model="ir.actions.act_window">
+        <field name="name">Daily Work Reports</field>
+        <field name="res_model">hr.daily.work.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_daily_work_report_search"/>
+    </record>
+
+    <menuitem id="menu_hr_daily_work_report_root"
+              name="Daily Work Reports"
+              parent="hr.menu_hr_root"
+              action="action_hr_daily_work_report"
+              sequence="80"/>
+</odoo>

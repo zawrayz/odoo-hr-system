@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_hr_chatbot_external" model="ir.actions.act_url">
+        <field name="name">HR Chatbot</field>
+        <field name="type">ir.actions.act_url</field>
+        <field name="url">http://192.168.1.20:8501</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="menu_hr_chatbot_external"
+        name="HR Chatbot"
+        parent="hr.menu_hr_root"
+        action="action_hr_chatbot_external"
+        sequence="90"
+        groups="hr.group_hr_user,hr.group_hr_manager"
+    />
+</odoo>

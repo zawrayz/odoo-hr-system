@@ -1,0 +1,1684 @@
+.hr-portal-shell {
+    padding-top: 0.5rem;
+}
+
+.hr-layout-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.hr-sidebar-wrap {
+    flex: 0 0 300px;
+    max-width: 300px;
+}
+
+.hr-content-wrap {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
+.hr-sidebar-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    position: sticky;
+    top: 24px;
+}
+
+.hr-sidebar-header {
+    background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%);
+    color: #ffffff;
+    padding: 22px 20px;
+}
+
+.hr-sidebar-title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.hr-sidebar-subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.hr-sidebar-menu {
+    padding: 14px;
+}
+
+.hr-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 14px;
+    border-radius: 12px;
+    color: #333333;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 8px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hr-sidebar-link:hover {
+    background: #eef7fd;
+    color: #0d6fb8;
+}
+
+.hr-sidebar-link.active {
+    background: #e8f4fc;
+    color: #0d6fb8;
+}
+
+.hr-sidebar-link i {
+    width: 18px;
+    text-align: center;
+}
+
+.hr-sidebar-sublink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -2px 0 8px 22px;
+    padding: 10px 12px 10px 14px;
+    border-left: 2px solid #cfe4f4;
+    border-radius: 0 10px 10px 0;
+    color: #4b5b68;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.hr-sidebar-sublink:hover {
+    background: #f2f9fe;
+    color: #0d6fb8;
+    border-left-color: #0d6fb8;
+}
+
+.hr-sidebar-sublink i {
+    width: 16px;
+    text-align: center;
+    font-size: 13px;
+    color: inherit;
+}
+
+.hr-portal-banner {
+    background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 28px 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.hr-portal-banner h2,
+.hr-portal-banner p,
+.hr-portal-banner small {
+    color: #ffffff;
+}
+
+.hr-banner-summary-box {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    min-width: 250px;
+}
+
+.hr-banner-summary-box .hr-summary-line {
+    color: #222222;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.hr-banner-summary-box .hr-summary-line:last-child {
+    margin-bottom: 0;
+}
+
+.hr-stat-card,
+.hr-feature-card,
+.hr-content-card,
+.hr-profile-section-card,
+.hr-detail-hero-card,
+.hr-detail-item-card,
+.hr-page-header-card,
+.hr-empty-state-card,
+.hr-legend-card,
+.hr-request-card {
+    border: 1px solid #ececec;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    height: 100%;
+}
+
+.hr-feature-card:hover,
+.hr-stat-card:hover,
+.hr-profile-section-card:hover,
+.hr-detail-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.hr-stat-card .card-body,
+.hr-feature-card .card-body,
+.hr-content-card .card-body,
+.hr-profile-section-card .card-body,
+.hr-detail-hero-card .card-body,
+.hr-detail-item-card .card-body,
+.hr-page-header-card .card-body,
+.hr-empty-state-card .card-body,
+.hr-legend-card .card-body,
+.hr-request-card .card-body {
+    padding: 22px;
+}
+
+.hr-stat-icon,
+.hr-feature-icon,
+.hr-profile-section-icon,
+.hr-detail-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f4fc;
+    color: #0d6fb8;
+    font-size: 22px;
+    margin-bottom: 14px;
+}
+
+.hr-stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #222222;
+    line-height: 1.1;
+}
+
+.hr-stat-label {
+    color: #666666;
+    margin-top: 6px;
+    margin-bottom: 0;
+}
+
+.hr-feature-card .card-body {
+    min-height: 220px;
+}
+
+.hr-profile-section-card .card-body {
+    min-height: 230px;
+    display: flex;
+    flex-direction: column;
+}
+
+.hr-feature-title,
+.hr-profile-section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 8px;
+}
+
+.hr-feature-text,
+.hr-profile-section-text {
+    color: #555555;
+    margin-bottom: 12px;
+}
+
+.hr-feature-meta,
+.hr-profile-section-meta {
+    color: #333333;
+    font-weight: 600;
+    margin-bottom: 0;
+    margin-top: auto;
+    font-size: 14px;
+}
+
+.hr-section-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #222222;
+}
+
+.hr-portal-subtle {
+    color: #666666;
+}
+
+.hr-page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #222222;
+}
+
+.hr-page-subtitle {
+    color: #666666;
+    margin-bottom: 0;
+}
+
+.hr-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0d6fb8;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 16px;
+}
+
+.hr-page-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.hr-page-header-pill {
+    background: #e8f4fc;
+    color: #0d6fb8;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.hr-placeholder-box {
+    border: 1px dashed #b7d6ea;
+    border-radius: 14px;
+    background: #f6fbfe;
+    padding: 18px;
+    color: #555555;
+}
+
+.hr-detail-hero-card .card-body {
+    padding: 20px 22px;
+}
+
+.hr-detail-hero-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 6px;
+}
+
+.hr-detail-hero-text {
+    color: #666666;
+    margin-bottom: 14px;
+}
+
+.hr-detail-context-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hr-detail-context-item {
+    background: #eef7fd;
+    color: #084f88;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hr-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.hr-detail-item-card .card-body {
+    min-height: 140px;
+}
+
+.hr-detail-item-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0d6fb8;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+}
+
+.hr-detail-item-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222222;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.hr-detail-item-value.is-empty {
+    color: #999999;
+    font-weight: 600;
+}
+
+.hr-detail-item-subtext {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #777777;
+    line-height: 1.4;
+}
+
+.hr-empty-state-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 8px;
+}
+
+.hr-empty-state-text {
+    color: #666666;
+    margin-bottom: 0;
+}
+
+.hr-attendance-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.hr-attendance-month-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hr-attendance-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #e8f4fc;
+    color: #0d6fb8;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.hr-attendance-nav-btn:hover {
+    background: #d9eefb;
+    color: #084f88;
+}
+
+.hr-attendance-month-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222222;
+}
+
+.hr-attendance-matrix-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+}
+
+.hr-attendance-matrix {
+    width: 100%;
+    min-width: 1200px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #ffffff;
+}
+
+.hr-attendance-matrix thead th {
+    position: sticky;
+    top: 0;
+    background: #f5fbff;
+    z-index: 2;
+    font-size: 13px;
+    font-weight: 700;
+    color: #222222;
+    border-bottom: 1px solid #ececec;
+    border-right: 1px solid #f1f1f1;
+    text-align: center;
+    padding: 10px 8px;
+    white-space: nowrap;
+}
+
+.hr-attendance-matrix tbody td {
+    border-bottom: 1px solid #f1f1f1;
+    border-right: 1px solid #f8f8f8;
+    padding: 10px 8px;
+    font-size: 13px;
+    vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hr-attendance-day-head {
+    min-width: 56px;
+}
+
+.hr-attendance-day-head .day-no {
+    font-size: 14px;
+    font-weight: 700;
+    color: #222222;
+    line-height: 1.1;
+}
+
+.hr-attendance-day-head .day-name {
+    font-size: 11px;
+    color: #777777;
+    margin-top: 4px;
+}
+
+.hr-day-cell {
+    font-weight: 800;
+    font-size: 13px;
+    border-radius: 8px;
+    min-width: 42px;
+}
+
+.hr-day-weekend {
+    background: #f6fbfe;
+}
+
+.hr-code-P {
+    background: #f6fbf6;
+    color: #1f7a36;
+}
+
+.hr-code-R {
+    background: #fff7e8;
+    color: #8c5a00;
+}
+
+.hr-code-H {
+    background: #eaf5fc;
+    color: #0d6fb8;
+}
+
+.hr-code-S {
+    background: #f1ecfb;
+    color: #6b46c1;
+}
+
+.hr-code-C {
+    background: #edf8ea;
+    color: #2f855a;
+}
+
+.hr-code-U {
+    background: #fdeaea;
+    color: #c53030;
+}
+
+.hr-code-D {
+    background: #111111;
+    color: #ffffff;
+}
+
+.hr-code-empty {
+    color: #999999;
+    background: #f8f8f8;
+}
+
+.hr-attendance-total-col {
+    min-width: 62px;
+    font-weight: 700;
+    background: #fafafa;
+}
+
+.hr-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.hr-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #333333;
+}
+
+.hr-legend-badge {
+    min-width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.hr-request-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.hr-request-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 12px;
+    background: #0d6fb8;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.hr-request-btn:hover {
+    background: #084f88;
+    color: #ffffff;
+}
+
+.hr-subsection-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 14px;
+}
+
+.hr-toggle-btn {
+    background-color: #e8f4fc;
+    color: #0d6fb8;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 0;
+}
+
+.hr-toggle-btn:hover,
+.hr-toggle-btn:focus {
+    background-color: #d9eefb;
+    color: #084f88;
+    box-shadow: none;
+}
+
+.hr-summary-policy-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hr-summary-policy-pill {
+    background: #e8f4fc;
+    color: #0d6fb8;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.hr-summary-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+}
+
+.hr-summary-table {
+    min-width: 1200px;
+    background: #ffffff;
+}
+
+.hr-summary-table thead th {
+    background: #f5fbff;
+    text-align: center;
+    vertical-align: middle;
+    color: #222222;
+    font-weight: 700;
+    border-color: #ececec;
+}
+
+.hr-summary-table tbody td,
+.hr-summary-table tfoot th,
+.hr-summary-table tfoot td {
+    vertical-align: middle;
+    border-color: #ececec;
+}
+
+.hr-summary-table tbody tr:hover {
+    background: #f6fbfe;
+}
+
+.hr-selected-summary-row {
+    background: #f6fbfe;
+}
+
+.hr-negative-balance {
+    color: #c53030;
+    font-weight: 700;
+}
+
+.hr-filter-label {
+    font-weight: 700;
+    color: #333333;
+}
+
+.hr-filter-btn {
+    background: #0d6fb8;
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 12px;
+    border: 0;
+    padding: 10px 14px;
+}
+
+.hr-filter-btn:hover,
+.hr-filter-btn:focus {
+    background: #084f88;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+/* ---------------------------------------------------------
+   Employee dashboard request section
+--------------------------------------------------------- */
+
+.alert {
+    border-radius: 14px;
+    margin-bottom: 18px;
+}
+
+.hr-content-card form .form-label {
+    margin-bottom: 8px;
+}
+
+.hr-content-card form .form-control,
+.hr-content-card form .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid #cfdde8;
+    box-shadow: none;
+}
+
+.hr-content-card form .form-control:focus,
+.hr-content-card form .form-select:focus {
+    border-color: #61a8d9;
+    box-shadow: 0 0 0 0.2rem rgba(13, 111, 184, 0.12);
+}
+
+.hr-content-card form .form-control::placeholder {
+    color: #9a9a9a;
+}
+
+.hr-content-card form .hr-filter-btn {
+    min-height: 46px;
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+/* ---------------------------------------------------------
+   Employee payroll page
+--------------------------------------------------------- */
+
+.hr-payroll-summary-box {
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.hr-payroll-summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ececec;
+    background: #fafafa;
+    color: #222222;
+    font-size: 15px;
+}
+
+.hr-payroll-summary-line:last-child {
+    border-bottom: 0;
+}
+
+.hr-payroll-summary-line strong {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.hr-payroll-summary-line-dark {
+    background: #0a2940;
+    color: #ffffff;
+}
+
+.hr-payroll-note-box {
+    min-height: 170px;
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    background: #fcfcfc;
+    padding: 14px 16px;
+    color: #444444;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------
+   Admin payroll page
+--------------------------------------------------------- */
+
+.hr-content-card table th.text-nowrap,
+.hr-content-card table td.text-nowrap {
+    white-space: nowrap;
+}
+
+.hr-admin-payroll-strip {
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.hr-admin-payroll-strip-inner {
+    min-width: 1220px;
+    display: grid;
+    grid-template-columns: 260px 260px 220px 1fr;
+    gap: 18px;
+    align-items: stretch;
+}
+
+.hr-admin-payroll-panel {
+    border: 1px solid #ececec;
+    border-radius: 16px;
+    background: #ffffff;
+    overflow: hidden;
+    height: 100%;
+}
+
+.hr-admin-payroll-panel-header {
+    background: #f5fbff;
+    color: #084f88;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ececec;
+}
+
+.hr-admin-payroll-panel-body {
+    padding: 16px;
+}
+
+.hr-admin-payroll-compact-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.hr-admin-payroll-compact-table th,
+.hr-admin-payroll-compact-table td {
+    border: 1px solid #ececec;
+    padding: 12px 14px;
+    vertical-align: top;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.hr-admin-payroll-compact-table th {
+    width: 58%;
+    font-weight: 700;
+    color: #222222;
+    background: #fcfdff;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.hr-admin-payroll-compact-table td {
+    width: 42%;
+    color: #333333;
+    white-space: nowrap;
+}
+
+.hr-admin-payroll-tax-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.hr-admin-payroll-tax-table th,
+.hr-admin-payroll-tax-table td {
+    border: 1px solid #ececec;
+    padding: 12px 14px;
+    vertical-align: top;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.hr-admin-payroll-tax-table th {
+    background: #f5fbff;
+    color: #222222;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.hr-admin-payroll-tax-table td {
+    color: #333333;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-admin-payroll-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.hr-admin-payroll-table {
+    min-width: 2850px;
+    width: 100%;
+    background: #ffffff;
+    margin-bottom: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.hr-admin-payroll-table thead th,
+.hr-admin-payroll-table tbody td,
+.hr-admin-payroll-table tfoot th,
+.hr-admin-payroll-table tfoot td {
+    padding: 14px 14px;
+    border-color: #ececec;
+    vertical-align: middle;
+}
+
+.hr-admin-payroll-table thead th {
+    background: #f5fbff;
+    color: #222222;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.hr-admin-payroll-table tbody td {
+    white-space: nowrap;
+    font-size: 13px;
+    color: #333333;
+    line-height: 1.4;
+}
+
+.hr-admin-payroll-table tbody tr:hover {
+    background: #f6fbfe;
+}
+
+.hr-admin-payroll-table tfoot th,
+.hr-admin-payroll-table tfoot td {
+    background: #e8f4fc;
+    color: #084f88;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.hr-admin-payroll-table th:nth-child(1),
+.hr-admin-payroll-table td:nth-child(1) {
+    min-width: 56px;
+    width: 56px;
+    text-align: center;
+}
+
+.hr-admin-payroll-table th:nth-child(2),
+.hr-admin-payroll-table td:nth-child(2) {
+    min-width: 110px;
+    width: 110px;
+}
+
+.hr-admin-payroll-table th:nth-child(3),
+.hr-admin-payroll-table td:nth-child(3) {
+    min-width: 190px;
+    width: 190px;
+}
+
+.hr-admin-payroll-table th:nth-child(4),
+.hr-admin-payroll-table td:nth-child(4) {
+    min-width: 140px;
+    width: 140px;
+}
+
+.hr-admin-payroll-table th:nth-child(5),
+.hr-admin-payroll-table td:nth-child(5) {
+    min-width: 160px;
+    width: 160px;
+}
+
+.hr-admin-payroll-table th:nth-child(6),
+.hr-admin-payroll-table td:nth-child(6) {
+    min-width: 140px;
+    width: 140px;
+}
+
+.hr-admin-payroll-table th:nth-child(7),
+.hr-admin-payroll-table td:nth-child(7),
+.hr-admin-payroll-table th:nth-child(8),
+.hr-admin-payroll-table td:nth-child(8),
+.hr-admin-payroll-table th:nth-child(9),
+.hr-admin-payroll-table td:nth-child(9),
+.hr-admin-payroll-table th:nth-child(10),
+.hr-admin-payroll-table td:nth-child(10),
+.hr-admin-payroll-table th:nth-child(11),
+.hr-admin-payroll-table td:nth-child(11),
+.hr-admin-payroll-table th:nth-child(12),
+.hr-admin-payroll-table td:nth-child(12),
+.hr-admin-payroll-table th:nth-child(13),
+.hr-admin-payroll-table td:nth-child(13),
+.hr-admin-payroll-table th:nth-child(14),
+.hr-admin-payroll-table td:nth-child(14),
+.hr-admin-payroll-table th:nth-child(15),
+.hr-admin-payroll-table td:nth-child(15),
+.hr-admin-payroll-table th:nth-child(16),
+.hr-admin-payroll-table td:nth-child(16),
+.hr-admin-payroll-table th:nth-child(17),
+.hr-admin-payroll-table td:nth-child(17),
+.hr-admin-payroll-table th:nth-child(18),
+.hr-admin-payroll-table td:nth-child(18),
+.hr-admin-payroll-table th:nth-child(19),
+.hr-admin-payroll-table td:nth-child(19),
+.hr-admin-payroll-table th:nth-child(20),
+.hr-admin-payroll-table td:nth-child(20),
+.hr-admin-payroll-table th:nth-child(21),
+.hr-admin-payroll-table td:nth-child(21),
+.hr-admin-payroll-table th:nth-child(22),
+.hr-admin-payroll-table td:nth-child(22),
+.hr-admin-payroll-table th:nth-child(23),
+.hr-admin-payroll-table td:nth-child(23) {
+    min-width: 128px;
+    width: 128px;
+}
+
+.hr-admin-payroll-table th:nth-child(17),
+.hr-admin-payroll-table td:nth-child(17),
+.hr-admin-payroll-table th:nth-child(18),
+.hr-admin-payroll-table td:nth-child(18),
+.hr-admin-payroll-table th:nth-child(19),
+.hr-admin-payroll-table td:nth-child(19),
+.hr-admin-payroll-table th:nth-child(20),
+.hr-admin-payroll-table td:nth-child(20),
+.hr-admin-payroll-table th:nth-child(21),
+.hr-admin-payroll-table td:nth-child(21),
+.hr-admin-payroll-table th:nth-child(22),
+.hr-admin-payroll-table td:nth-child(22),
+.hr-admin-payroll-table th:nth-child(23),
+.hr-admin-payroll-table td:nth-child(23) {
+    min-width: 145px;
+    width: 145px;
+}
+
+.hr-admin-payroll-table th:nth-child(1),
+.hr-admin-payroll-table th:nth-child(2),
+.hr-admin-payroll-table th:nth-child(3),
+.hr-admin-payroll-table td:nth-child(1),
+.hr-admin-payroll-table td:nth-child(2),
+.hr-admin-payroll-table td:nth-child(3) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: inherit;
+}
+
+.hr-admin-payroll-table th:nth-child(1),
+.hr-admin-payroll-table td:nth-child(1) {
+    left: 0;
+}
+
+.hr-admin-payroll-table th:nth-child(2),
+.hr-admin-payroll-table td:nth-child(2) {
+    left: 56px;
+}
+
+.hr-admin-payroll-table th:nth-child(3),
+.hr-admin-payroll-table td:nth-child(3) {
+    left: 166px;
+}
+
+.hr-admin-payroll-table thead th:nth-child(1),
+.hr-admin-payroll-table thead th:nth-child(2),
+.hr-admin-payroll-table thead th:nth-child(3) {
+    background: #f5fbff;
+    z-index: 3;
+}
+
+.hr-admin-payroll-table tbody td:nth-child(1),
+.hr-admin-payroll-table tbody td:nth-child(2),
+.hr-admin-payroll-table tbody td:nth-child(3) {
+    background: #ffffff;
+    z-index: 2;
+}
+
+.hr-admin-payroll-table tbody tr:hover td:nth-child(1),
+.hr-admin-payroll-table tbody tr:hover td:nth-child(2),
+.hr-admin-payroll-table tbody tr:hover td:nth-child(3) {
+    background: #f6fbfe;
+}
+
+.hr-admin-payroll-table tfoot th:nth-child(1),
+.hr-admin-payroll-table tfoot th:nth-child(2),
+.hr-admin-payroll-table tfoot th:nth-child(3),
+.hr-admin-payroll-table tfoot td:nth-child(1),
+.hr-admin-payroll-table tfoot td:nth-child(2),
+.hr-admin-payroll-table tfoot td:nth-child(3) {
+    background: #e8f4fc;
+    z-index: 2;
+}
+
+.hr-admin-payroll-table th,
+.hr-admin-payroll-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hr-admin-payroll-mini-metric {
+    color: #444444;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.hr-admin-payroll-mini-metric strong {
+    display: block;
+    margin-top: 8px;
+    color: #222222;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+   HR Chatbot Widget
+--------------------------------------------------------- */
+
+.hr-chatbot-launcher {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.20);
+    z-index: 1050;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hr-chatbot-launcher:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+}
+
+.hr-chatbot-widget {
+    position: fixed;
+    right: 24px;
+    bottom: 92px;
+    width: 360px;
+    height: 540px;
+    max-height: calc(100vh - 140px);
+    background: #ffffff;
+    border: 1px solid #d8e7f2;
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    z-index: 1051;
+    display: none;
+}
+
+.hr-chatbot-widget.is-open {
+    display: block;
+}
+
+.hr-chatbot-header {
+    height: 60px;
+    background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+}
+
+.hr-chatbot-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.hr-chatbot-close {
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+}
+
+.hr-chatbot-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.hr-chatbot-frame-wrap {
+    width: 100%;
+    height: calc(100% - 60px);
+    background: #ffffff;
+}
+
+.hr-chatbot-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #ffffff;
+}
+.hr-performance-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.hr-performance-table {
+    width: 100%;
+    min-width: 1850px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 0;
+    background: #ffffff;
+}
+
+.hr-performance-table thead th {
+    background: #f5fbff;
+    color: #222222;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.45;
+    vertical-align: middle;
+    text-align: left;
+    padding: 16px 14px;
+    border-color: #ececec;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.hr-performance-table tbody td {
+    vertical-align: top;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333333;
+    padding: 18px 14px;
+    border-color: #ececec;
+    background: #ffffff;
+}
+
+.hr-performance-table tbody tr:hover td {
+    background: #f9fcff;
+}
+
+.hr-performance-table th:nth-child(1),
+.hr-performance-table td:nth-child(1) {
+    width: 170px;
+    min-width: 170px;
+}
+
+.hr-performance-table th:nth-child(2),
+.hr-performance-table td:nth-child(2) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.hr-performance-table th:nth-child(3),
+.hr-performance-table td:nth-child(3) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.hr-performance-table th:nth-child(4),
+.hr-performance-table td:nth-child(4) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-performance-table th:nth-child(5),
+.hr-performance-table td:nth-child(5) {
+    width: 250px;
+    min-width: 250px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-performance-table th:nth-child(6),
+.hr-performance-table td:nth-child(6) {
+    width: 110px;
+    min-width: 110px;
+}
+
+.hr-performance-table th:nth-child(7),
+.hr-performance-table td:nth-child(7) {
+    width: 140px;
+    min-width: 140px;
+}
+
+.hr-performance-table th:nth-child(8),
+.hr-performance-table td:nth-child(8) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-performance-table th:nth-child(9),
+.hr-performance-table td:nth-child(9) {
+    width: 240px;
+    min-width: 240px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-performance-table th:nth-child(10),
+.hr-performance-table td:nth-child(10) {
+    width: 420px;
+    min-width: 420px;
+}
+
+.hr-performance-update-col {
+    min-width: 420px;
+    width: 420px;
+}
+
+.hr-performance-update-form {
+    display: grid;
+    gap: 12px;
+}
+
+.hr-performance-update-form .form-control,
+.hr-performance-update-form .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid #cfdde8;
+    box-shadow: none;
+    font-size: 14px;
+    padding: 10px 14px;
+}
+
+.hr-performance-update-form .form-control:focus,
+.hr-performance-update-form .form-select:focus {
+    border-color: #61a8d9;
+    box-shadow: 0 0 0 0.2rem rgba(13, 111, 184, 0.12);
+}
+
+.hr-performance-update-form textarea.form-control {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.hr-performance-update-form button.hr-request-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    margin-top: 4px;
+}
+.hr-task-report-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.hr-task-report-table {
+    width: 100%;
+    min-width: 1700px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 0;
+    background: #ffffff;
+}
+
+.hr-task-report-table thead th {
+    background: #f5fbff;
+    color: #222222;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.45;
+    vertical-align: middle;
+    text-align: left;
+    padding: 16px 14px;
+    border-color: #ececec;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.hr-task-report-table tbody td {
+    vertical-align: top;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333333;
+    padding: 18px 14px;
+    border-color: #ececec;
+    background: #ffffff;
+}
+
+.hr-task-report-table tbody tr:hover td {
+    background: #f9fcff;
+}
+
+.hr-task-report-table th:nth-child(1),
+.hr-task-report-table td:nth-child(1) {
+    width: 180px;
+    min-width: 180px;
+}
+
+.hr-task-report-table th:nth-child(2),
+.hr-task-report-table td:nth-child(2) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.hr-task-report-table th:nth-child(3),
+.hr-task-report-table td:nth-child(3) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-task-report-table th:nth-child(4),
+.hr-task-report-table td:nth-child(4) {
+    width: 180px;
+    min-width: 180px;
+}
+
+.hr-task-report-table th:nth-child(5),
+.hr-task-report-table td:nth-child(5) {
+    width: 160px;
+    min-width: 160px;
+}
+
+.hr-task-report-table th:nth-child(6),
+.hr-task-report-table td:nth-child(6) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.hr-task-report-table th:nth-child(7),
+.hr-task-report-table td:nth-child(7) {
+    width: 250px;
+    min-width: 250px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-task-report-table th:nth-child(8),
+.hr-task-report-table td:nth-child(8) {
+    width: 220px;
+    min-width: 220px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-task-report-table th:nth-child(9),
+.hr-task-report-table td:nth-child(9) {
+    width: 420px;
+    min-width: 420px;
+}
+
+.hr-task-report-update-col {
+    min-width: 420px;
+    width: 420px;
+}
+
+.hr-task-report-update-form {
+    display: grid;
+    gap: 12px;
+}
+
+.hr-task-report-update-form .form-control,
+.hr-task-report-update-form .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid #cfdde8;
+    box-shadow: none;
+    font-size: 14px;
+    padding: 10px 14px;
+}
+
+.hr-task-report-update-form .form-control:focus,
+.hr-task-report-update-form .form-select:focus {
+    border-color: #61a8d9;
+    box-shadow: 0 0 0 0.2rem rgba(13, 111, 184, 0.12);
+}
+
+.hr-task-report-update-form textarea.form-control {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.hr-task-report-update-form button.hr-request-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    margin-top: 4px;
+}
+.hr-employee-performance-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.hr-employee-performance-table {
+    width: 100%;
+    min-width: 1600px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 0;
+    background: #ffffff;
+}
+
+.hr-employee-performance-table thead th {
+    background: #f5fbff;
+    color: #222222;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.45;
+    vertical-align: middle;
+    text-align: left;
+    padding: 16px 14px;
+    border-color: #ececec;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.hr-employee-performance-table tbody td {
+    vertical-align: top;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333333;
+    padding: 18px 14px;
+    border-color: #ececec;
+    background: #ffffff;
+}
+
+.hr-employee-performance-table tbody tr:hover td {
+    background: #f9fcff;
+}
+
+.hr-employee-performance-table th:nth-child(1),
+.hr-employee-performance-table td:nth-child(1) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-employee-performance-table th:nth-child(2),
+.hr-employee-performance-table td:nth-child(2) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.hr-employee-performance-table th:nth-child(3),
+.hr-employee-performance-table td:nth-child(3) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-employee-performance-table th:nth-child(4),
+.hr-employee-performance-table td:nth-child(4) {
+    width: 250px;
+    min-width: 250px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-employee-performance-table th:nth-child(5),
+.hr-employee-performance-table td:nth-child(5) {
+    width: 110px;
+    min-width: 110px;
+}
+
+.hr-employee-performance-table th:nth-child(6),
+.hr-employee-performance-table td:nth-child(6) {
+    width: 140px;
+    min-width: 140px;
+}
+
+.hr-employee-performance-table th:nth-child(7),
+.hr-employee-performance-table td:nth-child(7) {
+    width: 130px;
+    min-width: 130px;
+}
+
+.hr-employee-performance-table th:nth-child(8),
+.hr-employee-performance-table td:nth-child(8) {
+    width: 220px;
+    min-width: 220px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.hr-employee-performance-table th:nth-child(9),
+.hr-employee-performance-table td:nth-child(9) {
+    width: 380px;
+    min-width: 380px;
+}
+
+.hr-employee-performance-update-col {
+    min-width: 380px;
+    width: 380px;
+}
+
+.hr-employee-performance-update-form {
+    display: grid;
+    gap: 12px;
+}
+
+.hr-employee-performance-update-form .form-control,
+.hr-employee-performance-update-form .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid #cfdde8;
+    box-shadow: none;
+    font-size: 14px;
+    padding: 10px 14px;
+}
+
+.hr-employee-performance-update-form .form-control:focus,
+.hr-employee-performance-update-form .form-select:focus {
+    border-color: #61a8d9;
+    box-shadow: 0 0 0 0.2rem rgba(13, 111, 184, 0.12);
+}
+
+.hr-employee-performance-update-form textarea.form-control {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.hr-employee-performance-update-form button.hr-request-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    margin-top: 4px;
+}
+
+@media (max-width: 1199.98px) {
+    .hr-admin-payroll-strip-inner {
+        min-width: 1100px;
+        grid-template-columns: 250px 250px 220px 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .hr-sidebar-wrap,
+    .hr-content-wrap {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .hr-sidebar-card {
+        position: static;
+    }
+
+    .hr-sidebar-sublink {
+        margin-left: 14px;
+    }
+
+    .hr-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hr-legend-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hr-admin-payroll-strip-inner {
+        min-width: 980px;
+        grid-template-columns: 240px 240px 220px 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .hr-legend-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hr-summary-policy-bar {
+        flex-direction: column;
+    }
+
+    .hr-payroll-summary-line {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hr-admin-payroll-mini-metric strong {
+        font-size: 18px;
+    }
+
+    .hr-chatbot-launcher {
+        right: 16px;
+        bottom: 16px;
+        width: 54px;
+        height: 54px;
+        font-size: 22px;
+    }
+
+    .hr-chatbot-widget {
+        right: 16px;
+        left: 16px;
+        bottom: 80px;
+        width: auto;
+        height: 72vh;
+        max-height: 72vh;
+    }
+}
