@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_payroll_register_line_list" model="ir.ui.view">
+        <field name="name">hr.payroll.register.line.list</field>
+        <field name="model">hr.payroll.register.line</field>
+        <field name="arch" type="xml">
+            <list string="Payroll Register Lines">
+                <field name="month_date"/>
+                <field name="fiscal_year_label"/>
+                <field name="employee_id"/>
+                <field name="employee_code"/>
+                <field name="designation"/>
+                <field name="basic_salary"/>
+                <field name="income_tax_deduction"/>
+                <field name="total_salary"/>
+                <field name="payment_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_payroll_register_line_form" model="ir.ui.view">
+        <field name="name">hr.payroll.register.line.form</field>
+        <field name="model">hr.payroll.register.line</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Register Line">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="employee_code"/>
+                            <field name="employee_name_text"/>
+                            <field name="fiscal_year_label"/>
+                            <field name="month_date"/>
+                            <field name="month_label"/>
+                            <field name="designation"/>
+                            <field name="payment_method"/>
+                        </group>
+                        <group>
+                            <field name="basic_salary"/>
+                            <field name="basic_actual"/>
+                            <field name="medical_allowance"/>
+                            <field name="advertised_salary"/>
+                            <field name="project_salary"/>
+                            <field name="bonus"/>
+                            <field name="allowance"/>
+                            <field name="allowance_detail"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="taxable_income"/>
+                            <field name="yearly_income"/>
+                            <field name="income_tax_deduction"/>
+                            <field name="other_deductions"/>
+                        </group>
+                        <group>
+                            <field name="total"/>
+                            <field name="total_round"/>
+                            <field name="total_salary"/>
+                            <field name="loans_from_cash"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="payment_date"/>
+                            <field name="payment"/>
+                            <field name="inclusive_of_tax"/>
+                            <field name="remaining"/>
+                        </group>
+                        <group>
+                            <field name="period_label"/>
+                            <field name="paid_at"/>
+                            <field name="comments"/>
+                            <field name="source"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_payroll_register_lines" model="ir.actions.act_window">
+        <field name="name">Payroll Register</field>
+        <field name="res_model">hr.payroll.register.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_hr_payroll_register_import_wizard_form" model="ir.ui.view">
+        <field name="name">hr.payroll.register.import.wizard.form</field>
+        <field name="model">hr.payroll.register.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Register Import">
+                <group>
+                    <group>
+                        <field name="file_name" invisible="True"/>
+                        <field name="file_data" filename="file_name" required="True"/>
+                    </group>
+                </group>
+
+                <group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Production-safe rules:</strong><br/>
+                        1. Payroll is matched by Employee Code first, then Employee Name.<br/>
+                        2. One payroll line is stored per employee per month.<br/>
+                        3. Existing employee/month rows are updated, not duplicated.<br/>
+                        4. Unknown employees are skipped and shown in summary.
+                    </div>
+                </group>
+
+                <group>
+                    <field name="result_html" widget="html"/>
+                </group>
+
+                <footer>
+                    <button name="action_import_payroll_register"
+                            string="Import Payroll Register"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_payroll_register_import_wizard" model="ir.actions.act_window">
+        <field name="name">Payroll Register Import</field>
+        <field name="res_model">hr.payroll.register.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_hr_payroll_register_root"
+              name="Payroll Register"
+              parent="hr.menu_hr_root"
+              sequence="98"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_payroll_register_lines"
+              name="Payroll Register Lines"
+              parent="menu_hr_payroll_register_root"
+              action="action_hr_payroll_register_lines"
+              sequence="1"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_payroll_register_import_wizard"
+              name="Payroll Register Import"
+              parent="menu_hr_payroll_register_root"
+              action="action_hr_payroll_register_import_wizard"
+              sequence="2"
+              groups="hr.group_hr_manager"/>
+</odoo>

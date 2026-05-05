@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_update_import_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.update.import.wizard.form</field>
+        <field name="model">hr.employee.update.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Employee Update Import">
+                <group>
+                    <group>
+                        <field name="file_name" invisible="True"/>
+                        <field name="file_data" filename="file_name" required="True"/>
+                    </group>
+                </group>
+
+                <group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Production-safe rules:</strong><br/>
+                        1. Employee is matched by Employee Code.<br/>
+                        2. If code is not found, row is skipped.<br/>
+                        3. Blank cells do not overwrite existing values.<br/>
+                        4. This version updates safe fields, including Account Title, IBAN, and Job Position if available.
+                    </div>
+                </group>
+
+                <group>
+                    <field name="result_html" widget="html"/>
+                </group>
+
+                <footer>
+                    <button name="action_import_employees"
+                            string="Import / Update Employees"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_update_import_wizard" model="ir.actions.act_window">
+        <field name="name">Employee Update Import</field>
+        <field name="res_model">hr.employee.update.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+        <record id="view_hr_employee_code_sync_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.code.sync.wizard.form</field>
+        <field name="model">hr.employee.code.sync.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Employee Code Sync">
+                <group>
+                    <group>
+                        <field name="file_name" invisible="True"/>
+                        <field name="file_data" filename="file_name" required="True"/>
+                    </group>
+                </group>
+
+                <group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Safe code sync rules:</strong><br/>
+                        1. Match employee by exact Employee Name.<br/>
+                        2. Update only Employee Code.<br/>
+                        3. Skip row if employee name is not found.<br/>
+                        4. Skip row if multiple employees have same name.<br/>
+                        5. Skip row if target code already exists on another employee.
+                    </div>
+                </group>
+
+                <group>
+                    <field name="result_html" widget="html"/>
+                </group>
+
+                <footer>
+                    <button name="action_sync_employee_codes"
+                            string="Sync Employee Codes"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_code_sync_wizard" model="ir.actions.act_window">
+        <field name="name">Employee Code Sync</field>
+        <field name="res_model">hr.employee.code.sync.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_hr_employee_code_sync_wizard"
+              name="Employee Code Sync"
+              parent="hr.menu_hr_root"
+              action="action_hr_employee_code_sync_wizard"
+              sequence="96"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_employee_update_import_wizard"
+              name="Employee Update Import"
+              parent="hr.menu_hr_root"
+              action="action_hr_employee_update_import_wizard"
+              sequence="95"
+              groups="hr.group_hr_manager"/>
+</odoo>

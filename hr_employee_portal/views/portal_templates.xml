@@ -147,7 +147,8 @@
             margin-bottom: 0;
         }
 
-        .hr-portal-home-link {
+        .hr-portal-home-link,
+        .hr-back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -219,9 +220,10 @@
             line-height: 1.1;
         }
 
-        .hr-stat-label {
+        .hr-stat-label,
+        .hr-page-subtitle,
+        .hr-portal-subtle {
             color: #666;
-            margin-top: 6px;
             margin-bottom: 0;
         }
 
@@ -236,10 +238,22 @@
         }
 
         .hr-feature-title,
-        .hr-profile-section-title {
-            font-size: 22px;
+        .hr-profile-section-title,
+        .hr-page-title,
+        .hr-section-title {
             font-weight: 700;
             color: #222;
+        }
+
+        .hr-feature-title,
+        .hr-profile-section-title {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .hr-page-title,
+        .hr-section-title {
+            font-size: 28px;
             margin-bottom: 8px;
         }
 
@@ -258,47 +272,17 @@
             font-size: 14px;
         }
 
-        .hr-section-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #222;
-        }
-
-        .hr-portal-subtle {
-            color: #666;
-        }
-
-        .hr-page-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #222;
-        }
-
-        .hr-page-subtitle {
-            color: #666;
-            margin-bottom: 0;
-        }
-
-        .hr-back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #7b3f6e;
-            font-weight: 600;
-            text-decoration: none;
-            margin-bottom: 16px;
-        }
-
-        .hr-page-header-meta {
+        .hr-page-header-meta,
+        .hr-detail-context-strip,
+        .hr-request-actions,
+        .hr-attendance-month-nav {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 16px;
         }
 
-        .hr-page-header-pill {
+        .hr-page-header-pill,
+        .hr-detail-context-item {
             background: #f6eef4;
             color: #7b3f6e;
             padding: 8px 12px;
@@ -329,21 +313,6 @@
         .hr-detail-hero-text {
             color: #666;
             margin-bottom: 14px;
-        }
-
-        .hr-detail-context-strip {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .hr-detail-context-item {
-            background: #f9f3f8;
-            color: #5d2f55;
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 600;
         }
 
         .hr-detail-grid {
@@ -406,13 +375,6 @@
             margin-bottom: 18px;
         }
 
-        .hr-attendance-month-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
         .hr-attendance-nav-btn {
             display: inline-flex;
             align-items: center;
@@ -425,7 +387,8 @@
             font-weight: 700;
         }
 
-        .hr-attendance-nav-btn:hover {
+        .hr-attendance-nav-btn:hover,
+        .hr-row-edit-toggle:hover {
             background: #eedde9;
             color: #5d2f55;
         }
@@ -499,49 +462,15 @@
             min-width: 42px;
         }
 
-        .hr-day-weekend {
-            background: #fcf8fb;
-        }
-
-        .hr-code-P {
-            background: #f6fbf6;
-            color: #1f7a36;
-        }
-
-        .hr-code-R {
-            background: #fff7e8;
-            color: #8c5a00;
-        }
-
-        .hr-code-H {
-            background: #f9ecf2;
-            color: #7b3f6e;
-        }
-
-        .hr-code-S {
-            background: #f1ecfb;
-            color: #6b46c1;
-        }
-
-        .hr-code-C {
-            background: #edf8ea;
-            color: #2f855a;
-        }
-
-        .hr-code-U {
-            background: #fdeaea;
-            color: #c53030;
-        }
-
-        .hr-code-D {
-            background: #111111;
-            color: #ffffff;
-        }
-
-        .hr-code-empty {
-            color: #999999;
-            background: #f8f8f8;
-        }
+        .hr-day-weekend { background: #fcf8fb; }
+        .hr-code-P { background: #f6fbf6; color: #1f7a36; }
+        .hr-code-R { background: #fff7e8; color: #8c5a00; }
+        .hr-code-H { background: #f9ecf2; color: #7b3f6e; }
+        .hr-code-S { background: #f1ecfb; color: #6b46c1; }
+        .hr-code-C { background: #edf8ea; color: #2f855a; }
+        .hr-code-U { background: #fdeaea; color: #c53030; }
+        .hr-code-D { background: #111111; color: #ffffff; }
+        .hr-code-empty { color: #999999; background: #f8f8f8; }
 
         .hr-attendance-total-col {
             min-width: 62px;
@@ -573,13 +502,6 @@
             font-weight: 800;
         }
 
-        .hr-request-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-
         .hr-request-btn {
             display: inline-flex;
             align-items: center;
@@ -604,6 +526,100 @@
             margin-bottom: 14px;
         }
 
+        .hr-row-edit-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #f6eef4;
+            color: #7b3f6e;
+            border: 0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .hr-edit-drawer .offcanvas-header {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .hr-edit-drawer .offcanvas-body {
+            padding: 18px;
+        }
+
+        .hr-edit-drawer .form-control,
+        .hr-edit-drawer .form-select {
+            min-height: 42px;
+            margin-bottom: 10px;
+        }
+
+        .hr-edit-drawer textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .hr-edit-drawer .hr-request-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hr-admin-table-scroll {
+            max-height: 560px;
+            overflow: auto;
+            border: 1px solid #ececec;
+            border-radius: 14px;
+        }
+
+        .hr-task-report-table,
+        .hr-performance-table {
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 0;
+        }
+
+        .hr-task-report-table thead th,
+        .hr-performance-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #eef4f8;
+            white-space: nowrap;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .hr-task-report-table td,
+        .hr-performance-table td {
+            vertical-align: top;
+            padding: 12px 10px;
+            font-size: 14px;
+            height: auto;
+        }
+
+        .hr-task-report-table tbody tr,
+        .hr-performance-table tbody tr {
+            height: auto;
+        }
+
+        .hr-task-report-table th:nth-child(7),
+        .hr-task-report-table td:nth-child(7),
+        .hr-task-report-table th:nth-child(8),
+        .hr-task-report-table td:nth-child(8),
+        .hr-performance-table th:nth-child(5),
+        .hr-performance-table td:nth-child(5),
+        .hr-performance-table th:nth-child(9),
+        .hr-performance-table td:nth-child(9) {
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .hr-task-report-update-col,
+        .hr-performance-update-col {
+            min-width: 140px;
+            width: 140px;
+        }
+
         @media (max-width: 991.98px) {
             .hr-sidebar-wrap,
             .hr-content-wrap {
@@ -623,41 +639,6 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-        .hr-performance-table {
-    table-layout: auto;
-    width: 100%;
-}
-
-.hr-performance-table thead th {
-    white-space: nowrap;
-    vertical-align: middle;
-    font-size: 14px;
-}
-
-.hr-performance-table td {
-    vertical-align: top;
-    font-size: 14px;
-}
-
-.hr-performance-table th:nth-child(5),
-.hr-performance-table td:nth-child(5),
-.hr-performance-table th:nth-child(9),
-.hr-performance-table td:nth-child(9),
-.hr-performance-table th:nth-child(10),
-.hr-performance-table td:nth-child(10) {
-    white-space: normal;
-    min-width: 220px;
-}
-
-.hr-performance-table th:nth-child(8),
-.hr-performance-table td:nth-child(8) {
-    min-width: 120px;
-}
-
-.hr-performance-table th:nth-child(10),
-.hr-performance-table td:nth-child(10) {
-    min-width: 360px;
-}
 
         @media (max-width: 767.98px) {
             .hr-legend-grid {
@@ -1871,12 +1852,11 @@
             <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
         </t>
     </template>
-
-   <template id="hr_employee_attendance_page" name="HR Employee Attendance Page">
+    <template id="hr_employee_attendance_page" name="HR Employee Attendance Page">
     <t t-call="portal.portal_layout">
         <t t-set="current_page" t-value="'attendance'"/>
 
-        <div class="container mt-4 mb-5">
+        <div class="container oe_structure mt-4 mb-5">
             <div class="hr-layout-row">
                 <div class="hr-sidebar-wrap">
                     <t t-call="hr_employee_portal.hr_employee_sidebar"/>
@@ -1885,94 +1865,110 @@
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to HR Portal
+                            <i class="fa fa-arrow-left"/> Back
                         </a>
                     </div>
 
                     <div class="card hr-page-header-card mb-4">
                         <div class="card-body">
-                            <h2 class="hr-page-title">My Attendance</h2>
-                            <p class="hr-page-subtitle" t-if="employee">
-                                View your monthly attendance summary, daily attendance codes, and attendance history below.
-                            </p>
-                            <p class="hr-page-subtitle" t-if="not employee">
-                                No employee record is linked to your user yet.
-                            </p>
+                            <h2 class="hr-page-title">Employee Attendances</h2>
+                            <p class="hr-page-subtitle">Review your attendance summary, leave balances, WFH total, late data, and raw logs.</p>
                         </div>
                     </div>
 
                     <t t-if="employee">
                         <div class="card hr-content-card mb-4">
                             <div class="card-body">
-                                <div class="hr-attendance-toolbar">
-                                    <div>
-                                        <div class="hr-subsection-title mb-2">Monthly Attendance Register</div>
-                                        <div class="hr-portal-subtle">
-                                            Monthly code matrix based on attendance, work mode, leave, holiday, late submission, overtime, and absence.
+                                <form action="/my/hr/attendance" method="get">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Fiscal Year</label>
+                                            <select name="fy"
+                                            class="form-select"
+                                            onchange="this.form.submit();">
+                                                <t t-foreach="fiscal_year_options" t-as="fy_opt">
+                                                    <option t-att-value="fy_opt['value']"
+                                                            t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                        <t t-esc="fy_opt['label']"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Select FY Month</label>
+                                            <select name="month" class="form-select">
+                                                <t t-foreach="fiscal_year_month_options" t-as="month_opt">
+                                                    <option t-att-value="month_opt['value']"
+                                                            t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                        <t t-esc="month_opt['label']"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <button type="submit" class="hr-request-btn border-0 w-100 justify-content-center">
+                                                <i class="fa fa-filter"/> Apply
+                                            </button>
                                         </div>
                                     </div>
 
-                                    <div class="hr-attendance-month-nav">
-                                        <a t-attf-href="/my/hr/attendance?month=#{previous_month_value}" class="hr-attendance-nav-btn">
-                                            <i class="fa fa-chevron-left"/> Previous
-                                        </a>
-                                        <div class="hr-attendance-month-label" t-esc="month_display"/>
-                                        <a t-attf-href="/my/hr/attendance?month=#{next_month_value}" class="hr-attendance-nav-btn">
-                                            Next <i class="fa fa-chevron-right"/>
-                                        </a>
+                                    <div class="row g-3 mt-2">
+                                        <div class="col-md-4">
+                                            <div class="hr-page-header-pill">Payroll Month: <t t-esc="attendance_fy_summary['selected_month_label']"/></div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="hr-page-header-pill">Fiscal Year: <t t-esc="fiscal_year_label"/></div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="hr-page-header-pill">Fiscal Year Range: <t t-esc="fiscal_year_range_label"/></div>
+                                        </div>
                                     </div>
-                                </div>
+                                </form>
+                            </div>
+                        </div>
 
-                                <div class="hr-attendance-context mb-3" t-if="attendance_matrix_row">
-                                    <span class="hr-page-header-pill d-inline-block me-2 mb-2">
-                                        <i class="fa fa-calendar me-1"/> <t t-esc="attendance_matrix_row['month_label']"/> (<t t-esc="attendance_matrix_row['fiscal_year']"/>)
-                                    </span>
-                                    <span class="hr-page-header-pill d-inline-block mb-2">
-                                        <i class="fa fa-user me-1"/> <t t-esc="attendance_matrix_row['employee_name']"/>
-                                    </span>
-                                </div>
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <div class="hr-subsection-title">Attendance &amp; Leave Summary</div>
 
-                                <div class="hr-attendance-matrix-wrap" t-if="attendance_matrix_row">
-                                    <table class="hr-attendance-matrix">
+                                <div class="hr-fy-summary-scroll">
+                                    <table class="table table-bordered text-center hr-fy-summary-table">
                                         <thead>
-    <tr>
-        <t t-foreach="attendance_matrix_row['days']" t-as="day">
-            <th class="hr-attendance-day-head">
-                <div class="day-no" t-esc="day['day_number']"/>
-                <div class="day-name" t-esc="day['weekday_short']"/>
-            </th>
-        </t>
-        <th class="hr-attendance-total-col">Total</th>
-        <th class="hr-attendance-total-col">P</th>
-        <th class="hr-attendance-total-col">R</th>
-        <th class="hr-attendance-total-col">H</th>
-        <th class="hr-attendance-total-col">S</th>
-        <th class="hr-attendance-total-col">C</th>
-        <th class="hr-attendance-total-col">U</th>
-        <th class="hr-attendance-total-col">D</th>
-        <th class="hr-attendance-total-col">A</th>
-        <th class="hr-attendance-total-col">OT</th>
-    </tr>
-</thead>
+                                            <tr class="hr-fy-summary-top">
+                                                <th rowspan="2" class="hr-fy-black-cell">FY-<t t-esc="selected_fiscal_year_code"/></th>
+                                                <th colspan="4" class="hr-fy-policy-cell">Policy Sick Leaves = 10</th>
+                                                <th colspan="4" class="hr-fy-policy-cell">Casual Leaves = 20</th>
+                                                <th colspan="2" class="hr-fy-policy-cell">Todate</th>
+                                            </tr>
+                                            <tr class="hr-fy-summary-head">
+                                                <th class="hr-month-head">Month</th>
+                                                <th class="hr-sick-head">Opening</th>
+                                                 <th class="hr-sick-head">Availed this month</th>
+                                                <th class="hr-sick-head">Earned this Month</th>
+                                                <th class="hr-sick-head">Closing Balance</th>
+                                                <th class="hr-casual-head">Opening</th>
+                                                <th class="hr-casual-head">Availed</th>
+                                                <th class="hr-casual-head">Earned this Month</th>
+                                                <th class="hr-casual-head">Closing Balance</th>
+                                                <th class="hr-wfh-head">WFH</th>
+                                                <th class="hr-late-head">Late data</th>
+                                            </tr>
+                                        </thead>
                                         <tbody>
                                             <tr>
-                                                <t t-foreach="attendance_matrix_row['days']" t-as="day">
-                                                    <td t-att-title="day['title']"
-                                                        t-attf-class="hr-day-cell #{'hr-day-weekend' if day['is_weekend'] else ''} #{'hr-code-P' if day['code'] == 'P' else ''} #{'hr-code-R' if day['code'] == 'R' else ''} #{'hr-code-H' if day['code'] == 'H' else ''} #{'hr-code-S' if day['code'] == 'S' else ''} #{'hr-code-C' if day['code'] == 'C' else ''} #{'hr-code-U' if day['code'] == 'U' else ''} #{'hr-code-D' if day['code'] == 'D' else ''} #{'hr-code-empty' if day['code'] == '-' else ''} #{'hr-code-empty' if day['code'] == 'A' else ''}">
-                                                        <span t-esc="day['code']"/>
-                                                    </td>
-                                                </t>
-
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['total']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['P']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['R']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['H']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['S']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['C']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['U']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['D']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['A']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['OT']"/>
+                                                <td class="hr-month-value"><t t-esc="attendance_fy_summary['selected_month_label']"/></td>
+                                                <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_opening']"/></td>
+                                                <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_availed']"/></td>
+                                                <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_earned']"/></td>
+                                                <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_closing']"/></td>
+                                                <td class="hr-casual-value"><t t-esc="attendance_fy_summary['casual_opening']"/></td>
+                                                <td class="hr-casual-value"><t t-esc="attendance_fy_summary['casual_availed']"/></td>
+                                                <td class="hr-casual-value"><t t-esc="attendance_fy_summary['casual_earned']"/></td>
+                                                <td class="hr-casual-value"><t t-esc="attendance_fy_summary['casual_closing']"/></td>
+                                                <td class="hr-wfh-value"><t t-esc="attendance_fy_summary['wfh_total']"/></td>
+                                                <td class="hr-late-value"><t t-esc="attendance_fy_summary['late_data_total']"/></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1984,86 +1980,49 @@
                             <div class="card-body">
                                 <div class="hr-subsection-title">Attendance Code Legend</div>
                                 <div class="hr-legend-grid">
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-P">P</span>
-                                        <span>Present</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-R">R</span>
-                                        <span>Remote / WFH</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-H">H</span>
-                                        <span>Holiday</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-S">S</span>
-                                        <span>Sick Leave</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-C">C</span>
-                                        <span>Casual Leave</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-U">U</span>
-                                        <span>Unpaid / Reported Leave</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-D">D</span>
-                                        <span>Data Late Submitted</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-empty">A</span>
-                                        <span>Absent</span>
-                                    </div>
-                                    <div class="hr-legend-item">
-                                        <span class="hr-legend-badge hr-code-empty">OT</span>
-                                        <span>Overtime total is counted separately on the right</span>
-                                    </div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-P">P</span><span>Present</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-R">R</span><span>Remote / WFH</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-H">H</span><span>Holiday</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-S">S</span><span>Sick Leave</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-C">C</span><span>Casual Leave</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-U">U</span><span>Unpaid Leave</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-D">D</span><span>Data Late Submitted</span></div>
+                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-empty">OT</span><span>Overtime counted separately</span></div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="card hr-content-card">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="hr-subsection-title mb-0">Raw Attendance History</div>
-                                    <button class="btn btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#rawAttendanceTable" aria-expanded="false" aria-controls="rawAttendanceTable" style="background-color: #f6eef4; color: #7b3f6e; font-weight: 600; border-radius: 8px;">
-                                        <i class="fa fa-chevron-down me-1"/> Toggle Detailed Logs
-                                    </button>
-                                </div>
-
-                                <div class="collapse" id="rawAttendanceTable">
-                                    <p class="hr-portal-subtle mb-3">Expand this section to view your exact clock-in and clock-out times for auditing purposes.</p>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-striped mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Check In</th>
-                                                    <th>Check Out</th>
-                                                    <th>Worked Hours</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <t t-if="attendances">
-                                                    <t t-foreach="attendances" t-as="att">
-                                                        <tr>
-                                                            <td><span t-esc="att['check_in'].date() if att['check_in'] else '-'"/></td>
-                                                            <td><span t-esc="att['check_in'] or '-'"/></td>
-                                                            <td><span t-esc="att['check_out'] or '-'"/></td>
-                                                            <td><span t-esc="att['worked_hours']"/></td>
-                                                        </tr>
-                                                    </t>
-                                                </t>
-                                                <t t-if="not attendances">
+                                <div class="hr-subsection-title">Raw Attendance History</div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Check In</th>
+                                                <th>Check Out</th>
+                                                <th>Worked Hours</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="attendances">
+                                                <t t-foreach="attendances" t-as="att">
                                                     <tr>
-                                                        <td colspan="4" class="text-center">No attendance records found.</td>
+                                                        <td><span t-esc="att['check_in'].date() if att['check_in'] else '-'"/></td>
+                                                        <td><span t-esc="att['check_in'] or '-'"/></td>
+                                                        <td><span t-esc="att['check_out'] or '-'"/></td>
+                                                        <td><span t-esc="att['worked_hours']"/></td>
                                                     </tr>
                                                 </t>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            </t>
+                                            <t t-if="not attendances">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No attendance records found.</td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -2190,13 +2149,16 @@
                                 </div>
                             </div>
 
-                            <t t-if="payroll_data">
-                                <div class="row g-3 mt-2">
+                            <form action="/my/hr/payroll" method="get">
+                                <div class="row g-3 mt-2 align-items-end">
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold">Fiscal Year</label>
-                                        <select class="form-select" onchange="if(this.value){window.location.href='/my/hr/payroll?fy=' + encodeURIComponent(this.value)}">
+                                        <select name="fy"
+                                                class="form-select"
+                                                onchange="this.form.month.value=''; this.form.submit();">
                                             <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                                <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                <option t-att-value="fy_opt['value']"
+                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                                                     <t t-esc="fy_opt['label']"/>
                                                 </option>
                                             </t>
@@ -2205,9 +2167,11 @@
 
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold">Select FY Month</label>
-                                        <select class="form-select" onchange="if(this.value){window.location.href='/my/hr/payroll?fy=#{selected_fiscal_year_value}&amp;month=' + encodeURIComponent(this.value)}">
+                                        <select name="month" class="form-select">
+                                            <option value="">Select Month</option>
                                             <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                                <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                <option t-att-value="month_opt['value']"
+                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                                                     <t t-esc="month_opt['label']"/>
                                                 </option>
                                             </t>
@@ -2215,11 +2179,14 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label class="form-label fw-bold">Fiscal Year Range</label>
-                                        <div class="hr-page-header-pill d-block" t-esc="fiscal_year_range_label"/>
+                                        <button type="submit" class="hr-request-btn border-0 w-100 justify-content-center">
+                                            Apply
+                                        </button>
                                     </div>
                                 </div>
+                            </form>
 
+                            <t t-if="employee">
                                 <div class="row g-3 mt-2">
                                     <div class="col-md-4">
                                         <div class="hr-page-header-pill d-block">
@@ -2228,7 +2195,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="hr-page-header-pill d-block">
-                                            Date of Payment: <span t-esc="payroll_data['overview']['payment_date']"/>
+                                            Date of Payment: <span t-esc="payroll_data['notes']['payment_date'] or payroll_data['overview']['payment_date']"/>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -2237,11 +2204,17 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-12">
+                                        <div class="hr-page-header-pill d-block" t-esc="fiscal_year_range_label"/>
+                                    </div>
+                                </div>
                             </t>
                         </div>
                     </div>
 
-                    <t t-if="payroll_data">
+                    <t t-if="employee and payroll_data['has_payroll']">
                         <div class="row g-4 mb-4">
                             <div class="col-lg-6">
                                 <div class="card hr-content-card">
@@ -2256,14 +2229,15 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>Basic</td><td t-esc="payroll_data['earnings']['basic']"/></tr>
-                                                    <tr><td>Actual Basic (Working)</td><td t-esc="payroll_data['earnings']['actual_basic_working']"/></tr>
+                                                    <tr><td>Basic Salary</td><td t-esc="payroll_data['earnings']['basic']"/></tr>
+                                                    <tr><td>Basic Actual</td><td t-esc="payroll_data['earnings']['actual_basic_working']"/></tr>
                                                     <tr><td>Medical Allowance</td><td t-esc="payroll_data['earnings']['medical_allowance']"/></tr>
+                                                    <tr><td>Advertised Salary</td><td t-esc="payroll_data['earnings']['advertised_salary']"/></tr>
                                                     <tr><td>Project Salary</td><td t-esc="payroll_data['earnings']['project_salary']"/></tr>
                                                     <tr><td>Bonus</td><td t-esc="payroll_data['earnings']['bonus']"/></tr>
-                                                    <tr><td>OverTime</td><td t-esc="payroll_data['earnings']['overtime']"/></tr>
+                                                    <tr><td>Allowance</td><td t-esc="payroll_data['earnings']['allowance']"/></tr>
                                                     <tr>
-                                                        <th>Total PKR:</th>
+                                                        <th>Total Earnings</th>
                                                         <th t-esc="payroll_data['earnings']['total_earnings']"/>
                                                     </tr>
                                                 </tbody>
@@ -2287,11 +2261,10 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr><td>Income Tax</td><td t-esc="payroll_data['deductions']['income_tax']"/></tr>
-                                                    <tr><td>Unpaid Leaves</td><td t-esc="payroll_data['deductions']['unpaid_leaves']"/></tr>
-                                                    <tr><td>Advance Deduction</td><td t-esc="payroll_data['deductions']['advance_deduction']"/></tr>
                                                     <tr><td>Other Deductions</td><td t-esc="payroll_data['deductions']['other_deductions']"/></tr>
+                                                    <tr><td>Loans from Cash</td><td t-esc="payroll_data['deductions']['loans_from_cash']"/></tr>
                                                     <tr>
-                                                        <th>Total (Deduction)</th>
+                                                        <th>Total Deductions</th>
                                                         <th t-esc="payroll_data['deductions']['total_deductions']"/>
                                                     </tr>
                                                 </tbody>
@@ -2300,12 +2273,16 @@
 
                                         <div class="border rounded overflow-hidden">
                                             <div class="d-flex justify-content-between p-3">
-                                                <span>Net Salary</span>
-                                                <strong>Rs <t t-esc="payroll_data['summary']['net_salary']"/></strong>
+                                                <span>Total</span>
+                                                <strong>Rs <t t-esc="payroll_data['summary']['total']"/></strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between p-3">
+                                                <span>Total Round</span>
+                                                <strong>Rs <t t-esc="payroll_data['summary']['total_round']"/></strong>
                                             </div>
                                             <div class="d-flex justify-content-between p-3 text-white" style="background:#0a2f4d;">
-                                                <span>Salary Rounded</span>
-                                                <strong>Rs <t t-esc="payroll_data['summary']['rounded_salary']"/></strong>
+                                                <span>Net Salary</span>
+                                                <strong>Rs <t t-esc="payroll_data['summary']['net_salary']"/></strong>
                                             </div>
                                         </div>
                                     </div>
@@ -2315,17 +2292,18 @@
 
                         <div class="row g-4 mb-4">
                             <div class="col-lg-6">
-                                <div class="card hr-content-card" t-att-id="payroll_tax_section_id">
+                                <div class="card hr-content-card">
                                     <div class="card-body">
-                                        <div class="hr-subsection-title">Tax Calculator</div>
+                                        <div class="hr-subsection-title">Payroll Details</div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered mb-0">
                                                 <tbody>
-                                                    <tr><th>Put Net Salary</th><td t-esc="payroll_data['summary']['rounded_salary']"/></tr>
-                                                    <tr><th>Medical Allowance</th><td t-esc="payroll_data['earnings']['medical_allowance']"/></tr>
-                                                    <tr><th>Taxable Income Yearly</th><td t-esc="payroll_data['summary']['rounded_salary'] * 12"/></tr>
-                                                    <tr><th>Monthly Tax</th><td t-esc="payroll_data['deductions']['income_tax']"/></tr>
-                                                    <tr><th>Yearly Tax</th><td t-esc="payroll_data['deductions']['income_tax'] * 12"/></tr>
+                                                    <tr><th>Designation</th><td t-esc="payroll_data['notes']['designation'] or '-'"/></tr>
+                                                    <tr><th>Payment Method</th><td t-esc="payroll_data['notes']['payment_method'] or '-'"/></tr>
+                                                    <tr><th>Allowance Detail</th><td t-esc="payroll_data['notes']['allowance_detail'] or '-'"/></tr>
+                                                    <tr><th>Period Label</th><td t-esc="payroll_data['notes']['period_label'] or '-'"/></tr>
+                                                    <tr><th>Paid At</th><td t-esc="payroll_data['notes']['paid_at'] or '-'"/></tr>
+                                                    <tr><th>Comments</th><td t-esc="payroll_data['notes']['comments'] or '-'"/></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -2334,6 +2312,27 @@
                             </div>
 
                             <div class="col-lg-6">
+                                <div class="card hr-content-card" t-att-id="payroll_tax_section_id">
+                                    <div class="card-body">
+                                        <div class="hr-subsection-title">Tax Calculator</div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered mb-0">
+                                                <tbody>
+                                                    <tr><th>Put Net Salary</th><td t-esc="payroll_data['summary']['total_round']"/></tr>
+                                                    <tr><th>Medical Allowance</th><td t-esc="payroll_data['earnings']['medical_allowance']"/></tr>
+                                                    <tr><th>Taxable Income Yearly</th><td t-esc="payroll_data['summary']['total_round'] * 12"/></tr>
+                                                    <tr><th>Monthly Tax</th><td t-esc="payroll_data['deductions']['income_tax']"/></tr>
+                                                    <tr><th>Yearly Tax</th><td t-esc="payroll_data['deductions']['income_tax'] * 12"/></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-12">
                                 <div class="card hr-content-card" t-att-id="payroll_tax_rate_section_id">
                                     <div class="card-body">
                                         <div class="hr-subsection-title">
@@ -2361,6 +2360,15 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-if="employee and not payroll_data['has_payroll']">
+                        <div class="card hr-empty-state-card">
+                            <div class="card-body">
+                                <div class="hr-empty-state-title">No payroll found</div>
+                                <p class="hr-empty-state-text">No payroll record exists for the selected month.</p>
                             </div>
                         </div>
                     </t>
@@ -2400,29 +2408,63 @@
 
                     <div class="card hr-page-header-card mb-4">
                         <div class="card-body">
-                            <h2 class="hr-page-title">Employee Attendances</h2>
-                            <p class="hr-page-subtitle">Review employee attendance registers, WFH status, leave codes, late submissions, and raw logs.</p>
-                        </div>
-                    </div>
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                <div>
+                                    <h2 class="hr-page-title">Employee Attendances</h2>
+                                    <p class="hr-page-subtitle">Review employee attendance registers, WFH status, leave codes, late submissions, and raw logs.</p>
+                                </div>
 
-                    <div class="card hr-content-card mb-4">
-                        <div class="card-body">
+                                <div class="hr-attendance-month-nav">
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
+                                        <i class="fa fa-chevron-left"/> Previous
+                                    </a>
+                                    <div class="hr-attendance-month-label" t-esc="month_display"/>
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
+                                        Next <i class="fa fa-chevron-right"/>
+                                    </a>
+                                </div>
+                            </div>
+
                             <form action="/my/hr/admin/attendances" method="get">
-                                <div class="row g-3 align-items-end">
-                                    <div class="col-md-5">
+                                <div class="row g-3 mt-2 align-items-end">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-bold">Employee</label>
                                         <select name="employee_id" class="form-select">
                                             <t t-foreach="employees" t-as="emp">
-                                                <option t-att-value="emp.id" t-att-selected="selected_employee_id == emp.id and 'selected' or None">
-                                                    <t t-esc="(emp.name or '-') + ' (' + (emp.employee_code or '-') + ')'"/>
+                                                <option t-att-value="emp.id"
+                                                        t-att-selected="selected_employee_id == emp.id and 'selected' or None">
+                                                    <t t-esc="emp.name"/>
+                                                    <t t-if="emp.employee_code"> (<t t-esc="emp.employee_code"/>)</t>
                                                 </option>
                                             </t>
                                         </select>
                                     </div>
 
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Month</label>
-                                        <input type="month" name="month" class="form-control" t-att-value="selected_month_value"/>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Fiscal Year</label>
+                                        <select name="fy"
+                                                class="form-select"
+                                                onchange="this.form.month.value=''; this.form.submit();">
+                                            <t t-foreach="fiscal_year_options" t-as="fy_opt">
+                                                <option t-att-value="fy_opt['value']"
+                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                    <t t-esc="fy_opt['label']"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">Select FY Month</label>
+                                        <select name="month" class="form-select">
+                                            <option value="">Select Month</option>
+                                            <t t-foreach="fiscal_year_month_options" t-as="month_opt">
+                                                <option t-att-value="month_opt['value']"
+                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                    <t t-esc="month_opt['label']"/>
+                                                </option>
+                                            </t>
+                                        </select>
                                     </div>
 
                                     <div class="col-md-3">
@@ -2435,140 +2477,96 @@
                         </div>
                     </div>
 
-                    <t t-if="selected_employee and attendance_matrix_row">
-                        <div class="card hr-content-card mb-4">
-                            <div class="card-body">
-                                <div class="hr-attendance-toolbar">
-                                    <div>
-                                        <div class="hr-subsection-title mb-2">Monthly Attendance Register</div>
-                                        <div class="hr-portal-subtle">
-                                            Review the selected employee monthly attendance code matrix and work-report activity.
-                                        </div>
-                                    </div>
+                    <div class="card hr-content-card mb-4">
+                        <div class="card-body">
+                            <div class="hr-subsection-title">Monthly Attendance Register</div>
+                            <p class="hr-page-subtitle mb-3">Review the selected employee monthly attendance code matrix and work-report activity.</p>
 
-                                    <div class="hr-attendance-month-nav">
-                                        <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
-                                            <i class="fa fa-chevron-left"/> Previous
-                                        </a>
-                                        <div class="hr-attendance-month-label" t-esc="month_display"/>
-                                        <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
-                                            Next <i class="fa fa-chevron-right"/>
-                                        </a>
-                                    </div>
+                            <div class="hr-attendance-toolbar">
+                                <div class="hr-attendance-month-nav">
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
+                                        <i class="fa fa-chevron-left"/> Previous
+                                    </a>
+                                    <div class="hr-attendance-month-label" t-esc="month_display"/>
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
+                                        Next <i class="fa fa-chevron-right"/>
+                                    </a>
                                 </div>
 
-                                <div class="hr-attendance-context mb-3">
-                                    <span class="hr-page-header-pill d-inline-block me-2 mb-2">
-                                        <i class="fa fa-user me-1"/> <t t-esc="selected_employee.name or '-'"/>
-                                    </span>
-                                    <span class="hr-page-header-pill d-inline-block me-2 mb-2">
-                                        <i class="fa fa-id-badge me-1"/> <t t-esc="selected_employee.employee_code or '-'"/>
-                                    </span>
-                                    <span class="hr-page-header-pill d-inline-block me-2 mb-2">
-                                        <i class="fa fa-building me-1"/> <t t-esc="selected_employee.department_id.name or '-'"/>
-                                    </span>
-                                    <span class="hr-page-header-pill d-inline-block mb-2">
-                                        <i class="fa fa-calendar me-1"/> <t t-esc="month_display"/> (<t t-esc="fiscal_year_label"/>)
-                                    </span>
+                                <div class="hr-page-header-meta">
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-user me-1"/>
+                                        <span t-esc="selected_employee.name if selected_employee else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-id-badge me-1"/>
+                                        <span t-esc="selected_employee.employee_code if selected_employee and selected_employee.employee_code else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-building me-1"/>
+                                        <span t-esc="selected_employee.department_id.name if selected_employee and selected_employee.department_id else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-calendar me-1"/>
+                                        <span t-esc="month_display"/> (<t t-esc="fiscal_year_label"/>)
+                                    </div>
                                 </div>
+                            </div>
 
+                            <t t-if="attendance_matrix_row">
                                 <div class="hr-attendance-matrix-wrap">
                                     <table class="hr-attendance-matrix">
                                         <thead>
-                                            <tr>
-                                                <t t-foreach="attendance_days" t-as="day">
-                                                    <th class="hr-attendance-day-head">
-                                                        <div class="day-no" t-esc="day['day_number']"/>
-                                                        <div class="day-name" t-esc="day['weekday_short']"/>
-                                                    </th>
-                                                </t>
-                                                <th class="hr-attendance-total-col">Total</th>
-                                                <th class="hr-attendance-total-col">P</th>
-                                                <th class="hr-attendance-total-col">R</th>
-                                                <th class="hr-attendance-total-col">H</th>
-                                                <th class="hr-attendance-total-col">S</th>
-                                                <th class="hr-attendance-total-col">C</th>
-                                                <th class="hr-attendance-total-col">U</th>
-                                                <th class="hr-attendance-total-col">D</th>
-                                                <th class="hr-attendance-total-col">OT</th>
-                                            </tr>
-                                        </thead>
+    <tr>
+        <th>Employee</th>
+        <t t-foreach="attendance_days" t-as="day_item">
+            <th class="hr-attendance-day-head">
+                <div class="day-no" t-esc="day_item.get('day_number', '')"/>
+                <div class="day-name" t-esc="day_item.get('day_name') or day_item.get('day_label') or day_item.get('title') or ''"/>
+            </th>
+        </t>
+        <th class="hr-attendance-total-col">P</th>
+        <th class="hr-attendance-total-col">R</th>
+        <th class="hr-attendance-total-col">H</th>
+        <th class="hr-attendance-total-col">S</th>
+        <th class="hr-attendance-total-col">C</th>
+        <th class="hr-attendance-total-col">U</th>
+        <th class="hr-attendance-total-col">D</th>
+    </tr>
+</thead>
                                         <tbody>
                                             <tr>
-                                                <t t-foreach="attendance_matrix_row['days']" t-as="day">
-                                                    <td t-att-title="day['title']"
-                                                        t-attf-class="hr-day-cell #{'hr-day-weekend' if day['is_weekend'] else ''} #{'hr-code-P' if day['code'] == 'P' else ''} #{'hr-code-R' if day['code'] == 'R' else ''} #{'hr-code-H' if day['code'] == 'H' else ''} #{'hr-code-S' if day['code'] == 'S' else ''} #{'hr-code-C' if day['code'] == 'C' else ''} #{'hr-code-U' if day['code'] == 'U' else ''} #{'hr-code-D' if day['code'] == 'D' else ''} #{'hr-code-empty' if day['code'] == '-' else ''}">
-                                                        <span t-esc="day['code']"/>
+                                                <td>
+                                                    <strong t-esc="attendance_matrix_row['employee_name']"/>
+                                                </td>
+                                                <t t-foreach="attendance_matrix_row['days']" t-as="day_data">
+                                                    <td t-attf-class="hr-day-cell hr-code-#{day_data['code'] if day_data['code'] else 'empty'} #{'hr-day-weekend' if day_data.get('is_weekend') else ''}">
+                                                        <t t-esc="day_data['code'] or '-'"/>
                                                     </td>
                                                 </t>
-
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['total']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['P']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['R']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['H']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['S']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['C']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['U']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['D']"/>
-                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary']['OT']"/>
+                                                <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('P', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('R', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('H', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('S', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('C', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('U', 0)"/>
+<td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('D', 0)"/>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
-                        </div>
+                            </t>
 
-                        <div class="card hr-legend-card mb-4">
-                            <div class="card-body">
-                                <div class="hr-subsection-title">Attendance Code Legend</div>
-                                <div class="hr-legend-grid">
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-P">P</span><span>Present</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-R">R</span><span>Remote / WFH</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-H">H</span><span>Holiday</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-S">S</span><span>Sick Leave</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-C">C</span><span>Casual Leave</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-U">U</span><span>Unpaid Leave</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-D">D</span><span>Data Late Submitted</span></div>
-                                    <div class="hr-legend-item"><span class="hr-legend-badge hr-code-empty">OT</span><span>Overtime counted separately</span></div>
+                            <t t-if="not attendance_matrix_row">
+                                <div class="card hr-empty-state-card mt-3">
+                                    <div class="card-body">
+                                        <div class="hr-empty-state-title">No attendance found</div>
+                                        <p class="hr-empty-state-text">No attendance register exists for the selected employee and month.</p>
+                                    </div>
                                 </div>
-                            </div>
+                            </t>
                         </div>
-
-                        <div class="card hr-content-card">
-                            <div class="card-body">
-                                <div class="hr-subsection-title">Raw Attendance History</div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-striped mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Check In</th>
-                                                <th>Check Out</th>
-                                                <th>Worked Hours</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <t t-if="attendances">
-                                                <t t-foreach="attendances" t-as="att">
-                                                    <tr>
-                                                        <td><span t-esc="att['check_in'].date() if att['check_in'] else '-'"/></td>
-                                                        <td><span t-esc="att['check_in'] or '-'"/></td>
-                                                        <td><span t-esc="att['check_out'] or '-'"/></td>
-                                                        <td><span t-esc="att['worked_hours']"/></td>
-                                                    </tr>
-                                                </t>
-                                            </t>
-                                            <t t-if="not attendances">
-                                                <tr>
-                                                    <td colspan="4" class="text-center">No attendance records found.</td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2698,7 +2696,7 @@
                                 <div class="card-body">
                                     <div class="hr-stat-icon"><i class="fa fa-check-circle"/></div>
                                     <div class="hr-stat-number" t-esc="present_employees"/>
-                                    <p class="hr-stat-label">Present Today</p>
+                                    <p class="hr-stat-label">Present This Month</p>
                                 </div>
                             </div>
                         </div>
@@ -2706,9 +2704,9 @@
                         <div class="col-md-4">
                             <div class="card hr-stat-card">
                                 <div class="card-body">
-                                    <div class="hr-stat-icon"><i class="fa fa-clock-o"/></div>
-                                    <div class="hr-stat-number" t-esc="pending_leaves"/>
-                                    <p class="hr-stat-label">Pending Leaves</p>
+                                    <div class="hr-stat-icon"><i class="fa fa-file-text-o"/></div>
+                                    <div class="hr-stat-number" t-esc="task_reports_submitted_today"/>
+                                    <p class="hr-stat-label">Task Reports Submitted Today</p>
                                 </div>
                             </div>
                         </div>
@@ -2757,6 +2755,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -2767,6 +2766,7 @@
     <template id="hr_admin_task_reports_page" name="HR Admin Task Reports">
     <t t-call="portal.portal_layout">
         <t t-set="current_page" t-value="'admin_task_reports'"/>
+
         <div class="container oe_structure mt-4 mb-5">
             <div class="hr-layout-row">
                 <div class="hr-sidebar-wrap">
@@ -2833,7 +2833,7 @@
                         <div class="card-body">
                             <div class="hr-subsection-title">Employee Daily Reports</div>
 
-                            <div class="table-responsive hr-task-report-table-wrap">
+                            <div class="table-responsive hr-admin-table-scroll hr-task-report-table-wrap">
                                 <table class="table table-bordered table-striped align-middle hr-task-report-table">
                                     <thead>
                                         <tr>
@@ -2866,41 +2866,17 @@
                                                     <td style="white-space: pre-wrap; min-width: 260px;" t-esc="report.task_report or '-'"/>
                                                     <td style="white-space: pre-wrap; min-width: 200px;" t-esc="report.remarks or '-'"/>
                                                     <td class="hr-task-report-update-col">
-                                                        <form action="/my/hr/admin/task-reports/update" method="post" class="hr-task-report-update-form">
-                                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                                            <input type="hidden" name="report_id" t-att-value="report.id"/>
-
-                                                            <input type="date" name="report_date" class="form-control" t-att-value="report.report_date or ''"/>
-
-                                                            <input type="datetime-local" name="submitted_at"
-                                                                   class="form-control"
-                                                                   t-att-value="report.submitted_at and report.submitted_at.strftime('%Y-%m-%dT%H:%M:%S') or ''"/>
-
-                                                            <select name="work_mode" class="form-select">
-                                                                <option value="office" t-att-selected="report.work_mode == 'office' and 'selected' or None">Work from Office</option>
-                                                                <option value="wfh" t-att-selected="report.work_mode == 'wfh' and 'selected' or None">Work from Home</option>
-                                                                <option value="leave" t-att-selected="report.work_mode == 'leave' and 'selected' or None">Leave</option>
-                                                            </select>
-
-                                                            <select name="state" class="form-select">
-                                                                <option value="draft" t-att-selected="report.state == 'draft' and 'selected' or None">Draft</option>
-                                                                <option value="submitted" t-att-selected="report.state == 'submitted' and 'selected' or None">Submitted</option>
-                                                                <option value="approved" t-att-selected="report.state == 'approved' and 'selected' or None">Approved</option>
-                                                                <option value="rejected" t-att-selected="report.state == 'rejected' and 'selected' or None">Rejected</option>
-                                                            </select>
-
-                                                            <textarea name="task_report" class="form-control" rows="4" required="required"><t t-esc="report.task_report or ''"/></textarea>
-                                                            <textarea name="remarks" class="form-control" rows="2"><t t-esc="report.remarks or ''"/></textarea>
-
-                                                            <button type="submit" class="hr-request-btn border-0 justify-content-center">
-                                                                <i class="fa fa-save"/> Update
-                                                            </button>
-                                                        </form>
+                                                        <button class="hr-row-edit-toggle"
+                                                                type="button"
+                                                                data-bs-toggle="offcanvas"
+                                                                t-att-data-bs-target="'#taskReportDrawer_%s' % report.id"
+                                                                t-att-aria-controls="'taskReportDrawer_%s' % report.id">
+                                                            <i class="fa fa-pencil"/> Edit
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             </t>
                                         </t>
-
                                         <t t-if="not task_reports">
                                             <tr>
                                                 <td colspan="9" class="text-center">No task reports found for the selected filters.</td>
@@ -2909,11 +2885,95 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+    <div class="text-muted">
+        Showing
+        <strong t-esc="task_report_start"/>
+        -
+        <strong t-esc="task_report_end"/>
+        of
+        <strong t-esc="task_report_total"/>
+        reports
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <a t-if="previous_page_url"
+           t-att-href="previous_page_url"
+           class="btn btn-light fw-bold">
+            <i class="fa fa-chevron-left"/> Previous
+        </a>
+
+        <span class="fw-bold">
+            Page <t t-esc="task_report_page"/> / <t t-esc="task_report_page_count"/>
+        </span>
+
+        <a t-if="next_page_url"
+           t-att-href="next_page_url"
+           class="btn btn-light fw-bold">
+            Next <i class="fa fa-chevron-right"/>
+        </a>
+    </div>
+</div>
                         </div>
                     </div>
+
+                    <t t-if="task_reports">
+                        <t t-foreach="task_reports" t-as="report">
+                            <div class="offcanvas offcanvas-end hr-edit-drawer"
+                                 tabindex="-1"
+                                 t-att-id="'taskReportDrawer_%s' % report.id">
+                                <div class="offcanvas-header">
+                                    <h5 class="offcanvas-title">
+                                        Edit Task Report - <t t-esc="report.employee_id.name or '-'"/>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                </div>
+
+                                <div class="offcanvas-body">
+                                    <form action="/my/hr/admin/task-reports/update" method="post" class="hr-task-report-update-form">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="hidden" name="report_id" t-att-value="report.id"/>
+
+                                        <label class="form-label fw-bold">Report Date</label>
+                                        <input type="date" name="report_date" class="form-control" t-att-value="report.report_date or ''"/>
+
+                                        <label class="form-label fw-bold">Submitted At</label>
+                                        <input type="datetime-local" name="submitted_at" class="form-control"
+                                               t-att-value="report.submitted_at and report.submitted_at.strftime('%Y-%m-%dT%H:%M:%S') or ''"/>
+
+                                        <label class="form-label fw-bold">Work Mode</label>
+                                        <select name="work_mode" class="form-select">
+                                            <option value="office" t-att-selected="report.work_mode == 'office' and 'selected' or None">Work from Office</option>
+                                            <option value="wfh" t-att-selected="report.work_mode == 'wfh' and 'selected' or None">Work from Home</option>
+                                            <option value="leave" t-att-selected="report.work_mode == 'leave' and 'selected' or None">Leave</option>
+                                        </select>
+
+                                        <label class="form-label fw-bold">Status</label>
+                                        <select name="state" class="form-select">
+                                            <option value="draft" t-att-selected="report.state == 'draft' and 'selected' or None">Draft</option>
+                                            <option value="submitted" t-att-selected="report.state == 'submitted' and 'selected' or None">Submitted</option>
+                                            <option value="approved" t-att-selected="report.state == 'approved' and 'selected' or None">Approved</option>
+                                            <option value="rejected" t-att-selected="report.state == 'rejected' and 'selected' or None">Rejected</option>
+                                        </select>
+
+                                        <label class="form-label fw-bold">Task Report</label>
+                                        <textarea name="task_report" class="form-control" rows="4" required="required"><t t-esc="report.task_report or ''"/></textarea>
+
+                                        <label class="form-label fw-bold">Remarks</label>
+                                        <textarea name="remarks" class="form-control" rows="3"><t t-esc="report.remarks or ''"/></textarea>
+
+                                        <button type="submit" class="hr-request-btn border-0">
+                                            <i class="fa fa-save"/> Update
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
                 </div>
             </div>
         </div>
+
         <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
     </t>
 </template>
@@ -2987,7 +3047,7 @@
                         <div class="card-body">
                             <div class="hr-subsection-title">Performance Records</div>
 
-                            <div class="table-responsive hr-performance-table-wrap">
+                            <div class="table-responsive hr-admin-table-scroll hr-performance-table-wrap">
                                 <table class="table table-bordered table-striped align-middle hr-performance-table">
                                     <thead>
                                         <tr>
@@ -3027,46 +3087,14 @@
                                                     </td>
                                                     <td><span t-esc="rec.completion_percent or 0.0"/>%</td>
                                                     <td style="white-space: pre-wrap; min-width: 180px;" t-esc="rec.supervisor_remarks or '-'"/>
-
-                                                   <td class="hr-performance-update-col">
-                                                        <form action="/my/hr/admin/performance/update" method="post" class="hr-performance-update-form">
-                                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                                            <input type="hidden" name="record_id" t-att-value="rec.id"/>
-
-                                                            <select name="employee_id" class="form-select" required="required">
-                                                                <t t-foreach="employees" t-as="emp">
-                                                                    <option t-att-value="emp.id" t-att-selected="rec.employee_id.id == emp.id and 'selected' or None">
-                                                                        <t t-esc="(emp.name or '-') + ' (' + (emp.employee_code or '-') + ')'"/>
-                                                                    </option>
-                                                                </t>
-                                                            </select>
-
-                                                            <input type="date" name="plan_date" class="form-control" t-att-value="rec.plan_date or ''" required="required"/>
-                                                            <input type="text" name="task_id" class="form-control" t-att-value="rec.task_id or ''" required="required"/>
-                                                            <input type="text" name="project_name" class="form-control" t-att-value="rec.project_name or ''" required="required"/>
-
-                                                            <select name="priority_level" class="form-select" required="required">
-                                                                <option value="low" t-att-selected="rec.priority_level == 'low' and 'selected' or None">Low</option>
-                                                                <option value="medium" t-att-selected="rec.priority_level == 'medium' and 'selected' or None">Medium</option>
-                                                                <option value="high" t-att-selected="rec.priority_level == 'high' and 'selected' or None">High</option>
-                                                            </select>
-
-                                                            <select name="status" class="form-select" required="required">
-                                                                <option value="pending" t-att-selected="rec.status == 'pending' and 'selected' or None">Pending</option>
-                                                                <option value="underprocess" t-att-selected="rec.status == 'underprocess' and 'selected' or None">Under Process</option>
-                                                                <option value="completed" t-att-selected="rec.status == 'completed' and 'selected' or None">Completed</option>
-                                                                <option value="hold" t-att-selected="rec.status == 'hold' and 'selected' or None">On Hold</option>
-                                                            </select>
-
-                                                            <input type="number" step="0.01" min="0" max="100" name="completion_percent" class="form-control" t-att-value="rec.completion_percent or 0.0"/>
-
-                                                            <textarea name="task_description" class="form-control" rows="3" required="required"><t t-esc="rec.task_description or ''"/></textarea>
-                                                            <textarea name="supervisor_remarks" class="form-control" rows="2"><t t-esc="rec.supervisor_remarks or ''"/></textarea>
-
-                                                            <button type="submit" class="hr-request-btn border-0 justify-content-center">
-                                                                <i class="fa fa-save"/> Update
-                                                            </button>
-                                                        </form>
+                                                    <td class="hr-performance-update-col">
+                                                        <button class="hr-row-edit-toggle"
+                                                                type="button"
+                                                                data-bs-toggle="offcanvas"
+                                                                t-att-data-bs-target="'#performanceDrawer_%s' % rec.id"
+                                                                t-att-aria-controls="'performanceDrawer_%s' % rec.id">
+                                                            <i class="fa fa-pencil"/> Edit
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             </t>
@@ -3080,8 +3108,105 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+    <div class="text-muted">
+        Showing
+        <strong t-esc="performance_start"/>
+        -
+        <strong t-esc="performance_end"/>
+        of
+        <strong t-esc="performance_total"/>
+        performance records
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <a t-if="previous_page_url"
+           t-att-href="previous_page_url"
+           class="btn btn-light fw-bold">
+            <i class="fa fa-chevron-left"/> Previous
+        </a>
+
+        <span class="fw-bold">
+            Page <t t-esc="performance_page"/> / <t t-esc="performance_page_count"/>
+        </span>
+
+        <a t-if="next_page_url"
+           t-att-href="next_page_url"
+           class="btn btn-light fw-bold">
+            Next <i class="fa fa-chevron-right"/>
+        </a>
+    </div>
+</div>
                         </div>
                     </div>
+
+                    <t t-if="performance_records">
+                        <t t-foreach="performance_records" t-as="rec">
+                            <div class="offcanvas offcanvas-end hr-edit-drawer"
+                                 tabindex="-1"
+                                 t-att-id="'performanceDrawer_%s' % rec.id">
+                                <div class="offcanvas-header">
+                                    <h5 class="offcanvas-title">
+                                        Edit Performance - <t t-esc="rec.employee_id.name or '-'"/>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                </div>
+
+                                <div class="offcanvas-body">
+                                    <form action="/my/hr/admin/performance/update" method="post" class="hr-performance-update-form">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="hidden" name="record_id" t-att-value="rec.id"/>
+
+                                        <label class="form-label fw-bold">Employee</label>
+                                        <select name="employee_id" class="form-select" required="required">
+                                            <t t-foreach="employees" t-as="emp">
+                                                <option t-att-value="emp.id" t-att-selected="rec.employee_id.id == emp.id and 'selected' or None">
+                                                    <t t-esc="(emp.name or '-') + ' (' + (emp.employee_code or '-') + ')'"/>
+                                                </option>
+                                            </t>
+                                        </select>
+
+                                        <label class="form-label fw-bold">Date</label>
+                                        <input type="date" name="plan_date" class="form-control" t-att-value="rec.plan_date or ''" required="required"/>
+
+                                        <label class="form-label fw-bold">Task ID</label>
+                                        <input type="text" name="task_id" class="form-control" t-att-value="rec.task_id or ''" required="required"/>
+
+                                        <label class="form-label fw-bold">Project</label>
+                                        <input type="text" name="project_name" class="form-control" t-att-value="rec.project_name or ''" required="required"/>
+
+                                        <label class="form-label fw-bold">Priority</label>
+                                        <select name="priority_level" class="form-select" required="required">
+                                            <option value="low" t-att-selected="rec.priority_level == 'low' and 'selected' or None">Low</option>
+                                            <option value="medium" t-att-selected="rec.priority_level == 'medium' and 'selected' or None">Medium</option>
+                                            <option value="high" t-att-selected="rec.priority_level == 'high' and 'selected' or None">High</option>
+                                        </select>
+
+                                        <label class="form-label fw-bold">Status</label>
+                                        <select name="status" class="form-select" required="required">
+                                            <option value="pending" t-att-selected="rec.status == 'pending' and 'selected' or None">Pending</option>
+                                            <option value="underprocess" t-att-selected="rec.status == 'underprocess' and 'selected' or None">Under Process</option>
+                                            <option value="completed" t-att-selected="rec.status == 'completed' and 'selected' or None">Completed</option>
+                                            <option value="hold" t-att-selected="rec.status == 'hold' and 'selected' or None">On Hold</option>
+                                        </select>
+
+                                        <label class="form-label fw-bold">Completion %</label>
+                                        <input type="number" step="0.01" min="0" max="100" name="completion_percent" class="form-control" t-att-value="rec.completion_percent or 0.0"/>
+
+                                        <label class="form-label fw-bold">Task Description</label>
+                                        <textarea name="task_description" class="form-control" rows="4" required="required"><t t-esc="rec.task_description or ''"/></textarea>
+
+                                        <label class="form-label fw-bold">Supervisor Remarks</label>
+                                        <textarea name="supervisor_remarks" class="form-control" rows="3"><t t-esc="rec.supervisor_remarks or ''"/></textarea>
+
+                                        <button type="submit" class="hr-request-btn border-0">
+                                            <i class="fa fa-save"/> Update
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
                 </div>
             </div>
         </div>
@@ -3144,7 +3269,7 @@
         </t>
     </template>
 
-   <template id="hr_admin_payslips_page" name="HR Admin Payslips">
+   <template id="hr_admin_payslips_page" name="HR Admin Payslips Page">
     <t t-call="portal.portal_layout">
         <t t-set="current_page" t-value="'admin_payslips'"/>
 
@@ -3180,34 +3305,42 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 mt-2">
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Fiscal Year</label>
-                                    <select class="form-select" onchange="if(this.value){window.location.href='/my/hr/admin/payslips?fy=' + encodeURIComponent(this.value)}">
-                                        <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                            <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
-                                                <t t-esc="fy_opt['label']"/>
-                                            </option>
-                                        </t>
-                                    </select>
-                                </div>
+                            <form action="/my/hr/admin/payslips" method="get">
+                                <div class="row g-3 mt-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Fiscal Year</label>
+                                        <select name="fy"
+                                                class="form-select"
+                                                onchange="this.form.month.value=''; this.form.submit();">
+                                            <t t-foreach="fiscal_year_options" t-as="fy_opt">
+                                                <option t-att-value="fy_opt['value']"
+                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                    <t t-esc="fy_opt['label']"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Select FY Month</label>
-                                    <select class="form-select" onchange="if(this.value){window.location.href='/my/hr/admin/payslips?fy=#{selected_fiscal_year_value}&amp;month=' + encodeURIComponent(this.value)}">
-                                        <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                            <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
-                                                <t t-esc="month_opt['label']"/>
-                                            </option>
-                                        </t>
-                                    </select>
-                                </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Select FY Month</label>
+                                        <select name="month" class="form-select">
+                                            <option value="">Select Month</option>
+                                            <t t-foreach="fiscal_year_month_options" t-as="month_opt">
+                                                <option t-att-value="month_opt['value']"
+                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                    <t t-esc="month_opt['label']"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Fiscal Year Range</label>
-                                    <div class="hr-page-header-pill d-block" t-esc="fiscal_year_range_label"/>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="hr-request-btn border-0 w-100 justify-content-center">
+                                            Apply
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            </form>
 
                             <div class="row g-3 mt-2">
                                 <div class="col-md-4">
@@ -3221,13 +3354,14 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
+                                    <div class="hr-page-header-pill d-block" t-esc="fiscal_year_range_label"/>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-12">
                                     <div class="hr-page-header-pill d-block">
-                                        Month Snapshot:
-                                        Work Days <span t-esc="admin_payroll_data['overview']['work_days']"/>
-                                        |
-                                        Holidays &amp; Weekends <span t-esc="admin_payroll_data['overview']['holiday_weekend_days']"/>
-                                        |
-                                        Days <span t-esc="admin_payroll_data['overview']['days_in_month_elapsed']"/> / <span t-esc="admin_payroll_data['overview']['days_in_month_total']"/>
+                                        Month Snapshot: Work Days <t t-esc="admin_payroll_data['overview']['work_days']"/> | Holidays &amp; Weekends <t t-esc="admin_payroll_data['overview']['holiday_weekend_days']"/> | Days <t t-esc="admin_payroll_data['overview']['days_in_month_elapsed']"/> / <t t-esc="admin_payroll_data['overview']['days_in_month_total']"/>
                                     </div>
                                 </div>
                             </div>
@@ -3238,34 +3372,97 @@
                         <div class="card-body">
                             <div class="hr-subsection-title">Remuneration</div>
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped mb-0">
+                                <table class="table table-bordered mb-0 hr-payroll-admin-table">
                                     <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Employee ID</th>
-                                            <th>Employee Name</th>
-                                            <th>Bank</th>
-                                            <th>Designation</th>
-                                            <th>Payment Method</th>
-                                            <th>Basic Salary</th>
-                                        </tr>
-                                    </thead>
+    <tr>
+        <th class="text-nowrap">#</th>
+        <th class="text-nowrap">Employee ID</th>
+        <th class="text-nowrap">Employee Name</th>
+        <th class="text-nowrap">Bank</th>
+        <th class="text-nowrap">Designation</th>
+        <th class="text-nowrap">Payment Method</th>
+        <th class="text-nowrap">Basic Salary</th>
+        <th class="text-nowrap">Basic Actual</th>
+        <th class="text-nowrap">Medical Allowance</th>
+        <th class="text-nowrap">Advertised Salary</th>
+        <th class="text-nowrap">Project Salary</th>
+        <th class="text-nowrap">Allowance Detail</th>
+        <th class="text-nowrap">Bonus</th>
+        <th class="text-nowrap">Period</th>
+        <th class="text-nowrap">Taxable Income</th>
+        <th class="text-nowrap">Yearly Income</th>
+        <th class="text-nowrap">Income Tax</th>
+        <th class="text-nowrap">Other Deductions</th>
+        <th class="text-nowrap">Comments</th>
+        <th class="text-nowrap">Total</th>
+        <th class="text-nowrap">Total Round</th>
+        <th class="text-nowrap">Allowance</th>
+        <th class="text-nowrap">Net Salary</th>
+        <th class="text-nowrap">Rounded</th>
+        <th class="text-nowrap">Payment Date</th>
+    </tr>
+</thead>
                                     <tbody>
-                                        <t t-foreach="admin_payroll_data['rows']" t-as="row">
+                                        <t t-if="admin_payroll_data['rows']">
+                                            <t t-set="row_no" t-value="1"/>
+                                            <t t-foreach="admin_payroll_data['rows']" t-as="row">
+                                                <tr>
+                                                    <td t-esc="row_no"/>
+                                                    <td t-esc="row['employee_code']"/>
+                                                    <td t-esc="row['employee_name']"/>
+                                                    <td t-esc="row['bank_name']"/>
+                                                    <td t-esc="row['designation']"/>
+                                                    <td t-esc="row['payment_method']"/>
+                                                    <td t-esc="row['basic_salary']"/>
+                                                    <td t-esc="row['basic_actual']"/>
+                                                    <td t-esc="row['medical_allowance']"/>
+                                                    <td t-esc="row['advertised_salary']"/>
+                                                    <td t-esc="row['project_salary']"/>
+                                                    <td t-esc="row['project_value']"/>
+                                                    <td t-esc="row['bonus']"/>
+                                                    <td t-esc="row['for_value']"/>
+                                                    <td t-esc="row['taxable_income']"/>
+                                                    <td t-esc="row['yearly_income']"/>
+                                                    <td t-esc="row['income_tax_deduction']"/>
+                                                    <td t-esc="row['other_deductions']"/>
+                                                    <td t-esc="row['deduction_for']"/>
+                                                    <td t-esc="row['total']"/>
+                                                    <td t-esc="row['total_round']"/>
+                                                    <td t-esc="row['total_allowance']"/>
+                                                    <td t-esc="row['hr_cost_including_bonus']"/>
+                                                    <td t-esc="row['hr_cost_rounded']"/>
+                                                    <td t-esc="row['payment_date']"/>
+                                                </tr>
+                                                <t t-set="row_no" t-value="row_no + 1"/>
+                                            </t>
                                             <tr>
-                                                <td t-esc="row_index + 1"/>
-                                                <td t-esc="row['employee_code']"/>
-                                                <td t-esc="row['employee_name']"/>
-                                                <td t-esc="row['bank_name']"/>
-                                                <td t-esc="row['designation']"/>
-                                                <td t-esc="row['payment_method']"/>
-                                                <td t-esc="row['basic_salary']"/>
+                                                <th colspan="6">Totals</th>
+                                                <th t-esc="admin_payroll_data['totals']['basic_salary']"/>
+                                                <th t-esc="admin_payroll_data['totals']['basic_actual']"/>
+                                                <th t-esc="admin_payroll_data['totals']['medical_allowance']"/>
+                                                <th t-esc="admin_payroll_data['totals']['advertised_salary']"/>
+                                                <th t-esc="admin_payroll_data['totals']['project_salary']"/>
+                                                <th>-</th>
+                                                <th t-esc="admin_payroll_data['totals']['bonus']"/>
+                                                <th>-</th>
+                                                <th t-esc="admin_payroll_data['totals']['taxable_income']"/>
+                                                <th t-esc="admin_payroll_data['totals']['yearly_income']"/>
+                                                <th t-esc="admin_payroll_data['totals']['income_tax_deduction']"/>
+                                                <th t-esc="admin_payroll_data['totals']['other_deductions']"/>
+                                                <th>-</th>
+                                                <th t-esc="admin_payroll_data['totals']['total']"/>
+                                                <th t-esc="admin_payroll_data['totals']['total_round']"/>
+                                                <th t-esc="admin_payroll_data['totals']['total_allowance']"/>
+                                                <th t-esc="admin_payroll_data['totals']['hr_cost_including_bonus']"/>
+                                                <th t-esc="admin_payroll_data['totals']['hr_cost_rounded']"/>
+                                                <th>-</th>
                                             </tr>
                                         </t>
-                                        <tr>
-                                            <th colspan="6" class="text-center">Totals</th>
-                                            <th t-esc="admin_payroll_data['totals']['basic_salary']"/>
-                                        </tr>
+                                        <t t-if="not admin_payroll_data['rows']">
+                                            <tr>
+                                                <td colspan="25" class="text-center">No payroll records found for the selected month.</td>
+                                            </tr>
+                                        </t>
                                     </tbody>
                                 </table>
                             </div>
@@ -3273,46 +3470,81 @@
                     </div>
 
                     <div class="row g-4 mb-4">
-                        <div class="col-md-3">
-                            <div class="card hr-stat-card">
+                        <div class="col-lg-3">
+                            <div class="card hr-content-card">
                                 <div class="card-body">
                                     <div class="hr-subsection-title">Allowance Totals</div>
-                                    <div class="hr-stat-number" t-esc="admin_payroll_data['totals']['total_allowance']"/>
-                                    <p class="hr-stat-label">Total Allowance</p>
+                                    <div class="display-6 fw-bold" t-esc="admin_payroll_data['totals']['total_allowance']"/>
+                                    <div class="text-muted">Total Allowance</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <div class="card hr-stat-card">
+                        <div class="col-lg-3">
+                            <div class="card hr-content-card">
                                 <div class="card-body">
                                     <div class="hr-subsection-title">HR Cost</div>
-                                    <div class="hr-stat-number" t-esc="admin_payroll_data['totals']['hr_cost_including_bonus']"/>
-                                    <p class="hr-stat-label">Including Bonus</p>
+                                    <div class="display-6 fw-bold" t-esc="admin_payroll_data['totals']['hr_cost_including_bonus']"/>
+                                    <div class="text-muted">Including Bonus</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <div class="card hr-stat-card">
+                        <div class="col-lg-3">
+                            <div class="card hr-content-card">
                                 <div class="card-body">
                                     <div class="hr-subsection-title">HR Cost Rounded</div>
-                                    <div class="hr-stat-number" t-esc="admin_payroll_data['totals']['hr_cost_rounded']"/>
-                                    <p class="hr-stat-label">Rounded</p>
+                                    <div class="display-6 fw-bold" t-esc="admin_payroll_data['totals']['hr_cost_rounded']"/>
+                                    <div class="text-muted">Rounded</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <div class="card hr-stat-card">
+                        <div class="col-lg-3">
+                            <div class="card hr-content-card">
                                 <div class="card-body">
                                     <div class="hr-subsection-title">Final Rounded Total</div>
-                                    <div class="hr-stat-number" t-esc="admin_payroll_data['totals']['total_round']"/>
-                                    <p class="hr-stat-label">Payroll Rounded</p>
+                                    <div class="display-6 fw-bold" t-esc="admin_payroll_data['totals']['total_round']"/>
+                                    <div class="text-muted">Payroll Rounded</div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6">
+                            <div class="card hr-content-card" t-att-id="admin_payroll_tax_section_id">
+                                <div class="card-body">
+                                    <div class="hr-subsection-title">Tax Calculator</div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered mb-0">
+                                            <tbody>
+                                                <tr><th>Put Net Salary</th><td t-esc="admin_payroll_data['calculator']['put_net_salary']"/></tr>
+                                                <tr><th>Medical Allowance</th><td t-esc="admin_payroll_data['calculator']['medical_allowance']"/></tr>
+                                                <tr><th>Taxable Income Yearly</th><td t-esc="admin_payroll_data['calculator']['taxable_income_yearly']"/></tr>
+                                                <tr><th>Monthly Tax</th><td t-esc="admin_payroll_data['calculator']['monthly_tax']"/></tr>
+                                                <tr><th>Yearly Tax</th><td t-esc="admin_payroll_data['calculator']['yearly_tax']"/></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card hr-content-card">
+                                <div class="card-body">
+                                    <div class="hr-subsection-title">Tax Rates</div>
+                                    <div class="d-grid gap-2">
+                                        <a t-attf-href="/my/hr/admin/payslips/tax-rates?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}" class="btn btn-outline-primary">
+                                            Open Tax Rates
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -3530,12 +3762,12 @@
 
         <div class="hr-chatbot-body" style="height: 470px;">
             <t t-if="is_hr_manager">
-                <iframe src="http://192.168.1.14:8502"
+                <iframe src="http://192.168.1.16:8502"
                         class="hr-chatbot-frame"
                         style="width: 100%; height: 100%; border: none;"></iframe>
             </t>
             <t t-else="">
-                <iframe src="http://192.168.1.14:8501"
+                <iframe src="http://192.168.1.16:8501"
                         class="hr-chatbot-frame"
                         style="width: 100%; height: 100%; border: none;"></iframe>
             </t>
@@ -3549,5 +3781,4 @@
         <i class="fa fa-comments" style="font-size: 26px; margin-top: 4px;"/>
     </button>
 </template>
-    </template>
 </odoo>

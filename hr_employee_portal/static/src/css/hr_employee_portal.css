@@ -891,13 +891,14 @@
 }
 
 .hr-admin-payroll-table thead th {
-    background: #f5fbff;
-    color: #222222;
+    background: #0b5ea8 !important;
+    color: #ffffff !important;
     font-weight: 700;
     text-align: center;
     white-space: nowrap;
     font-size: 13px;
     line-height: 1.35;
+    border-color: #084d89 !important;
 }
 
 .hr-admin-payroll-table tbody td {
@@ -1329,7 +1330,8 @@
     margin-top: 4px;
 }
 .hr-task-report-table-wrap {
-    overflow-x: auto;
+    overflow: auto;
+    max-height: 650px;
     border: 1px solid #ececec;
     border-radius: 14px;
     background: #ffffff;
@@ -1438,7 +1440,7 @@
 
 .hr-task-report-update-form {
     display: grid;
-    gap: 12px;
+    gap: 22px;
 }
 
 .hr-task-report-update-form .form-control,
@@ -1681,4 +1683,294 @@
         height: 72vh;
         max-height: 72vh;
     }
+}
+/* =========================================
+   Admin Payroll Management - Remuneration
+   Compact professional table
+========================================= */
+
+.admin-payroll-remuneration-wrap {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.admin-payroll-remuneration-table {
+    width: 100%;
+    min-width: 2200px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+.admin-payroll-remuneration-table thead th {
+    background: #0b5ea8;
+    color: #ffffff;
+    border-color: #084d89;
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+}
+
+.admin-payroll-remuneration-table tbody td {
+    padding: 10px 8px;
+    font-size: 11px;
+    line-height: 1.35;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.admin-payroll-remuneration-table th,
+.admin-payroll-remuneration-table td {
+    min-width: 85px;
+}
+
+.admin-payroll-remuneration-table th:first-child,
+.admin-payroll-remuneration-table td:first-child {
+    width: 48px;
+    min-width: 48px;
+    text-align: center;
+}
+
+.admin-payroll-remuneration-table .text-right {
+    text-align: right;
+}
+
+.admin-payroll-remuneration-table .text-center {
+    text-align: center;
+}
+
+.admin-payroll-remuneration-table tfoot td,
+.admin-payroll-remuneration-table tbody tr:last-child td {
+    font-weight: 700;
+}
+
+@media (max-width: 1600px) {
+    .admin-payroll-remuneration-table {
+        min-width: 2000px;
+        font-size: 11px;
+    }
+
+    .admin-payroll-remuneration-table thead th,
+    .admin-payroll-remuneration-table tbody td {
+        padding: 8px 6px;
+        font-size: 10.5px;
+    }
+}
+.hr-fy-summary-scroll {
+    overflow-x: auto;
+    border: 1px solid #d8d8d8;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.hr-fy-summary-table {
+    min-width: 1100px;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.hr-fy-summary-table th,
+.hr-fy-summary-table td {
+    border: 1px solid #2f2f2f !important;
+    padding: 10px 12px;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.hr-fy-black-cell {
+    background: #0d0d0d !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    min-width: 120px;
+}
+
+.hr-fy-policy-cell {
+    background: #efe3bb !important;
+    color: #111111 !important;
+    font-weight: 700;
+}
+
+.hr-fy-summary-head .hr-month-head {
+    background: #bcbcbc !important;
+    color: #111111 !important;
+    font-weight: 700;
+}
+
+.hr-fy-summary-head .hr-sick-head {
+    background: #cfc5e9 !important;
+    color: #111111 !important;
+    font-weight: 700;
+}
+
+.hr-fy-summary-head .hr-casual-head {
+    background: #cfe0b7 !important;
+    color: #111111 !important;
+    font-weight: 700;
+}
+
+.hr-fy-summary-head .hr-wfh-head {
+    background: #204f97 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.hr-fy-summary-head .hr-late-head {
+    background: #7e150d !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.hr-month-value {
+    background: #d0d0d0 !important;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.hr-sick-value {
+    background: #e2dcf3 !important;
+}
+
+.hr-casual-value {
+    background: #dce9cb !important;
+}
+
+.hr-wfh-value {
+    background: #1f58b5 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.hr-late-value {
+    background: #8e170f !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+.hr-payroll-admin-table {
+    min-width: 3400px;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.hr-payroll-admin-table th,
+.hr-payroll-admin-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+    padding: 14px 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hr-payroll-admin-table thead th {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hr-payroll-admin-table tbody td:first-child,
+.hr-payroll-admin-table thead th:first-child {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(2),
+.hr-payroll-admin-table thead th:nth-child(2) {
+    width: 140px;
+    min-width: 140px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(3),
+.hr-payroll-admin-table thead th:nth-child(3) {
+    width: 220px;
+    min-width: 220px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(4),
+.hr-payroll-admin-table thead th:nth-child(4) {
+    width: 160px;
+    min-width: 160px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(5),
+.hr-payroll-admin-table thead th:nth-child(5) {
+    width: 240px;
+    min-width: 240px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(6),
+.hr-payroll-admin-table thead th:nth-child(6) {
+    width: 170px;
+    min-width: 170px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(7),
+.hr-payroll-admin-table thead th:nth-child(7),
+.hr-payroll-admin-table tbody td:nth-child(8),
+.hr-payroll-admin-table thead th:nth-child(8),
+.hr-payroll-admin-table tbody td:nth-child(9),
+.hr-payroll-admin-table thead th:nth-child(9),
+.hr-payroll-admin-table tbody td:nth-child(10),
+.hr-payroll-admin-table thead th:nth-child(10),
+.hr-payroll-admin-table tbody td:nth-child(11),
+.hr-payroll-admin-table thead th:nth-child(11),
+.hr-payroll-admin-table tbody td:nth-child(13),
+.hr-payroll-admin-table thead th:nth-child(13),
+.hr-payroll-admin-table tbody td:nth-child(15),
+.hr-payroll-admin-table thead th:nth-child(15),
+.hr-payroll-admin-table tbody td:nth-child(16),
+.hr-payroll-admin-table thead th:nth-child(16),
+.hr-payroll-admin-table tbody td:nth-child(17),
+.hr-payroll-admin-table thead th:nth-child(17),
+.hr-payroll-admin-table tbody td:nth-child(18),
+.hr-payroll-admin-table thead th:nth-child(18),
+.hr-payroll-admin-table tbody td:nth-child(20),
+.hr-payroll-admin-table thead th:nth-child(20),
+.hr-payroll-admin-table tbody td:nth-child(21),
+.hr-payroll-admin-table thead th:nth-child(21),
+.hr-payroll-admin-table tbody td:nth-child(22),
+.hr-payroll-admin-table thead th:nth-child(22),
+.hr-payroll-admin-table tbody td:nth-child(23),
+.hr-payroll-admin-table thead th:nth-child(23),
+.hr-payroll-admin-table tbody td:nth-child(24),
+.hr-payroll-admin-table thead th:nth-child(24),
+.hr-payroll-admin-table tbody td:nth-child(25),
+.hr-payroll-admin-table thead th:nth-child(25) {
+    width: 150px;
+    min-width: 150px;
+}
+
+.hr-payroll-admin-table tbody td:nth-child(12),
+.hr-payroll-admin-table thead th:nth-child(12),
+.hr-payroll-admin-table tbody td:nth-child(14),
+.hr-payroll-admin-table thead th:nth-child(14),
+.hr-payroll-admin-table tbody td:nth-child(19),
+.hr-payroll-admin-table thead th:nth-child(19) {
+    width: 200px;
+    min-width: 200px;
+}
+
+.hr-content-card .display-6 {
+    font-size: 2.3rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: normal;
+}
+
+.hr-content-card .text-muted {
+    white-space: nowrap;
+}
+.hr-admin-table-scroll {
+    max-height: 560px;
+    overflow: auto;
+    border: 1px solid #ececec;
+    border-radius: 14px;
 }

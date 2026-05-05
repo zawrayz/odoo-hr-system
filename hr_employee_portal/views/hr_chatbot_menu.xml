@@ -4,14 +4,14 @@
     <record id="action_hr_employee_chatbot_external" model="ir.actions.act_url">
         <field name="name">Employee HR Chatbot</field>
         <field name="type">ir.actions.act_url</field>
-        <field name="url">http://192.168.1.14:8501</field>
+        <field name="url">http://192.168.1.16:8501</field>
         <field name="target">new</field>
     </record>
 
     <record id="action_hr_admin_chatbot_external" model="ir.actions.act_url">
         <field name="name">Admin HR Chatbot</field>
         <field name="type">ir.actions.act_url</field>
-        <field name="url">http://192.168.1.14:8502</field>
+        <field name="url">http://192.168.1.16:8502</field>
         <field name="target">new</field>
     </record>
 

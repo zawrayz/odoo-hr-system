@@ -4,10 +4,14 @@ from odoo import models, fields, api
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
+    _sql_constraints = [
+        ('employee_code_unique', 'unique(employee_code)', 'Employee Code must be unique.')
+    ]
+
     employee_code = fields.Char(
         string="Employee Code",
-        readonly=True,
-        copy=False
+        copy=False,
+        index=True,
     )
 
     employment_status = fields.Selection(

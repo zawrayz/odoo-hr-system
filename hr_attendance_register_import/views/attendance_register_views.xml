@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_attendance_register_line_list" model="ir.ui.view">
+        <field name="name">hr.attendance.register.line.list</field>
+        <field name="model">hr.attendance.register.line</field>
+        <field name="arch" type="xml">
+            <list string="Attendance Register Lines">
+                <field name="attendance_date"/>
+                <field name="employee_id"/>
+                <field name="employee_code"/>
+                <field name="attendance_code"/>
+                <field name="fiscal_year_label"/>
+                <field name="month_label"/>
+                <field name="source"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_attendance_register_line_form" model="ir.ui.view">
+        <field name="name">hr.attendance.register.line.form</field>
+        <field name="model">hr.attendance.register.line</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Register Line">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="employee_code"/>
+                            <field name="attendance_date"/>
+                            <field name="attendance_code"/>
+                        </group>
+                        <group>
+                            <field name="fiscal_year_label"/>
+                            <field name="month_label"/>
+                            <field name="source"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_attendance_register_lines" model="ir.actions.act_window">
+        <field name="name">Attendance Register</field>
+        <field name="res_model">hr.attendance.register.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_hr_attendance_register_import_wizard_form" model="ir.ui.view">
+        <field name="name">hr.attendance.register.import.wizard.form</field>
+        <field name="model">hr.attendance.register.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Register Import">
+                <group>
+                    <group>
+                        <field name="file_name" invisible="True"/>
+                        <field name="file_data" filename="file_name" required="True"/>
+                    </group>
+                </group>
+
+                <group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Production-safe rules:</strong><br/>
+                        1. Employee is matched by exact employee name for version 1.<br/>
+                        2. Monthly matrix codes are converted into one daily record per employee.<br/>
+                        3. Existing employee/date lines are updated, not duplicated.<br/>
+                        4. Unknown employees and invalid codes are skipped and shown in summary.
+                    </div>
+                </group>
+
+                <group>
+                    <field name="result_html" widget="html"/>
+                </group>
+
+                <footer>
+                    <button name="action_import_attendance_register"
+                            string="Import Attendance Register"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_attendance_register_import_wizard" model="ir.actions.act_window">
+        <field name="name">Attendance Register Import</field>
+        <field name="res_model">hr.attendance.register.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_hr_attendance_register_root"
+              name="Attendance Register"
+              parent="hr.menu_hr_root"
+              sequence="97"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_attendance_register_lines"
+              name="Attendance Register Lines"
+              parent="menu_hr_attendance_register_root"
+              action="action_hr_attendance_register_lines"
+              sequence="1"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_attendance_register_import_wizard"
+              name="Attendance Register Import"
+              parent="menu_hr_attendance_register_root"
+              action="action_hr_attendance_register_import_wizard"
+              sequence="2"
+              groups="hr.group_hr_manager"/>
+</odoo>
