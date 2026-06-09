@@ -25,7 +25,11 @@ sessions/
 # Private data files
 *.xlsx
 *.xls
+# Ignore private CSV data files
 *.csv
+
+# But keep Odoo security CSV files
+!**/security/*.csv
 *.pdf
 
 # OS / IDE

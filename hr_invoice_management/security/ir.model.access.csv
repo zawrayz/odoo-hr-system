@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_invoice_management_manager,access.hr.invoice.management.manager,model_hr_invoice_management,hr.group_hr_manager,1,1,1,1
+access_hr_invoice_management_line_manager,access.hr.invoice.management.line.manager,model_hr_invoice_management_line,hr.group_hr_manager,1,1,1,1
+access_hr_invoice_management_history_manager,access.hr.invoice.management.history.manager,model_hr_invoice_management_history,hr.group_hr_manager,1,1,1,1
+access_hr_invoice_client_user,access.hr.invoice.client.user,model_hr_invoice_client,hr.group_hr_user,1,0,0,0
+access_hr_invoice_client_manager,access.hr.invoice.client.manager,model_hr_invoice_client,hr.group_hr_manager,1,1,1,1
