@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_hr_invoice_management" model="ir.sequence">
+        <field name="name">HR Invoice Number</field>
+        <field name="code">hr.invoice.management</field>
+        <field name="prefix">INV</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+    </record>
+</odoo>

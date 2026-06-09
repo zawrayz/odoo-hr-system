@@ -5,6 +5,8 @@ from odoo import http, fields
 from odoo.exceptions import ValidationError
 from odoo.http import request
 from werkzeug.urls import url_encode
+from io import BytesIO
+from openpyxl import Workbook
 
 
 class HrEmployeePortal(http.Controller):
@@ -61,6 +63,139 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     def _is_hr_manager(self):
         return request.env.user.has_group('hr.group_hr_manager')
+    def _get_admin_payroll_register_lines(self, selected_month, employee_id=None):
+        if not selected_month:
+            return request.env['hr.payroll.register.line'].sudo()
+
+        month_start = selected_month.replace(day=1)
+        domain = [('month_date', '=', month_start)]
+
+        if employee_id:
+            domain.append(('employee_id', '=', employee_id))
+
+        return request.env['hr.payroll.register.line'].sudo().search(
+            domain,
+            order='employee_id asc'
+        )
+
+    def _get_admin_payroll_data(self, selected_month, employee_id=None):
+        payroll_lines = self._get_admin_payroll_register_lines(
+            selected_month,
+            employee_id=employee_id,
+        )
+
+        rows = []
+        for line in payroll_lines:
+            project_salary_value = self._to_amount(getattr(line, 'project_salary', 0.0))
+            allowance_value = self._to_amount(getattr(line, 'allowance', 0.0))
+            project_salary_allowance = self._to_amount(project_salary_value + allowance_value)
+
+            project_detail = (
+                getattr(line, 'project_detail', False)
+                or getattr(line, 'allowance_detail', False)
+                or '-'
+            )
+            bonus_detail = getattr(line, 'bonus_detail', False) or '-'
+            deduction_detail = (
+                getattr(line, 'deduction_detail', False)
+                or getattr(line, 'comments', False)
+                or '-'
+            )
+
+            rows.append({
+                'record_id': line.id,
+                'employee_code': line.employee_code or '-',
+                'employee_name': line.employee_id.name or line.employee_name_text or '-',
+                'bank_name': line.payment_method or '-',
+                'designation': line.designation or '-',
+                'payment_method': line.payment_method or '-',
+
+                'basic_salary': self._to_amount(line.basic_salary),
+                'basic_actual': self._to_amount(line.basic_actual),
+                'medical_allowance': self._to_amount(line.medical_allowance),
+                'advertised_salary': self._to_amount(line.advertised_salary),
+
+                'project_salary': project_salary_allowance,
+                'project_value': project_detail,
+
+                'bonus': self._to_amount(line.bonus),
+                'for_value': bonus_detail,
+
+                'overtime': self._to_amount(getattr(line, 'overtime', 0.0)),
+                'ot_detail': getattr(line, 'overtime_detail', False) or '-',
+
+                'taxable_income': self._to_amount(line.taxable_income),
+                'yearly_income': self._to_amount(line.yearly_income),
+                'income_tax_deduction': self._to_amount(line.income_tax_deduction),
+                'other_deductions': self._to_amount(line.other_deductions),
+                'deduction_for': deduction_detail,
+
+                'total': self._to_amount(line.total),
+                'total_round': self._to_amount(line.total_round),
+                'total_allowance': allowance_value,
+                'hr_cost_including_bonus': self._to_amount(line.total_salary),
+                'hr_cost_rounded': self._to_amount(line.total_round),
+
+                'payment_date': line.payment_date.strftime('%d-%b-%Y') if line.payment_date else '-',
+                'payment_date_value': line.payment_date.strftime('%Y-%m-%d') if line.payment_date else '',
+                'month_label': line.month_label or '-',
+
+                'project_detail_raw': (
+                    getattr(line, 'project_detail', False)
+                    or getattr(line, 'allowance_detail', False)
+                    or ''
+                ),
+                'bonus_detail_raw': getattr(line, 'bonus_detail', False) or '',
+                'deduction_detail_raw': getattr(line, 'deduction_detail', False) or '',
+                'comments_raw': line.comments or '',
+            })
+
+        totals = {
+            'basic_salary': self._sum_row_values(rows, 'basic_salary'),
+            'basic_actual': self._sum_row_values(rows, 'basic_actual'),
+            'medical_allowance': self._sum_row_values(rows, 'medical_allowance'),
+            'advertised_salary': self._sum_row_values(rows, 'advertised_salary'),
+            'project_salary': self._sum_row_values(rows, 'project_salary'),
+            'project_value': 0.0,
+            'bonus': self._sum_row_values(rows, 'bonus'),
+            'for_value': 0.0,
+            'overtime': self._sum_row_values(rows, 'overtime'),
+            'ot_detail': 0.0,
+            'taxable_income': self._sum_row_values(rows, 'taxable_income'),
+            'yearly_income': self._sum_row_values(rows, 'yearly_income'),
+            'income_tax_deduction': self._sum_row_values(rows, 'income_tax_deduction'),
+            'other_deductions': self._sum_row_values(rows, 'other_deductions'),
+            'deduction_for': 0.0,
+            'total': self._sum_row_values(rows, 'total'),
+            'total_round': self._sum_row_values(rows, 'total_round'),
+            'total_allowance': self._sum_row_values(rows, 'total_allowance'),
+            'hr_cost_including_bonus': self._sum_row_values(rows, 'hr_cost_including_bonus'),
+            'hr_cost_rounded': self._sum_row_values(rows, 'hr_cost_rounded'),
+        }
+
+        calculator_input = rows[0]['total_round'] if rows else 0.0
+        calculator_medical = rows[0]['medical_allowance'] if rows else 0.0
+        calculator_taxable_yearly = self._to_amount(calculator_input * 12.0)
+        calculator_monthly_tax = rows[0]['income_tax_deduction'] if rows else 0.0
+        calculator_yearly_tax = self._to_amount(calculator_monthly_tax * 12.0)
+
+        overview = self._get_admin_payroll_overview(selected_month)
+
+        return {
+            'overview': overview,
+            'fiscal_year_code': overview['fiscal_year_code'],
+            'fiscal_year_range_label': overview['fiscal_year_range_label'],
+            'rows': rows,
+            'totals': totals,
+            'tax_slabs': self.ADMIN_PAYROLL_TAX_SLABS,
+            'calculator': {
+                'put_net_salary': calculator_input,
+                'medical_allowance': calculator_medical,
+                'taxable_income_yearly': calculator_taxable_yearly,
+                'monthly_tax': calculator_monthly_tax,
+                'yearly_tax': calculator_yearly_tax,
+            },
+        }
 
     # ---------------------------------------------------------
     # Redirect /my safely for employee-linked users only
@@ -322,43 +457,6 @@ class HrEmployeePortal(http.Controller):
             'fiscal_year_options': fy_options,
             'fiscal_year_month_options': month_options,
         }
-    def _get_payroll_register_line(self, employee, selected_month):
-        payroll_env = request.env['hr.payroll.register.line'].sudo()
-
-        if not employee or not selected_month:
-            return payroll_env
-
-        month_start = selected_month.replace(day=1)
-
-        payroll_line = payroll_env.search([
-            ('employee_id', '=', employee.id),
-            ('month_date', '=', month_start),
-        ], limit=1)
-
-        if payroll_line:
-            return payroll_line
-
-        employee_code = (employee.employee_code or '').strip()
-        if employee_code:
-            payroll_line = payroll_env.search([
-                ('employee_code', '=', employee_code),
-                ('month_date', '=', month_start),
-            ], limit=1)
-            if payroll_line:
-                return payroll_line
-
-        return payroll_env.browse()
-
-    def _get_admin_payroll_register_lines(self, selected_month):
-        if not selected_month:
-            return request.env['hr.payroll.register.line'].sudo()
-
-        month_start = selected_month.replace(day=1)
-        return request.env['hr.payroll.register.line'].sudo().search([
-            ('month_date', '=', month_start),
-        ], order='employee_id asc')
-    
-
     # ---------------------------------------------------------
     # Request helpers
     # ---------------------------------------------------------
@@ -443,6 +541,60 @@ class HrEmployeePortal(http.Controller):
         mail.send()
 
         return True, 'Your request has been sent successfully.'
+    def _send_employee_request_status_email(self, portal_request):
+        if 'mail.mail' not in request.env:
+            return False
+
+        employee = portal_request.employee_id
+        employee_email = (
+            employee.user_id.email
+            or employee.work_email
+            or request.env.user.email
+            or ''
+        )
+
+        if not employee_email:
+            return False
+
+        status_label = 'Approved' if portal_request.state == 'approved' else 'Rejected'
+
+        mail_subject = f"HR Request {status_label} - {portal_request.request_type_label}"
+
+        mail_body = f"""
+            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #222;">
+                <h3>HR Request {status_label}</h3>
+                <p>Dear {employee.name or 'Employee'},</p>
+                <p>Your HR request has been <strong>{status_label}</strong>.</p>
+
+                <table style="border-collapse: collapse; width: 100%; max-width: 700px;">
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Request Type</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{portal_request.request_type_label or '-'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>From Date</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{portal_request.date_from or '-'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>To Date</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{portal_request.date_to or '-'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Admin Remarks</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{portal_request.admin_remarks or '-'}</td>
+                    </tr>
+                </table>
+            </div>
+        """
+
+        request.env['mail.mail'].sudo().create({
+            'subject': mail_subject,
+            'body_html': mail_body,
+            'email_to': employee_email,
+            'email_from': request.env.user.email or 'noreply@example.com',
+        }).send()
+
+        return True
 
     # ---------------------------------------------------------
     # Daily work report helpers
@@ -467,6 +619,14 @@ class HrEmployeePortal(http.Controller):
             return datetime.strptime((date_string or '').strip(), '%Y-%m-%d').date()
         except ValueError:
             return False
+    def _parse_portal_float(self, value):
+        try:
+            clean_value = str(value or '').replace(',', '').strip()
+            if not clean_value:
+                return 0.0
+            return float(clean_value)
+        except (TypeError, ValueError):
+            return 0.0
 
     def _parse_portal_datetime_local(self, datetime_string):
         try:
@@ -591,14 +751,20 @@ class HrEmployeePortal(http.Controller):
             ('month_date', '=', month_start),
         ], limit=1)
 
-    def _get_admin_payroll_register_lines(self, selected_month):
+    def _get_admin_payroll_register_lines(self, selected_month, employee_id=None):
         if not selected_month:
             return request.env['hr.payroll.register.line'].sudo()
 
         month_start = selected_month.replace(day=1)
-        return request.env['hr.payroll.register.line'].sudo().search([
-            ('month_date', '=', month_start),
-        ], order='employee_id asc')
+        domain = [('month_date', '=', month_start)]
+
+        if employee_id:
+            domain.append(('employee_id', '=', employee_id))
+
+        return request.env['hr.payroll.register.line'].sudo().search(
+            domain,
+            order='employee_id asc'
+        )
 
     def _get_employee_payroll_data(self, employee, selected_month):
         payroll_line = self._get_payroll_register_line(employee, selected_month)
@@ -704,6 +870,29 @@ class HrEmployeePortal(http.Controller):
 
     def _sum_row_values(self, rows, key):
         return self._to_amount(sum(self._to_amount(row.get(key, 0.0)) for row in rows))
+    def _export_workbook_response(self, workbook, file_name):
+        for sheet in workbook.worksheets:
+            for column_cells in sheet.columns:
+                max_length = 12
+                column_letter = column_cells[0].column_letter
+
+                for cell in column_cells:
+                    value = str(cell.value or '')
+                    max_length = max(max_length, min(len(value) + 2, 45))
+
+                sheet.column_dimensions[column_letter].width = max_length
+
+        output = BytesIO()
+        workbook.save(output)
+        output.seek(0)
+
+        return request.make_response(
+            output.getvalue(),
+            headers=[
+                ('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                ('Content-Disposition', 'attachment; filename="%s"' % file_name),
+            ]
+        )
 
     def _count_weekend_days(self, month_start, end_day):
         weekend_days = 0
@@ -741,63 +930,97 @@ class HrEmployeePortal(http.Controller):
             'days_in_month_total': total_days_in_month,
         }
 
-    def _get_admin_payroll_data(self, selected_month):
-        payroll_lines = self._get_admin_payroll_register_lines(selected_month)
+    def _get_admin_payroll_data(self, selected_month, employee_id=None):
+        payroll_lines = self._get_admin_payroll_register_lines(selected_month, employee_id=employee_id)
 
         rows = []
         for line in payroll_lines:
-            rows.append({
-                'employee_code': line.employee_code or '-',
-                'employee_name': line.employee_id.name or line.employee_name_text or '-',
-                'bank_name': line.payment_method or '-',
-                'designation': line.designation or '-',
-                'payment_method': line.payment_method or '-',
-                'basic_salary': self._to_amount(line.basic_salary),
-                'basic_actual': self._to_amount(line.basic_actual),
-                'medical_allowance': self._to_amount(line.medical_allowance),
-                'advertised_salary': self._to_amount(line.advertised_salary),
-                'project_salary': self._to_amount(line.project_salary),
-                'project_value': line.allowance_detail or '-',
-                'bonus': self._to_amount(line.bonus),
-                'for_value': line.period_label or '-',
-                'overtime': 0.0,
-                'ot_detail': '-',
-                'taxable_income': self._to_amount(line.taxable_income),
-                'yearly_income': self._to_amount(line.yearly_income),
-                'income_tax_deduction': self._to_amount(line.income_tax_deduction),
-                'other_deductions': self._to_amount(line.other_deductions),
-                'deduction_for': line.comments or '-',
-                'total': self._to_amount(line.total),
-                'total_round': self._to_amount(line.total_round),
-                'total_allowance': self._to_amount(line.allowance),
-                'hr_cost_including_bonus': self._to_amount(line.total_salary),
-                'hr_cost_rounded': self._to_amount(line.total_round),
-                'payment_date': line.payment_date.strftime('%d-%b-%Y') if line.payment_date else '-',
-                'month_label': line.month_label or '-',
-            })
+                project_salary_value = self._to_amount(getattr(line, 'project_salary', 0.0))
+                allowance_value = self._to_amount(getattr(line, 'allowance', 0.0))
+                project_salary_allowance = self._to_amount(project_salary_value + allowance_value)
+
+                project_detail = (
+                    getattr(line, 'project_detail', False)
+                    or getattr(line, 'allowance_detail', False)
+                    or '-'
+        )
+                bonus_detail = getattr(line, 'bonus_detail', False) or '-'
+                deduction_detail = (
+                    getattr(line, 'deduction_detail', False)
+                    or getattr(line, 'comments', False)
+                    or '-'
+        )
+
+                rows.append({
+                    'record_id': line.id,
+                    'employee_code': line.employee_code or '-',
+                    'employee_name': line.employee_id.name or line.employee_name_text or '-',
+                    'bank_name': line.payment_method or '-',
+                    'designation': line.designation or '-',
+                    'payment_method': line.payment_method or '-',
+
+                    'basic_salary': self._to_amount(line.basic_salary),
+                    'basic_actual': self._to_amount(line.basic_actual),
+                    'medical_allowance': self._to_amount(line.medical_allowance),
+                    'advertised_salary': self._to_amount(line.advertised_salary),
+
+                    'project_salary': project_salary_allowance,
+                    'project_value': project_detail,
+
+                    'bonus': self._to_amount(line.bonus),
+                    'for_value': bonus_detail,
+
+                    'overtime': self._to_amount(getattr(line, 'overtime', 0.0)),
+                    'ot_detail': getattr(line, 'overtime_detail', False) or '-',
+
+                    'taxable_income': self._to_amount(line.taxable_income),
+                    'yearly_income': self._to_amount(line.yearly_income),
+                    'income_tax_deduction': self._to_amount(line.income_tax_deduction),
+                    'other_deductions': self._to_amount(line.other_deductions),
+                    'deduction_for': deduction_detail,
+
+                    'total': self._to_amount(line.total),
+                    'total_round': self._to_amount(line.total_round),
+                    'total_allowance': allowance_value,
+                    'hr_cost_including_bonus': self._to_amount(line.total_salary),
+                    'hr_cost_rounded': self._to_amount(line.total_round),
+
+                    'payment_date': line.payment_date.strftime('%d-%b-%Y') if line.payment_date else '-',
+                    'payment_date_value': line.payment_date.strftime('%Y-%m-%d') if line.payment_date else '',
+                    'month_label': line.month_label or '-',
+
+                    'project_detail_raw': (
+                        getattr(line, 'project_detail', False)
+                        or getattr(line, 'allowance_detail', False)
+                        or ''
+            ),
+                    'bonus_detail_raw': getattr(line, 'bonus_detail', False) or '',
+                    'deduction_detail_raw': getattr(line, 'deduction_detail', False) or '',
+                    'comments_raw': line.comments or '',
+        })
 
         totals = {
-            'basic_salary': self._sum_row_values(rows, 'basic_salary'),
-            'basic_actual': self._sum_row_values(rows, 'basic_actual'),
-            'medical_allowance': self._sum_row_values(rows, 'medical_allowance'),
-            'advertised_salary': self._sum_row_values(rows, 'advertised_salary'),
-            'project_salary': self._sum_row_values(rows, 'project_salary'),
-            'project_value': 0.0,
-            'bonus': self._sum_row_values(rows, 'bonus'),
-            'for_value': 0.0,
-            'overtime': self._sum_row_values(rows, 'overtime'),
-            'ot_detail': 0.0,
-            'taxable_income': self._sum_row_values(rows, 'taxable_income'),
-            'yearly_income': self._sum_row_values(rows, 'yearly_income'),
-            'income_tax_deduction': self._sum_row_values(rows, 'income_tax_deduction'),
-            'other_deductions': self._sum_row_values(rows, 'other_deductions'),
-            'deduction_for': 0.0,
-            'total': self._sum_row_values(rows, 'total'),
-            'total_round': self._sum_row_values(rows, 'total_round'),
-            'total_allowance': self._sum_row_values(rows, 'total_allowance'),
-            'hr_cost_including_bonus': self._sum_row_values(rows, 'hr_cost_including_bonus'),
-            'hr_cost_rounded': self._sum_row_values(rows, 'hr_cost_rounded'),
-        }
+                'basic_salary': self._sum_row_values(rows, 'basic_salary'),
+                'basic_actual': self._sum_row_values(rows, 'basic_actual'),
+                'medical_allowance': self._sum_row_values(rows, 'medical_allowance'),
+                'advertised_salary': self._sum_row_values(rows, 'advertised_salary'),
+                'project_salary': self._sum_row_values(rows, 'project_salary'),
+                'project_value': 0.0,
+                'bonus': self._sum_row_values(rows, 'bonus'),
+                'for_value': 0.0,
+                'overtime': self._sum_row_values(rows, 'overtime'),
+                'ot_detail': 0.0,
+                'taxable_income': self._sum_row_values(rows, 'taxable_income'),
+                'yearly_income': self._sum_row_values(rows, 'yearly_income'),
+                'income_tax_deduction': self._sum_row_values(rows, 'income_tax_deduction'),
+                'other_deductions': self._sum_row_values(rows, 'other_deductions'),
+                'deduction_for': 0.0,
+                'total': self._sum_row_values(rows, 'total'),
+                'total_round': self._sum_row_values(rows, 'total_round'),
+                'total_allowance': self._sum_row_values(rows, 'total_allowance'),
+                'hr_cost_including_bonus': self._sum_row_values(rows, 'hr_cost_including_bonus'),
+                'hr_cost_rounded': self._sum_row_values(rows, 'hr_cost_rounded'),
+    }
 
         calculator_input = rows[0]['total_round'] if rows else 0.0
         calculator_medical = rows[0]['medical_allowance'] if rows else 0.0
@@ -985,9 +1208,6 @@ class HrEmployeePortal(http.Controller):
 
             if code in summary:
                 summary[code] += 1
-
-            if target_date in overtime_days:
-                summary['OT'] += 1
 
             days.append({
                 'day_number': day_number,
@@ -1213,11 +1433,53 @@ class HrEmployeePortal(http.Controller):
         date_from = self._parse_portal_date(kwargs.get('date_from'))
         date_to = self._parse_portal_date(kwargs.get('date_to'))
 
-        performance_records = self._get_employee_performance_records(
-            employee,
-            date_from=date_from,
-            date_to=date_to,
+        try:
+            page = int(kwargs.get('page') or 1)
+        except (TypeError, ValueError):
+            page = 1
+
+        page = max(page, 1)
+        per_page = 8
+        offset = (page - 1) * per_page
+
+        performance_env = request.env['hr.daily.performance.plan'].sudo()
+
+        domain = [('employee_id', '=', employee.id)]
+        if date_from:
+            domain.append(('plan_date', '>=', date_from))
+        if date_to:
+            domain.append(('plan_date', '<=', date_to))
+
+        performance_total = performance_env.search_count(domain)
+
+        performance_records = performance_env.search(
+            domain,
+            order='plan_date desc, id desc',
+            limit=per_page,
+            offset=offset,
         )
+
+        performance_page_count = max((performance_total + per_page - 1) // per_page, 1)
+        performance_start = offset + 1 if performance_total else 0
+        performance_end = min(offset + per_page, performance_total)
+
+        base_params = {
+            'date_from': date_from.strftime('%Y-%m-%d') if date_from else '',
+            'date_to': date_to.strftime('%Y-%m-%d') if date_to else '',
+        }
+
+        previous_page_url = False
+        next_page_url = False
+
+        if page > 1:
+            previous_params = dict(base_params)
+            previous_params['page'] = page - 1
+            previous_page_url = self._build_redirect_url('/my/hr/performance', previous_params)
+
+        if page < performance_page_count:
+            next_params = dict(base_params)
+            next_params['page'] = page + 1
+            next_page_url = self._build_redirect_url('/my/hr/performance', next_params)
 
         values = self._prepare_portal_values(employee, {
             'performance_records': performance_records,
@@ -1225,9 +1487,15 @@ class HrEmployeePortal(http.Controller):
             'date_to': date_to.strftime('%Y-%m-%d') if date_to else '',
             'performance_status': (kwargs.get('performance_status') or '').strip(),
             'performance_message': (kwargs.get('performance_message') or '').strip(),
+            'performance_total': performance_total,
+            'performance_page': page,
+            'performance_page_count': performance_page_count,
+            'performance_start': performance_start,
+            'performance_end': performance_end,
+            'previous_page_url': previous_page_url,
+            'next_page_url': next_page_url,
         })
         return request.render('hr_employee_portal.hr_employee_performance_page', values)
-
     @http.route('/my/hr/performance/submit', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_performance_submit(self, **post):
         if self._is_hr_manager():
@@ -1405,7 +1673,16 @@ class HrEmployeePortal(http.Controller):
 
         employee = self._get_employee()
         if not employee:
-            return request.redirect('/my/hr?request_status=error&request_message=Employee+record+not+found')
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'Employee record not found.',
+            }))
+
+        if 'hr.employee.portal.request' not in request.env:
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'HR request model is not available. Please upgrade the module.',
+            }))
 
         request_type = (post.get('request_type') or '').strip()
         reason = (post.get('reason') or '').strip()
@@ -1415,22 +1692,50 @@ class HrEmployeePortal(http.Controller):
         valid_request_types = [item[0] for item in self.REQUEST_TYPE_OPTIONS]
 
         if request_type not in valid_request_types:
-            return request.redirect('/my/hr?request_status=error&request_message=Please+select+a+valid+request+type')
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'Please select a valid request type.',
+            }))
 
         if not reason:
-            return request.redirect('/my/hr?request_status=error&request_message=Reason+is+required')
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'Reason is required.',
+            }))
 
         date_from = self._parse_request_date(date_from_raw)
         date_to = self._parse_request_date(date_to_raw)
 
         if not date_from or not date_to:
-            return request.redirect('/my/hr?request_status=error&request_message=Please+enter+valid+from+and+to+dates')
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'Please enter valid from and to dates.',
+            }))
 
         if date_to < date_from:
-            return request.redirect('/my/hr?request_status=error&request_message=To+date+cannot+be+earlier+than+from+date')
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'To date cannot be earlier than from date.',
+            }))
 
         try:
-            email_sent, message = self._send_employee_request_email(
+            portal_request = request.env['hr.employee.portal.request'].sudo().create({
+                'employee_id': employee.id,
+                'request_type': request_type,
+                'date_from': date_from,
+                'date_to': date_to,
+                'reason': reason,
+                'state': 'submitted',
+                'submitted_at': fields.Datetime.now(),
+            })
+        except Exception:
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'Request could not be saved. Please contact HR.',
+            }))
+
+        try:
+            self._send_employee_request_email(
                 employee=employee,
                 request_type=request_type,
                 reason=reason,
@@ -1438,14 +1743,12 @@ class HrEmployeePortal(http.Controller):
                 date_to=date_to,
             )
         except Exception:
-            email_sent = False
-            message = 'Request could not be sent. Please contact the administrator.'
+            pass
 
-        if email_sent:
-            return request.redirect('/my/hr?request_status=success&request_message=Request+sent+successfully')
-
-        safe_message = (message or 'Request could not be sent').replace(' ', '+')
-        return request.redirect(f'/my/hr?request_status=error&request_message={safe_message}')
+        return request.redirect(self._build_redirect_url('/my/hr', {
+            'request_status': 'success',
+            'request_message': 'Request submitted successfully and sent to HR.',
+        }))
 
     # =========================================================
     # EMPLOYEE: HR Dashboard
@@ -1592,10 +1895,16 @@ class HrEmployeePortal(http.Controller):
         fy_end = payroll_period['selected_fy_end']
 
         register_env = request.env['hr.attendance.register.line'].sudo()
+
+        selected_month_start = selected_month.replace(day=1)
+        selected_month_end = selected_month_start.replace(
+        day=calendar.monthrange(selected_month_start.year, selected_month_start.month)[1]
+)
+
         register_lines = register_env.search([
-            ('employee_id', '=', employee.id),
-            ('attendance_date', '>=', fy_start),
-            ('attendance_date', '<=', fy_end),
+        ('employee_id', '=', employee.id),
+        ('attendance_date', '>=', selected_month_start),
+        ('attendance_date', '<=', selected_month_end),
         ], order='attendance_date asc')
 
         leave_env = request.env['hr.leave'].sudo()
@@ -2003,6 +2312,68 @@ class HrEmployeePortal(http.Controller):
             'performance_status': 'success',
             'performance_message': 'Performance record updated successfully.',
         }))
+    @http.route('/my/hr/admin/performance/export', type='http', auth='user', website=True)
+    def my_hr_admin_performance_export(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        selected_employee_id = False
+
+        if employee_id_raw:
+            try:
+                selected_employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                selected_employee_id = False
+
+        date_from = self._parse_portal_date(kwargs.get('date_from'))
+        date_to = self._parse_portal_date(kwargs.get('date_to'))
+
+        domain = self._get_performance_search_domain(
+            employee_id=selected_employee_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
+        records = request.env['hr.daily.performance.plan'].sudo().search(
+            domain,
+            order='plan_date desc, id desc',
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Performance'
+
+        sheet.append([
+            '#',
+            'Employee',
+            'Employee Code',
+            'Date',
+            'Task ID',
+            'Project',
+            'Task Description',
+            'Priority',
+            'Status',
+            'Completion %',
+            'Supervisor Remarks',
+        ])
+
+        for index, rec in enumerate(records, start=1):
+            sheet.append([
+                index,
+                rec.employee_id.name or '',
+                rec.employee_id.employee_code or '',
+                rec.plan_date.strftime('%Y-%m-%d') if rec.plan_date else '',
+                rec.task_id or '',
+                rec.project_name or '',
+                rec.task_description or '',
+                rec.priority_level or '',
+                rec.status or '',
+                rec.completion_percent or 0.0,
+                rec.supervisor_remarks or '',
+            ])
+
+        return self._export_workbook_response(workbook, 'performance_records.xlsx')
 
     # ---------------------------------------------------------
     # EMPLOYEE: Documents, Payroll, Leaves
@@ -2049,6 +2420,8 @@ class HrEmployeePortal(http.Controller):
                 'fiscal_year_options': payroll_period['fiscal_year_options'],
                 'selected_fiscal_year_value': payroll_period['selected_fy_value'],
                 'selected_fiscal_year_code': payroll_period['selected_fy_code'],
+                'attendance_status': (kwargs.get('attendance_status') or '').strip(),
+                'attendance_message': (kwargs.get('attendance_message') or '').strip(),
                 'payroll_tax_section_id': 'employee-payroll-tax-section',
                 'payroll_tax_rate_section_id': 'employee-payroll-tax-rate-section',
             })
@@ -2066,16 +2439,61 @@ class HrEmployeePortal(http.Controller):
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
-        leaves = []
-        if employee:
-            leaves = request.env['hr.leave'].sudo().search(
-                [('employee_id', '=', employee.id)],
-                order='request_date_from desc'
+        hr_requests = request.env['hr.employee.portal.request'].sudo()
+
+        try:
+            request_page = int(kwargs.get('request_page') or 1)
+        except (TypeError, ValueError):
+            request_page = 1
+
+        request_page = max(request_page, 1)
+        per_page = 8
+        offset = (request_page - 1) * per_page
+
+        request_total = 0
+        request_page_count = 1
+        request_start = 0
+        request_end = 0
+        previous_request_page_url = False
+        next_request_page_url = False
+
+        if employee and 'hr.employee.portal.request' in request.env:
+            domain = [('employee_id', '=', employee.id)]
+
+            request_total = hr_requests.search_count(domain)
+            hr_requests = hr_requests.search(
+                domain,
+                order='submitted_at desc, id desc',
+                limit=per_page,
+                offset=offset,
             )
+
+            request_page_count = max((request_total + per_page - 1) // per_page, 1)
+            request_start = offset + 1 if request_total else 0
+            request_end = min(offset + per_page, request_total)
+
+            if request_page > 1:
+                previous_request_page_url = self._build_redirect_url('/my/hr/leaves', {
+                    'request_page': request_page - 1,
+                })
+
+            if request_page < request_page_count:
+                next_request_page_url = self._build_redirect_url('/my/hr/leaves', {
+                    'request_page': request_page + 1,
+                })
 
         return request.render(
             'hr_employee_portal.hr_employee_leaves_page',
-            self._prepare_portal_values(employee, {'leaves': leaves})
+            self._prepare_portal_values(employee, {
+                'hr_requests': hr_requests,
+                'request_total': request_total,
+                'request_page': request_page,
+                'request_page_count': request_page_count,
+                'request_start': request_start,
+                'request_end': request_end,
+                'previous_request_page_url': previous_request_page_url,
+                'next_request_page_url': next_request_page_url,
+            })
         )
 
         # =========================================================
@@ -2086,7 +2504,7 @@ class HrEmployeePortal(http.Controller):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
-        hr_employee_env = request.env['hr.employee'].sudo()
+        hr_employee_env = request.env['hr.employee'].sudo().with_context(active_test=False)
         hr_task_report_env = request.env['hr.daily.work.report'].sudo()
         attendance_register_env = request.env['hr.attendance.register.line'].sudo()
 
@@ -2106,21 +2524,66 @@ class HrEmployeePortal(http.Controller):
             ('attendance_date', '>=', month_start),
             ('attendance_date', '<=', month_end),
             ('attendance_code', 'in', ['P', 'R']),
-    ])
+        ])
         present_employee_count = len(set(month_register_lines.mapped('employee_id').ids))
 
         task_reports_submitted_today = hr_task_report_env.search_count([
             ('submitted_at', '>=', fields.Datetime.to_string(today_start)),
             ('submitted_at', '<', fields.Datetime.to_string(next_day_start)),
-    ])
+        ])
 
         values = self._prepare_portal_values(None, {
             'employees': all_employees,
             'total_employees': total_employees,
             'present_employees': present_employee_count,
             'task_reports_submitted_today': task_reports_submitted_today,
-    })
+            'employee_status': (kwargs.get('employee_status') or '').strip(),
+            'employee_message': (kwargs.get('employee_message') or '').strip(),
+        })
         return request.render('hr_employee_portal.hr_admin_dashboard_page', values)
+    @http.route('/my/hr/admin/employee/status/update', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_employee_status_update(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (post.get('employee_id') or '').strip()
+        active_value = (post.get('active') or '').strip()
+
+        try:
+            employee_id = int(employee_id_raw)
+        except (TypeError, ValueError):
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Invalid employee selected.',
+            }))
+
+        employee = request.env['hr.employee'].sudo().with_context(active_test=False).browse(employee_id).exists()
+        if not employee:
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Employee not found.',
+            }))
+
+        if employee.user_id and employee.user_id.id == request.env.user.id and active_value == '0':
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'You cannot deactivate your own linked employee record from the portal.',
+            }))
+
+        if active_value not in ['0', '1']:
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Invalid status selected.',
+            }))
+
+        employee.write({
+            'active': True if active_value == '1' else False,
+        })
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin', {
+            'employee_status': 'success',
+            'employee_message': 'Employee status updated successfully.',
+        }))
 
     @http.route('/my/hr/admin/attendances', type='http', auth='user', website=True)
     def my_hr_admin_attendances(self, **kwargs):
@@ -2135,7 +2598,10 @@ class HrEmployeePortal(http.Controller):
         fy_value = kwargs.get('fy')
         month_value = kwargs.get('month')
 
-        payroll_period = self._get_selected_payroll_period(fy_value=fy_value, month_value=month_value)
+        payroll_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
         selected_month = payroll_period['selected_month']
         month_navigation = self._get_month_navigation(selected_month)
         fiscal_context = self._get_fiscal_year_context(selected_month)
@@ -2158,11 +2624,13 @@ class HrEmployeePortal(http.Controller):
         attendance_matrix_row = False
         attendance_days = []
         attendance_display = []
+        attendance_fy_summary = False
 
         if selected_employee:
             attendance_matrix_row = self._build_attendance_matrix(selected_employee, selected_month)
             attendance_days = attendance_matrix_row['days']
             attendance_display = self._get_attendance_logs(selected_employee)
+            attendance_fy_summary = self._get_employee_attendance_fy_summary(selected_employee, selected_month)
 
         values = self._prepare_portal_values(None, {
             'employees': employees,
@@ -2171,10 +2639,13 @@ class HrEmployeePortal(http.Controller):
             'attendance_matrix_row': attendance_matrix_row,
             'attendance_days': attendance_days,
             'attendances': attendance_display,
+            'attendance_fy_summary': attendance_fy_summary,
+
             'month_display': month_navigation.get('month_display', ''),
             'previous_month_value': month_navigation.get('previous_month_value', ''),
             'next_month_value': month_navigation.get('next_month_value', ''),
             'selected_month_value': selected_month.strftime('%Y-%m'),
+
             'fiscal_year_label': fiscal_context['fiscal_year_label'],
             'fiscal_year_code': fiscal_context['fiscal_year_code'],
             'fiscal_year_range_label': fiscal_context['fiscal_year_range_label'],
@@ -2182,12 +2653,189 @@ class HrEmployeePortal(http.Controller):
             'fiscal_year_options': payroll_period['fiscal_year_options'],
             'selected_fiscal_year_value': payroll_period['selected_fy_value'],
             'selected_fiscal_year_code': payroll_period['selected_fy_code'],
-    })
+
+            'attendance_status': (kwargs.get('attendance_status') or '').strip(),
+            'attendance_message': (kwargs.get('attendance_message') or '').strip(),
+        })
 
         return request.render(
             'hr_employee_portal.hr_admin_attendances_page',
-        values
-    )
+            values
+        )
+    @http.route('/my/hr/admin/attendances/update', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_attendances_update(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (post.get('employee_id') or '').strip()
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+
+        base_params = {
+            'employee_id': employee_id_raw,
+            'fy': fy_value,
+            'month': month_value,
+        }
+
+        try:
+            employee_id = int(employee_id_raw)
+        except (TypeError, ValueError):
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': 'Invalid employee selected.',
+            })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+
+        employee = request.env['hr.employee'].sudo().browse(employee_id).exists()
+        if not employee:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': 'Employee not found.',
+            })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+
+        attendance_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = attendance_period['selected_month']
+        month_start = selected_month.replace(day=1)
+        total_days = calendar.monthrange(month_start.year, month_start.month)[1]
+
+        valid_codes = {'P', 'R', 'H', 'S', 'C', 'U', 'D', 'OT'}
+        register_env = request.env['hr.attendance.register.line'].sudo()
+
+        fiscal_year_label = self._get_fiscal_year_label(month_start)
+        month_label = month_start.strftime('%B %Y')
+
+        try:
+            for day_number in range(1, total_days + 1):
+                raw_code = (post.get(f'day_{day_number}') or '').strip().upper()
+                attendance_date = month_start.replace(day=day_number)
+
+                existing_line = register_env.search([
+                    ('employee_id', '=', employee.id),
+                    ('attendance_date', '=', attendance_date),
+                ], limit=1)
+
+                if raw_code in ('', '-'):
+                    if existing_line:
+                        existing_line.unlink()
+                    continue
+
+                if raw_code not in valid_codes:
+                    raise ValidationError(f"Invalid attendance code '{raw_code}' for day {day_number}.")
+
+                register_env.create_or_update_attendance_line(
+                    employee=employee,
+                    attendance_date=attendance_date,
+                    attendance_code=raw_code,
+                    fiscal_year_label=fiscal_year_label,
+                    month_label=month_label,
+                    source='manual',
+                    notes='Updated manually from admin portal.',
+                )
+
+        except ValidationError as error:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': str(error),
+            })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+        except Exception:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': 'Attendance could not be updated.',
+            })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+
+        base_params.update({
+            'attendance_status': 'success',
+            'attendance_message': 'Attendance updated successfully.',
+        })
+        return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+
+    @http.route('/my/hr/admin/attendances/export', type='http', auth='user', website=True)
+    def my_hr_admin_attendances_export(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        fy_value = (kwargs.get('fy') or '').strip()
+        month_value = (kwargs.get('month') or '').strip()
+
+        try:
+            employee_id = int(employee_id_raw)
+        except (TypeError, ValueError):
+            return request.redirect('/my/hr/admin/attendances')
+
+        employee = request.env['hr.employee'].sudo().browse(employee_id).exists()
+        if not employee:
+            return request.redirect('/my/hr/admin/attendances')
+
+        attendance_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = attendance_period['selected_month']
+        attendance_matrix_row = self._build_attendance_matrix(employee, selected_month)
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Attendance'
+
+        day_headers = [
+            'Day %s' % day_data['day_number']
+            for day_data in attendance_matrix_row['days']
+        ]
+
+        headers = [
+            'Employee Code',
+            'Employee Name',
+            'Fiscal Year',
+            'Month',
+        ] + day_headers + [
+            'P',
+            'R',
+            'H',
+            'S',
+            'C',
+            'U',
+            'D',
+            'OT',
+        ]
+
+        sheet.append(headers)
+
+        day_values = [
+            day_data.get('code') or '-'
+            for day_data in attendance_matrix_row['days']
+        ]
+
+        summary = attendance_matrix_row['summary']
+
+        sheet.append([
+            employee.employee_code or '',
+            employee.name or '',
+            attendance_matrix_row['fiscal_year'],
+            attendance_matrix_row['month_label'],
+        ] + day_values + [
+            summary.get('P', 0),
+            summary.get('R', 0),
+            summary.get('H', 0),
+            summary.get('S', 0),
+            summary.get('C', 0),
+            summary.get('U', 0),
+            summary.get('D', 0),
+            summary.get('OT', 0),
+        ])
+
+        file_name = 'attendance_%s_%s.xlsx' % (
+            employee.employee_code or employee.id,
+            selected_month.strftime('%Y_%m'),
+        )
+
+        return self._export_workbook_response(workbook, file_name)
     @http.route('/my/hr/admin/task-reports', type='http', auth='user', website=True)
     def my_hr_admin_task_reports(self, **kwargs):
         if not self._is_hr_manager():
@@ -2369,18 +3017,78 @@ class HrEmployeePortal(http.Controller):
             'report_status': 'success',
             'report_message': 'Task report updated successfully.',
         }))
-
-    @http.route('/my/hr/admin/leaves', type='http', auth='user', website=True)
-    def my_hr_admin_leaves(self, **kwargs):
-        if not self._is_hr_manager():
-            return request.redirect('/my/hr')
-        return request.render('hr_employee_portal.hr_admin_leaves_page', self._prepare_portal_values(None))
-
     @http.route('/my/hr/admin/documents', type='http', auth='user', website=True)
     def my_hr_admin_documents(self, **kwargs):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
         return request.render('hr_employee_portal.hr_admin_documents_page', self._prepare_portal_values(None))
+    @http.route('/my/hr/admin/task-reports/export', type='http', auth='user', website=True)
+    def my_hr_admin_task_reports_export(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        selected_employee_id = False
+
+        if employee_id_raw:
+            try:
+                selected_employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                selected_employee_id = False
+
+        date_from = self._parse_portal_date(kwargs.get('date_from'))
+        date_to = self._parse_portal_date(kwargs.get('date_to'))
+
+        domain = self._get_task_report_search_domain(
+            employee_id=selected_employee_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
+        reports = request.env['hr.daily.work.report'].sudo().search(
+            domain,
+            order='report_date desc, submitted_at desc, id desc',
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Task Reports'
+
+        sheet.append([
+            '#',
+            'Employee',
+            'Employee Code',
+            'Report Date',
+            'Submitted At',
+            'Work Mode',
+            'Status',
+            'Task Report',
+            'Remarks',
+        ])
+
+        for index, report in enumerate(reports, start=1):
+            if report.work_mode == 'office':
+                work_mode = 'Work from Office'
+            elif report.work_mode == 'wfh':
+                work_mode = 'Work from Home'
+            elif report.work_mode == 'leave':
+                work_mode = 'Leave'
+            else:
+                work_mode = report.work_mode or ''
+
+            sheet.append([
+                index,
+                report.employee_id.name or '',
+                report.employee_id.employee_code or '',
+                report.report_date.strftime('%Y-%m-%d') if report.report_date else '',
+                report.submitted_at.strftime('%Y-%m-%d %H:%M:%S') if report.submitted_at else '',
+                work_mode,
+                report.state or '',
+                report.task_report or '',
+                report.remarks or '',
+            ])
+
+        return self._export_workbook_response(workbook, 'task_reports.xlsx')
 
     @http.route('/my/hr/admin/payslips', type='http', auth='user', website=True)
     def my_hr_admin_payslips(self, **kwargs):
@@ -2410,6 +3118,8 @@ class HrEmployeePortal(http.Controller):
                 'fiscal_year_options': payroll_period['fiscal_year_options'],
                 'selected_fiscal_year_value': payroll_period['selected_fy_value'],
                 'selected_fiscal_year_code': payroll_period['selected_fy_code'],
+                'payroll_status': (kwargs.get('payroll_status') or '').strip(),
+                'payroll_message': (kwargs.get('payroll_message') or '').strip(),
             })
         )
 
@@ -2418,10 +3128,128 @@ class HrEmployeePortal(http.Controller):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
+        request_state = (kwargs.get('request_state') or '').strip()
+        domain = []
+
+        if request_state in ['submitted', 'approved', 'rejected']:
+            domain.append(('state', '=', request_state))
+
+        try:
+            page = int(kwargs.get('page') or 1)
+        except (TypeError, ValueError):
+            page = 1
+
+        page = max(page, 1)
+        per_page = 10
+        offset = (page - 1) * per_page
+
+        request_env = request.env['hr.employee.portal.request'].sudo()
+        request_total = request_env.search_count(domain)
+
+        hr_requests = request_env.search(
+            domain,
+            order='submitted_at desc, id desc',
+            limit=per_page,
+            offset=offset,
+        )
+
+        page_count = max((request_total + per_page - 1) // per_page, 1)
+        request_start = offset + 1 if request_total else 0
+        request_end = min(offset + per_page, request_total)
+
+        previous_page_url = False
+        next_page_url = False
+
+        base_params = {
+            'request_state': request_state,
+        }
+
+        if page > 1:
+            previous_params = dict(base_params)
+            previous_params['page'] = page - 1
+            previous_page_url = self._build_redirect_url('/my/hr/admin/leaves', previous_params)
+
+        if page < page_count:
+            next_params = dict(base_params)
+            next_params['page'] = page + 1
+            next_page_url = self._build_redirect_url('/my/hr/admin/leaves', next_params)
+
         return request.render(
             'hr_employee_portal.hr_admin_leaves_page',
-            self._prepare_portal_values(None)
+            self._prepare_portal_values(None, {
+                'hr_requests': hr_requests,
+                'selected_request_state': request_state,
+                'request_total': request_total,
+                'request_page': page,
+                'request_page_count': page_count,
+                'request_start': request_start,
+                'request_end': request_end,
+                'previous_page_url': previous_page_url,
+                'next_page_url': next_page_url,
+                'admin_request_status': (kwargs.get('admin_request_status') or '').strip(),
+                'admin_request_message': (kwargs.get('admin_request_message') or '').strip(),
+            })
         )
+    @http.route('/my/hr/admin/requests/update', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_request_update(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        request_id_raw = (post.get('request_id') or '').strip()
+        action = (post.get('action') or '').strip()
+        admin_remarks = (post.get('admin_remarks') or '').strip()
+        request_state = (post.get('request_state') or '').strip()
+        page = (post.get('page') or '').strip()
+
+        base_params = {
+            'request_state': request_state,
+            'page': page,
+        }
+
+        try:
+            request_id = int(request_id_raw)
+        except (TypeError, ValueError):
+            return request.redirect(self._build_redirect_url('/my/hr/admin/leaves', {
+            'admin_request_status': 'error',
+            'admin_request_message': 'Invalid request selected.',
+        }))
+
+        portal_request = request.env['hr.employee.portal.request'].sudo().browse(request_id).exists()
+        if not portal_request:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/leaves', {
+                'admin_request_status': 'error',
+                'admin_request_message': 'Request not found.',
+            }))
+
+        if portal_request.state != 'submitted':
+            return request.redirect(self._build_redirect_url('/my/hr/admin/leaves', {
+                'admin_request_status': 'error',
+                'admin_request_message': 'Only submitted requests can be approved or rejected.',
+            }))
+
+        if action not in ['approved', 'rejected']:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/leaves', {
+                'admin_request_status': 'error',
+                'admin_request_message': 'Invalid action selected.',
+            }))
+
+        portal_request.write({
+            'state': action,
+            'admin_remarks': admin_remarks,
+            'reviewed_by': request.env.user.id,
+            'reviewed_at': fields.Datetime.now(),
+        })
+
+        try:
+            self._send_employee_request_status_email(portal_request)
+        except Exception:
+            pass
+
+        base_params.update({
+            'admin_request_status': 'success',
+            'admin_request_message': f"Request {action} successfully.",
+})
+        return request.redirect(self._build_redirect_url('/my/hr/admin/leaves', base_params))
 
     @http.route('/my/hr/admin/documents', type='http', auth='user', website=True)
     def my_hr_admin_documents(self, **kwargs):
@@ -2441,14 +3269,29 @@ class HrEmployeePortal(http.Controller):
         fy_value = kwargs.get('fy')
         month_value = kwargs.get('month')
 
+        selected_employee_id = False
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        if employee_id_raw:
+            try:
+                selected_employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                selected_employee_id = False
+
+        employees = request.env['hr.employee'].sudo().search([], order='name asc')
+
         payroll_period = self._get_selected_payroll_period(fy_value=fy_value, month_value=month_value)
         selected_month = payroll_period['selected_month']
         month_navigation = self._get_month_navigation(selected_month)
-        admin_payroll_data = self._get_admin_payroll_data(selected_month)
+        admin_payroll_data = self._get_admin_payroll_data(
+            selected_month,
+            employee_id=selected_employee_id,
+        )
 
         return request.render(
             'hr_employee_portal.hr_admin_payslips_page',
             self._prepare_portal_values(None, {
+                'employees': employees,
+                'selected_employee_id': selected_employee_id,
                 'admin_payroll_data': admin_payroll_data,
                 'month_display': month_navigation.get('month_display', ''),
                 'previous_month_value': month_navigation.get('previous_month_value', ''),
@@ -2461,9 +3304,216 @@ class HrEmployeePortal(http.Controller):
                 'fiscal_year_options': payroll_period['fiscal_year_options'],
                 'selected_fiscal_year_value': payroll_period['selected_fy_value'],
                 'selected_fiscal_year_code': payroll_period['selected_fy_code'],
+                'payroll_status': (kwargs.get('payroll_status') or '').strip(),
+                'payroll_message': (kwargs.get('payroll_message') or '').strip(),
             })
         )
+    @http.route('/my/hr/admin/payslips/update', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_payslips_update(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
 
+        if 'hr.payroll.register.line' not in request.env:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', {
+                'payroll_status': 'error',
+                'payroll_message': 'Payroll register model is not available.',
+        }))
+
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+        employee_id_value = (post.get('employee_id') or '').strip()
+
+        base_params = {
+            'fy': fy_value,
+            'month': month_value,
+            'employee_id': employee_id_value,
+        }
+
+        record_id_raw = (post.get('record_id') or '').strip()
+        try:
+            record_id = int(record_id_raw)
+        except (TypeError, ValueError):
+            base_params.update({
+                'payroll_status': 'error',
+                'payroll_message': 'Invalid payroll record selected.',
+        })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', base_params))
+
+        payroll_line = request.env['hr.payroll.register.line'].sudo().browse(record_id).exists()
+        if not payroll_line:
+            base_params.update({
+                'payroll_status': 'error',
+                'payroll_message': 'Payroll record was not found.',
+        })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', base_params))
+
+        payment_date = self._parse_portal_date(post.get('payment_date'))
+
+        project_salary_allowance = self._parse_portal_float(post.get('project_salary'))
+
+        vals = {
+            'payment_method': (post.get('payment_method') or '').strip(),
+            'basic_salary': self._parse_portal_float(post.get('basic_salary')),
+            'basic_actual': self._parse_portal_float(post.get('basic_actual')),
+
+            # Combined portal field: Project Salary / Allowance.
+            # We store the edited combined value in project_salary and clear old allowance
+            # to avoid double-counting after recalculation.
+            'project_salary': project_salary_allowance,
+            'allowance': 0.0,
+
+            'project_detail': (post.get('project_detail') or '').strip(),
+            'bonus': self._parse_portal_float(post.get('bonus')),
+            'bonus_detail': (post.get('bonus_detail') or '').strip(),
+            'overtime': self._parse_portal_float(post.get('overtime')),
+            'overtime_detail': (post.get('overtime_detail') or '').strip(),
+            'income_tax_deduction': self._parse_portal_float(post.get('income_tax_deduction')),
+            'other_deductions': self._parse_portal_float(post.get('other_deductions')),
+            'deduction_detail': (post.get('deduction_detail') or '').strip(),
+            'comments': (post.get('comments') or '').strip(),
+            'source': 'manual',
+    }
+
+        if payment_date:
+            vals['payment_date'] = payment_date
+
+        try:
+            payroll_line.write(vals)
+            payroll_line.action_recalculate_manual_payroll()
+        except ValidationError as error:
+            base_params.update({
+                'payroll_status': 'error',
+                'payroll_message': str(error),
+        })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', base_params))
+        except Exception:
+            base_params.update({
+                'payroll_status': 'error',
+                'payroll_message': 'Payroll record could not be updated.',
+        })
+            return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', base_params))
+
+        base_params.update({
+            'payroll_status': 'success',
+            'payroll_message': 'Payroll record updated and recalculated successfully.',
+    })
+        return request.redirect(self._build_redirect_url('/my/hr/admin/payslips', base_params))
+
+    @http.route('/my/hr/admin/payslips/export', type='http', auth='user', website=True)
+    def my_hr_admin_payslips_export(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        fy_value = kwargs.get('fy')
+        month_value = kwargs.get('month')
+        selected_employee_id = False
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        if employee_id_raw:
+            try:
+                selected_employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                selected_employee_id = False
+
+        payroll_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = payroll_period['selected_month']
+
+        admin_payroll_data = self._get_admin_payroll_data(
+            selected_month,
+            employee_id=selected_employee_id,
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Payroll'
+
+        headers = [
+            '#',
+            'Employee ID',
+            'Employee Name',
+            'Bank',
+            'Designation',
+            'Payment Method',
+            'Basic Salary',
+            'Basic Actual',
+            'Medical Allowance',
+            'Advertised Salary',
+            'Project Salary / Allowance',
+            'Project / Allowance Detail',
+            'Bonus',
+            'Bonus Detail',
+            'Overtime',
+            'OT Detail',
+            'Taxable Income',
+            'Yearly Income',
+            'Income Tax',
+            'Other Deductions',
+            'Deductions For',
+            'Comments',
+            'Total',
+            'Total Round',
+            'Allowance',
+            'Net Salary',
+            'Rounded',
+            'Payment Date',
+    ]
+        sheet.append(headers)
+
+        for index, row in enumerate(admin_payroll_data.get('rows', []), start=1):
+            sheet.append([
+                index,
+                row.get('employee_code', ''),
+                row.get('employee_name', ''),
+                row.get('bank_name', ''),
+                row.get('designation', ''),
+                row.get('payment_method', ''),
+                row.get('basic_salary', 0.0),
+                row.get('basic_actual', 0.0),
+                row.get('medical_allowance', 0.0),
+                row.get('advertised_salary', 0.0),
+                row.get('project_salary', 0.0),
+                row.get('project_value', ''),
+                row.get('bonus', 0.0),
+                row.get('for_value', ''),
+                row.get('overtime', 0.0),
+                row.get('ot_detail', ''),
+                row.get('taxable_income', 0.0),
+                row.get('yearly_income', 0.0),
+                row.get('income_tax_deduction', 0.0),
+                row.get('other_deductions', 0.0),
+                row.get('deduction_for', ''),
+                row.get('comments_raw', ''),
+                row.get('total', 0.0),
+                row.get('total_round', 0.0),
+                row.get('total_allowance', 0.0),
+                row.get('hr_cost_including_bonus', 0.0),
+                row.get('hr_cost_rounded', 0.0),
+                row.get('payment_date', ''),
+        ])
+
+        for column_cells in sheet.columns:
+            max_length = 12
+            column_letter = column_cells[0].column_letter
+            for cell in column_cells:
+                value = str(cell.value or '')
+                max_length = max(max_length, min(len(value) + 2, 45))
+                sheet.column_dimensions[column_letter].width = max_length
+
+        output = BytesIO()
+        workbook.save(output)
+        output.seek(0)
+
+        file_name = 'payroll_%s.xlsx' % selected_month.strftime('%Y_%m')
+
+        return request.make_response(
+            output.getvalue(),
+            headers=[
+                ('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                ('Content-Disposition', 'attachment; filename="%s"' % file_name),
+        ]
+    )
     @http.route('/my/hr/admin/payslips/tax-calculator', type='http', auth='user', website=True)
     def my_hr_admin_payslips_tax_calculator(self, **kwargs):
         if not self._is_hr_manager():

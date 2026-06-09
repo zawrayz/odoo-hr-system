@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- Invoice Client Views -->
+    <!-- ========================================================= -->
+
+    <record id="view_hr_invoice_client_list" model="ir.ui.view">
+        <field name="name">hr.invoice.client.list</field>
+        <field name="model">hr.invoice.client</field>
+        <field name="arch" type="xml">
+            <list string="Invoice Clients">
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="ntn"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_invoice_client_form" model="ir.ui.view">
+        <field name="name">hr.invoice.client.form</field>
+        <field name="model">hr.invoice.client</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Client">
+                <sheet>
+                    <group string="Client Details">
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="ntn"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="address" placeholder="Client address..."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_invoice_client_search" model="ir.ui.view">
+        <field name="name">hr.invoice.client.search</field>
+        <field name="model">hr.invoice.client</field>
+        <field name="arch" type="xml">
+            <search string="Invoice Clients">
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="ntn"/>
+                <filter name="active_clients" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive_clients" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_invoice_client" model="ir.actions.act_window">
+        <field name="name">Invoice Clients</field>
+        <field name="res_model">hr.invoice.client</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_invoice_client_search"/>
+        <field name="context">{'search_default_active_clients': 1}</field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- Invoice Management Views -->
+    <!-- ========================================================= -->
+
+    <record id="view_hr_invoice_management_list" model="ir.ui.view">
+        <field name="name">hr.invoice.management.list</field>
+        <field name="model">hr.invoice.management</field>
+        <field name="arch" type="xml">
+            <list string="Invoice Management">
+                <field name="invoice_number"/>
+                <field name="client_id"/>
+                <field name="client_name"/>
+                <field name="subject"/>
+                <field name="issue_date"/>
+                <field name="due_date"/>
+                <field name="state"/>
+                <field name="amount_gross"/>
+                <field name="amount_discount"/>
+                <field name="amount_tax"/>
+                <field name="amount_net"/>
+                <field name="amount_total"/>
+                <field name="amount_due"/>
+                <field name="attachment_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_invoice_management_form" model="ir.ui.view">
+        <field name="name">hr.invoice.management.form</field>
+        <field name="model">hr.invoice.management</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Management">
+                <header>
+                    <button name="action_mark_sent"
+                            string="Mark as Sent"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_mark_paid"
+                            string="Mark as Paid"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'paid' or state == 'cancelled'"/>
+
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state == 'draft'"/>
+
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            invisible="state == 'cancelled'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,sent,paid,cancelled"/>
+                </header>
+
+                <sheet>
+                    <group string="Invoice Details">
+                        <group>
+                            <field name="invoice_number" readonly="1"/>
+
+                            <field name="client_id"
+                                   string="Invoice For / Client"
+                                   required="1"
+                                   options="{'no_create': False, 'no_open': False}"/>
+
+                            <field name="client_name"
+                                   required="1"/>
+
+                            <field name="subject"
+                                   required="1"/>
+
+                            <field name="company_id"/>
+                            <field name="currency_id"/>
+                        </group>
+
+                        <group>
+                            <field name="issue_date" required="1"/>
+                            <field name="due_date" required="1"/>
+                            <field name="sales_tax_percent"/>
+                            <field name="amount_paid"/>
+                        </group>
+                    </group>
+
+                    <group string="Discount">
+                        <group>
+                            <field name="apply_discount"/>
+                            <field name="discount_mode"
+                                   invisible="not apply_discount"
+                                   required="apply_discount"/>
+                        </group>
+
+                        <group>
+                            <field name="discount_manual_amount"
+                                   invisible="not apply_discount or discount_mode != 'manual'"/>
+                            <field name="discount_percentage"
+                                   invisible="not apply_discount or discount_mode != 'percentage'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Invoice Items">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="item_type"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="amount" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Totals">
+                            <group>
+                                <group string="Before Tax">
+                                    <field name="amount_gross" readonly="1"/>
+                                    <field name="amount_discount" readonly="1"/>
+                                    <field name="amount_tax" readonly="1"/>
+                                    <field name="amount_net" readonly="1"/>
+                                </group>
+
+                                <group string="Final Amounts">
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="amount_paid"/>
+                                    <field name="amount_due" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Attachments">
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"
+                                   string="Attach Files"/>
+                        </page>
+
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+
+                        <page string="History">
+                            <field name="history_ids" readonly="1">
+                                <list>
+                                    <field name="action_date"/>
+                                    <field name="action_type"/>
+                                    <field name="description"/>
+                                    <field name="user_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_invoice_management_search" model="ir.ui.view">
+        <field name="name">hr.invoice.management.search</field>
+        <field name="model">hr.invoice.management</field>
+        <field name="arch" type="xml">
+            <search string="Invoice Management">
+                <field name="invoice_number"/>
+                <field name="client_id"/>
+                <field name="client_name"/>
+                <field name="subject"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="sent" string="Sent" domain="[('state', '=', 'sent')]"/>
+                <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <filter name="cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_invoice_management" model="ir.actions.act_window">
+        <field name="name">Invoice Management</field>
+        <field name="res_model">hr.invoice.management</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_invoice_management_search"/>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- Menus -->
+    <!-- ========================================================= -->
+
+    <menuitem id="menu_hr_invoice_management_root"
+              name="Invoice Management"
+              parent="hr.menu_hr_root"
+              sequence="99"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_invoice_management_invoices"
+              name="Invoices"
+              parent="menu_hr_invoice_management_root"
+              action="action_hr_invoice_management"
+              sequence="1"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_invoice_management_clients"
+              name="Invoice Clients"
+              parent="menu_hr_invoice_management_root"
+              action="action_hr_invoice_client"
+              sequence="2"
+              groups="hr.group_hr_manager"/>
+
+</odoo>

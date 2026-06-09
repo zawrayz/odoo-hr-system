@@ -10,8 +10,10 @@
         'hr_attendance',
         'hr_holidays',
         'hr_employee_extra_fields',
+        'mail',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'views/portal_templates.xml',
         'views/hr_chatbot_menu.xml',
     ],

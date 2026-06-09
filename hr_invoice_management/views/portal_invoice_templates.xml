@@ -1,0 +1,1121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="hr_invoice_sidebar_inherit"
+              inherit_id="hr_employee_portal.hr_employee_sidebar"
+              name="HR Invoice Sidebar Inherit">
+        <xpath expr="//t[@t-if='is_hr_manager']/div[contains(@class, 'hr-sidebar-submenu')]" position="after">
+            <a href="/my/hr/admin/invoices"
+               t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_invoices' else ''}">
+                <i class="fa fa-file-text-o"/>
+                <span>Invoice Management</span>
+            </a>
+        </xpath>
+    </template>
+
+    <template id="hr_admin_invoice_page" name="HR Admin Invoice Page">
+        <t t-call="portal.portal_layout">
+            <t t-set="current_page" t-value="'admin_invoices'"/>
+            <t t-call="hr_employee_portal.hr_employee_portal_shared_styles"/>
+
+            <div class="container oe_structure mt-4 mb-5">
+                <t t-if="success_message">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <t t-esc="success_message"/>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"/>
+                    </div>
+                </t>
+
+                <t t-if="error_message">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <t t-esc="error_message"/>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"/>
+                    </div>
+                </t>
+
+                <div class="hr-layout-row">
+                    <div class="hr-sidebar-wrap">
+                        <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                    </div>
+
+                    <div class="hr-content-wrap">
+                        <a href="/my/hr/admin" class="hr-back-link">
+                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                        </a>
+
+                        <div class="card hr-page-header-card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                    <div>
+                                        <h1 class="hr-page-title">Invoice Management</h1>
+                                        <p class="hr-page-subtitle">
+                                            Create, track, and manage client invoices.
+                                        </p>
+                                    </div>
+                                    <a href="/my/hr/admin/invoices/create" class="hr-request-btn">
+                                        <i class="fa fa-plus"/> Create Invoice
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <form method="get" action="/my/hr/admin/invoices">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-lg-3">
+                                            <label class="form-label fw-bold">Status</label>
+                                            <select name="state" class="form-select">
+                                                <option value="">All Status</option>
+                                                <t t-foreach="status_options" t-as="status_option">
+                                                    <option t-att-value="status_option[0]"
+                                                            t-att-selected="'selected' if state_filter == status_option[0] else None">
+                                                        <t t-esc="status_option[1]"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-lg-3">
+                                            <label class="form-label fw-bold">Issue Month</label>
+                                            <input type="month"
+                                                   name="month"
+                                                   class="form-control"
+                                                   t-att-value="month_value or ''"/>
+                                        </div>
+
+                                        <div class="col-lg-3">
+                                            <label class="form-label fw-bold">Search</label>
+                                            <input type="text"
+                                                   name="search"
+                                                   class="form-control"
+                                                   placeholder="Invoice, client, subject..."
+                                                   t-att-value="search_text or ''"/>
+                                        </div>
+
+                                        <div class="col-lg-3">
+                                            <button type="submit" class="hr-request-btn w-100 justify-content-center">
+                                                <i class="fa fa-filter"/> Apply
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="mt-3 text-end">
+                                    <a t-att-href="download_url" class="hr-request-btn">
+                                        <i class="fa fa-download"/> Download Excel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card">
+                            <div class="card-body">
+                                <h3 class="hr-subsection-title">Invoices</h3>
+
+                                <div class="hr-admin-table-scroll">
+                                    <table class="table table-bordered table-hover mb-0 hr-invoice-list-table">
+                                        <thead>
+                                            <tr>
+    <th class="hr-invoice-col-number">Invoice #</th>
+    <th class="hr-invoice-col-client">Client</th>
+    <th class="hr-invoice-col-subject">Subject</th>
+    <th class="hr-invoice-col-date">Issue Date</th>
+    <th class="hr-invoice-col-date">Due Date</th>
+    <th class="hr-invoice-col-status">Status</th>
+    <th class="hr-invoice-col-money">Total</th>
+    <th class="hr-invoice-col-money">Balance</th>
+    <th class="hr-invoice-col-actions">Actions</th>
+</tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="invoices">
+                                                <tr t-foreach="invoices" t-as="invoice">
+                                                    <td>
+                                                        <strong t-esc="invoice.invoice_number"/>
+                                                    </td>
+                                                    <td t-esc="invoice.client_name"/>
+                                                    <td t-esc="invoice.subject"/>
+                                                    <td t-esc="invoice.issue_date"/>
+                                                    <td t-esc="invoice.due_date"/>
+                                                    <td>
+                                                        <span t-if="invoice.state == 'draft'" class="badge bg-secondary">Draft</span>
+                                                        <span t-if="invoice.state == 'sent'" class="badge bg-info">Sent</span>
+                                                        <span t-if="invoice.state == 'paid'" class="badge bg-success">Paid</span>
+                                                        <span t-if="invoice.state == 'cancelled'" class="badge bg-danger">Cancelled</span>
+                                                    </td>
+                                                    <td class="hr-invoice-col-money">
+    <span class="hr-invoice-money">
+        <span>Rs.</span>
+        <span t-esc="'%.2f' % (invoice.amount_total or 0.0)"/>
+    </span>
+</td>
+                                                    <td class="hr-invoice-col-money">
+    <span class="hr-invoice-money">
+        <span>Rs.</span>
+        <span t-esc="'%.2f' % (invoice.amount_due or 0.0)"/>
+    </span>
+</td>
+                                                    <td class="hr-invoice-col-actions">
+    <div class="hr-invoice-actions">
+        <a t-att-href="'/my/hr/admin/invoices/%s' % invoice.id"
+           class="btn btn-sm btn-outline-primary">
+            View
+        </a>
+        <a t-att-href="'/my/hr/admin/invoices/%s/edit' % invoice.id"
+           class="btn btn-sm btn-outline-secondary">
+            Edit
+        </a>
+    </div>
+</td>
+                                                </tr>
+                                            </t>
+
+                                            <tr t-if="not invoices">
+                                                <td colspan="9" class="text-center text-muted py-4">
+                                                    No invoices found.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                                                <div class="hr-pagination-bar">
+                                    <div class="text-muted">
+                                        Showing
+                                        <strong t-esc="showing_from"/>
+                                        -
+                                        <strong t-esc="showing_to"/>
+                                        of
+                                        <strong t-esc="total_invoices"/>
+                                        invoices
+                                    </div>
+
+                                    <div class="hr-pagination-actions">
+                                        <a t-if="prev_url"
+                                           t-att-href="prev_url"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Previous
+                                        </a>
+
+                                        <button t-if="not prev_url"
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                disabled="disabled">
+                                            Previous
+                                        </button>
+
+                                        <t t-foreach="pagination_pages" t-as="page_item">
+                                            <a t-if="page_item['number'] != invoice_page"
+                                               t-att-href="page_item['url']"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <t t-esc="page_item['number']"/>
+                                            </a>
+
+                                            <button t-if="page_item['number'] == invoice_page"
+                                                    type="button"
+                                                    class="btn btn-sm btn-primary"
+                                                    disabled="disabled">
+                                                <t t-esc="page_item['number']"/>
+                                            </button>
+                                        </t>
+
+                                        <a t-if="next_url"
+                                           t-att-href="next_url"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Next
+                                        </a>
+
+                                        <button t-if="not next_url"
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                disabled="disabled">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="hr_admin_invoice_form_page" name="HR Admin Invoice Form Page">
+    <t t-call="portal.portal_layout">
+        <t t-set="current_page" t-value="'admin_invoices'"/>
+        <t t-call="hr_employee_portal.hr_employee_portal_shared_styles"/>
+
+        <div class="container oe_structure mt-4 mb-5">
+            <div class="hr-layout-row">
+                <div class="hr-sidebar-wrap">
+                    <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                </div>
+
+                <div class="hr-content-wrap">
+                    <a href="/my/hr/admin/invoices" class="hr-back-link">
+                        <i class="fa fa-arrow-left"/> Back to Invoices
+                    </a>
+
+                    <t t-if="error_message">
+                        <div class="alert alert-danger" role="alert">
+                            <t t-esc="error_message"/>
+                        </div>
+                    </t>
+
+                    <div class="card hr-page-header-card mb-4">
+                        <div class="card-body">
+                            <h1 class="hr-page-title" t-esc="page_title"/>
+                            <p class="hr-page-subtitle">
+                                Fill invoice details carefully. You can edit this later.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" t-att-action="form_action" id="hrInvoiceForm">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <h3 class="hr-subsection-title">Invoice Details</h3>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-6">
+                                        <label class="form-label fw-bold">Invoice For / Client *</label>
+
+                                        <div class="d-flex gap-2">
+                                            <select name="client_id"
+                                                    id="hrInvoiceClient"
+                                                    class="form-select"
+                                                    required="required">
+                                                <option value="">Select client...</option>
+
+                                                <t t-foreach="clients" t-as="client">
+                                                    <option t-att-value="client.id"
+                                                            t-att-selected="'selected' if str(client.id) == str(form_values.get('client_id') or '') else None">
+                                                        <t t-esc="client.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+
+                                            <button type="button"
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#hrQuickClientModal"
+        title="Add New Client">
+    <i class="fa fa-plus"/>
+</button>
+                                        </div>
+
+                                        <small class="text-muted">
+                                            Add a new client, then refresh this page to see it here.
+                                        </small>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <label class="form-label fw-bold">Subject *</label>
+                                        <input type="text"
+                                               name="subject"
+                                               class="form-control"
+                                               required="required"
+                                               placeholder="Example: AD Budget for ILA for the month..."
+                                               t-att-value="form_values.get('subject') or ''"/>
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label class="form-label fw-bold">Issue Date *</label>
+                                        <input type="date"
+                                               name="issue_date"
+                                               class="form-control"
+                                               required="required"
+                                               t-att-value="form_values.get('issue_date') or ''"/>
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label class="form-label fw-bold">Due Date *</label>
+                                        <input type="date"
+                                               name="due_date"
+                                               class="form-control"
+                                               required="required"
+                                               t-att-value="form_values.get('due_date') or ''"/>
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label class="form-label fw-bold">Sales Tax %</label>
+                                        <input type="number"
+                                               step="0.01"
+                                               min="0"
+                                               name="sales_tax_percent"
+                                               id="hrInvoiceSalesTax"
+                                               class="form-control hr-invoice-calc-input"
+                                               t-att-value="form_values.get('sales_tax_percent')"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                    <h3 class="hr-subsection-title mb-0">Invoice Items</h3>
+
+                                    <button type="button"
+                                            id="hrInvoiceAddLine"
+                                            class="hr-request-btn">
+                                        <i class="fa fa-plus"/> Add Item
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered align-middle mb-2">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 150px;">Item Type</th>
+                                                <th>Description</th>
+                                                <th style="width: 140px;">Quantity</th>
+                                                <th style="width: 180px;">Unit Price</th>
+                                                <th style="width: 150px;">Amount</th>
+                                                <th style="width: 90px;">Action</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="hrInvoiceLinesBody"
+                                               t-att-data-next-index="len(line_rows) + 1">
+                                            <tr t-foreach="line_rows" t-as="line" class="hr-invoice-line-row">
+                                                <t t-set="row_no" t-value="line_index + 1"/>
+
+                                                <td>
+                                                    <select class="form-select"
+                                                            t-att-name="'line_item_type_%s' % row_no">
+                                                        <t t-foreach="item_type_options" t-as="item_option">
+                                                            <option t-att-value="item_option[0]"
+                                                                    t-att-selected="'selected' if line.get('item_type') == item_option[0] else None">
+                                                                <t t-esc="item_option[1]"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </td>
+
+                                                <td>
+                                                    <textarea class="form-control"
+                                                              rows="2"
+                                                              placeholder="Description"
+                                                              t-att-name="'line_description_%s' % row_no"><t t-esc="line.get('description') or ''"/></textarea>
+                                                </td>
+
+                                                <td>
+                                                    <input type="number"
+                                                           step="0.01"
+                                                           min="0.01"
+                                                           class="form-control hr-invoice-line-qty hr-invoice-calc-input"
+                                                           t-att-name="'line_quantity_%s' % row_no"
+                                                           t-att-value="line.get('quantity') or 1.0"/>
+                                                </td>
+
+                                                <td>
+                                                    <input type="number"
+                                                           step="0.01"
+                                                           min="0"
+                                                           class="form-control hr-invoice-line-price hr-invoice-calc-input"
+                                                           t-att-name="'line_unit_price_%s' % row_no"
+                                                           t-att-value="line.get('unit_price') or 0.0"/>
+                                                </td>
+
+                                                <td>
+                                                    <strong class="hr-invoice-line-amount">Rs. 0.00</strong>
+                                                </td>
+
+                                                <td>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger hrInvoiceRemoveLine">
+                                                        <i class="fa fa-trash"/>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <p class="text-muted mb-0">
+                                    Add as many items as needed. Empty description rows are ignored.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <h3 class="hr-subsection-title">Discount</h3>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           role="switch"
+                                           id="hrInvoiceApplyDiscount"
+                                           name="apply_discount"
+                                           t-att-checked="'checked' if form_values.get('apply_discount') else None"/>
+                                    <label class="form-check-label fw-bold" for="hrInvoiceApplyDiscount">
+                                        Apply discount to this invoice
+                                    </label>
+                                </div>
+
+                                <div id="hrInvoiceDiscountBox" class="row g-3">
+                                    <div class="col-lg-4">
+                                        <label class="form-label fw-bold">Discount Type</label>
+                                        <select name="discount_mode"
+                                                id="hrInvoiceDiscountMode"
+                                                class="form-select hr-invoice-calc-input">
+                                            <option value="manual"
+                                                    t-att-selected="'selected' if form_values.get('discount_mode') == 'manual' else None">
+                                                Manual Amount
+                                            </option>
+                                            <option value="percentage"
+                                                    t-att-selected="'selected' if form_values.get('discount_mode') == 'percentage' else None">
+                                                Percentage
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-lg-4" id="hrInvoiceManualDiscountBox">
+                                        <label class="form-label fw-bold">Manual Discount Amount</label>
+                                        <input type="number"
+                                               step="0.01"
+                                               min="0"
+                                               name="discount_manual_amount"
+                                               id="hrInvoiceManualDiscount"
+                                               class="form-control hr-invoice-calc-input"
+                                               placeholder="Example: 10000"
+                                               t-att-value="form_values.get('discount_manual_amount') or 0.0"/>
+                                    </div>
+
+                                    <div class="col-lg-4" id="hrInvoicePercentageDiscountBox">
+                                        <label class="form-label fw-bold">Discount Percentage</label>
+                                        <input type="number"
+                                               step="0.01"
+                                               min="0"
+                                               max="100"
+                                               name="discount_percentage"
+                                               id="hrInvoicePercentageDiscount"
+                                               class="form-control hr-invoice-calc-input"
+                                               placeholder="Example: 2"
+                                               t-att-value="form_values.get('discount_percentage') or 0.0"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <h3 class="hr-subsection-title">Amount Summary</h3>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-3">
+                                        <div class="p-3 rounded border bg-light">
+                                            <div class="text-muted">Gross Amount</div>
+                                            <h4 class="mb-0" id="hrInvoiceGrossAmount">Rs. 0.00</h4>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="p-3 rounded border bg-light">
+                                            <div class="text-muted">Discount</div>
+                                            <h4 class="mb-0" id="hrInvoiceDiscountAmount">Rs. 0.00</h4>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="p-3 rounded border bg-light">
+                                            <div class="text-muted">Sales Tax</div>
+                                            <h4 class="mb-0" id="hrInvoiceTaxAmount">Rs. 0.00</h4>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="p-3 rounded border bg-light">
+                                            <div class="text-muted">Net Amount</div>
+                                            <h4 class="mb-0" id="hrInvoiceNetAmount">Rs. 0.00</h4>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="p-3 rounded border bg-light">
+                                            <div class="text-muted">Final Total</div>
+                                            <h4 class="mb-0" id="hrInvoiceFinalTotal">Rs. 0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p class="text-muted mt-3 mb-0">
+                                    Final total is calculated as: Gross Amount - Discount + Sales Tax.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <h3 class="hr-subsection-title">Notes / Payment Instructions</h3>
+                                <textarea name="notes"
+                                          class="form-control"
+                                          rows="8"><t t-esc="form_values.get('notes') or ''"/></textarea>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="hr-request-btn">
+                                <i class="fa fa-save"/> Save Invoice
+                            </button>
+                        </div>
+                    </form>
+                    <t t-if="quick_client_error">
+    <div class="alert alert-danger mt-3">
+        <t t-esc="quick_client_error"/>
+    </div>
+</t>
+
+<div class="modal fade"
+     id="hrQuickClientModal"
+     tabindex="-1"
+     aria-labelledby="hrQuickClientModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <form method="post" action="/my/hr/admin/invoice-clients/create-quick">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="return_url" t-att-value="form_action"/>
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hrQuickClientModalLabel">
+                        Add New Client
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"/>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Client Name *</label>
+                        <input type="text"
+                               name="quick_client_name"
+                               class="form-control"
+                               placeholder="Example: UNDP"
+                               required="required"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email"
+                               name="quick_client_email"
+                               class="form-control"
+                               placeholder="client@example.com"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phone</label>
+                        <input type="text"
+                               name="quick_client_phone"
+                               class="form-control"/>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold">NTN</label>
+                        <input type="text"
+                               name="quick_client_ntn"
+                               class="form-control"/>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="hr-request-btn">
+                        <i class="fa fa-save"/> Save Client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+                    <script type="text/javascript">
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var body = document.getElementById('hrInvoiceLinesBody');
+                            var addBtn = document.getElementById('hrInvoiceAddLine');
+                            var applyDiscount = document.getElementById('hrInvoiceApplyDiscount');
+                            var discountBox = document.getElementById('hrInvoiceDiscountBox');
+                            var discountMode = document.getElementById('hrInvoiceDiscountMode');
+                            var manualBox = document.getElementById('hrInvoiceManualDiscountBox');
+                            var percentageBox = document.getElementById('hrInvoicePercentageDiscountBox');
+                            var manualDiscount = document.getElementById('hrInvoiceManualDiscount');
+                            var percentageDiscount = document.getElementById('hrInvoicePercentageDiscount');
+                            var salesTaxInput = document.getElementById('hrInvoiceSalesTax');
+
+                            function parseNumber(value) {
+                                var number = parseFloat(String(value || '0').replace(',', ''));
+                                return isNaN(number) ? 0 : number;
+                            }
+
+                            function formatMoney(value) {
+                                return 'Rs. ' + value.toFixed(2);
+                            }
+
+                            function updateLineNames(row, index) {
+                                var itemType = row.querySelector('select');
+                                var description = row.querySelector('textarea');
+                                var quantity = row.querySelector('.hr-invoice-line-qty');
+                                var unitPrice = row.querySelector('.hr-invoice-line-price');
+
+                                if (itemType) {
+                                    itemType.name = 'line_item_type_' + index;
+                                }
+                                if (description) {
+                                    description.name = 'line_description_' + index;
+                                }
+                                if (quantity) {
+                                    quantity.name = 'line_quantity_' + index;
+                                }
+                                if (unitPrice) {
+                                    unitPrice.name = 'line_unit_price_' + index;
+                                }
+                            }
+
+                            function renumberRows() {
+                                var rows = body.querySelectorAll('.hr-invoice-line-row');
+                                rows.forEach(function (row, index) {
+                                    updateLineNames(row, index + 1);
+                                });
+                            }
+
+                            function updateDiscountVisibility() {
+                                var enabled = applyDiscount &amp;&amp; applyDiscount.checked;
+                                var mode = discountMode ? discountMode.value : 'manual';
+
+                                if (discountBox) {
+                                    discountBox.style.display = enabled ? 'flex' : 'none';
+                                }
+
+                                if (manualBox) {
+                                    manualBox.style.display = enabled &amp;&amp; mode === 'manual' ? 'block' : 'none';
+                                }
+
+                                if (percentageBox) {
+                                    percentageBox.style.display = enabled &amp;&amp; mode === 'percentage' ? 'block' : 'none';
+                                }
+
+                                calculateTotals();
+                            }
+
+                            function calculateTotals() {
+                                var gross = 0;
+
+                                body.querySelectorAll('.hr-invoice-line-row').forEach(function (row) {
+                                    var qty = parseNumber(row.querySelector('.hr-invoice-line-qty')?.value);
+                                    var price = parseNumber(row.querySelector('.hr-invoice-line-price')?.value);
+                                    var amount = qty * price;
+
+                                    gross += amount;
+
+                                    var amountLabel = row.querySelector('.hr-invoice-line-amount');
+                                    if (amountLabel) {
+                                        amountLabel.textContent = formatMoney(amount);
+                                    }
+                                });
+
+                                var discountAmount = 0;
+
+                                if (applyDiscount &amp;&amp; applyDiscount.checked) {
+                                    if (discountMode &amp;&amp; discountMode.value === 'percentage') {
+                                        var percent = parseNumber(percentageDiscount ? percentageDiscount.value : 0);
+                                        if (percent &lt; 0) {
+                                            percent = 0;
+                                        }
+                                        if (percent &gt; 100) {
+                                            percent = 100;
+                                        }
+                                        discountAmount = gross * percent / 100;
+                                    } else {
+                                        discountAmount = parseNumber(manualDiscount ? manualDiscount.value : 0);
+                                    }
+                                }
+
+                                if (discountAmount &lt; 0) {
+                                    discountAmount = 0;
+                                }
+
+                                if (discountAmount &gt; gross) {
+                                    discountAmount = gross;
+                                }
+
+                                var net = gross - discountAmount;
+                                var taxPercent = parseNumber(salesTaxInput ? salesTaxInput.value : 0);
+                                if (taxPercent &lt; 0) {
+                                    taxPercent = 0;
+                                }
+
+                                var tax = net * taxPercent / 100;
+                                var finalTotal = net + tax;
+
+                                document.getElementById('hrInvoiceGrossAmount').textContent = formatMoney(gross);
+                                document.getElementById('hrInvoiceDiscountAmount').textContent = formatMoney(discountAmount);
+                                document.getElementById('hrInvoiceTaxAmount').textContent = formatMoney(tax);
+                                document.getElementById('hrInvoiceNetAmount').textContent = formatMoney(net);
+                                document.getElementById('hrInvoiceFinalTotal').textContent = formatMoney(finalTotal);
+                            }
+
+                            if (addBtn &amp;&amp; body) {
+                                addBtn.addEventListener('click', function () {
+                                    var rows = body.querySelectorAll('.hr-invoice-line-row');
+                                    var sourceRow = rows.length ? rows[rows.length - 1] : null;
+
+                                    if (!sourceRow) {
+                                        return;
+                                    }
+
+                                    var newRow = sourceRow.cloneNode(true);
+
+                                    var description = newRow.querySelector('textarea');
+                                    var quantity = newRow.querySelector('.hr-invoice-line-qty');
+                                    var unitPrice = newRow.querySelector('.hr-invoice-line-price');
+                                    var amountLabel = newRow.querySelector('.hr-invoice-line-amount');
+
+                                    if (description) {
+                                        description.value = '';
+                                    }
+                                    if (quantity) {
+                                        quantity.value = '1.0';
+                                    }
+                                    if (unitPrice) {
+                                        unitPrice.value = '';
+                                    }
+                                    if (amountLabel) {
+                                        amountLabel.textContent = 'Rs. 0.00';
+                                    }
+
+                                    body.appendChild(newRow);
+                                    renumberRows();
+                                    calculateTotals();
+                                });
+                            }
+
+                            if (body) {
+                                body.addEventListener('click', function (event) {
+                                    var removeBtn = event.target.closest('.hrInvoiceRemoveLine');
+
+                                    if (!removeBtn) {
+                                        return;
+                                    }
+
+                                    var rows = body.querySelectorAll('.hr-invoice-line-row');
+
+                                    if (rows.length &lt;= 1) {
+                                        alert('At least one invoice item row is required.');
+                                        return;
+                                    }
+
+                                    removeBtn.closest('tr').remove();
+                                    renumberRows();
+                                    calculateTotals();
+                                });
+
+                                body.addEventListener('input', calculateTotals);
+                                body.addEventListener('change', calculateTotals);
+                            }
+
+                            document.querySelectorAll('.hr-invoice-calc-input').forEach(function (input) {
+                                input.addEventListener('input', calculateTotals);
+                                input.addEventListener('change', calculateTotals);
+                            });
+
+                            if (applyDiscount) {
+                                applyDiscount.addEventListener('change', updateDiscountVisibility);
+                            }
+
+                            if (discountMode) {
+                                discountMode.addEventListener('change', updateDiscountVisibility);
+                            }
+
+                            updateDiscountVisibility();
+                            renumberRows();
+                            calculateTotals();
+                        });
+                    </script>
+
+                </div>
+            </div>
+        </div>
+    </t>
+</template>
+
+    <template id="hr_admin_invoice_view_page" name="HR Admin Invoice View Page">
+    <t t-call="portal.portal_layout">
+        <t t-set="current_page" t-value="'admin_invoices'"/>
+        <t t-call="hr_employee_portal.hr_employee_portal_shared_styles"/>
+
+        <div class="container oe_structure mt-4 mb-5">
+            <t t-if="success_message">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <t t-esc="success_message"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"/>
+                </div>
+            </t>
+
+            <t t-if="error_message">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <t t-esc="error_message"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"/>
+                </div>
+            </t>
+
+            <div class="hr-layout-row">
+                <div class="hr-sidebar-wrap">
+                    <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                </div>
+
+                <div class="hr-content-wrap">
+                    <a href="/my/hr/admin/invoices" class="hr-back-link">
+                        <i class="fa fa-arrow-left"/> Back to Invoices
+                    </a>
+
+                    <div class="card hr-page-header-card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                <div>
+                                    <h1 class="hr-page-title">
+                                        Invoice <span t-esc="invoice.invoice_number"/>
+                                        <span t-if="invoice.state == 'draft'" class="badge bg-secondary ms-2">Draft</span>
+                                        <span t-if="invoice.state == 'sent'" class="badge bg-info ms-2">Sent</span>
+                                        <span t-if="invoice.state == 'paid'" class="badge bg-success ms-2">Paid</span>
+                                        <span t-if="invoice.state == 'cancelled'" class="badge bg-danger ms-2">Cancelled</span>
+                                    </h1>
+                                    <p class="hr-page-subtitle">
+                                        Balance:
+                                        <strong t-esc="format_amount(invoice.amount_due)"/>
+                                    </p>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a t-att-href="'/report/pdf/hr_invoice_management.report_blimp_invoice_document/%s' % invoice.id"
+                                       target="_blank"
+                                       class="btn btn-dark">
+                                        <i class="fa fa-file-pdf-o"/> Download PDF
+                                    </a>
+
+                                    <a t-att-href="'/my/hr/admin/invoices/%s/edit' % invoice.id"
+                                       class="btn btn-outline-primary">
+                                        Edit Invoice
+                                    </a>
+
+                                    <form t-if="invoice.state == 'draft'"
+                                          t-att-action="'/my/hr/admin/invoices/%s/mark-sent' % invoice.id"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="btn btn-success">Mark Sent</button>
+                                    </form>
+
+                                    <form t-if="invoice.state != 'paid' and invoice.state != 'cancelled'"
+                                          t-att-action="'/my/hr/admin/invoices/%s/mark-paid' % invoice.id"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="btn btn-primary">Mark Paid</button>
+                                    </form>
+
+                                    <form t-if="invoice.state != 'draft'"
+                                          t-att-action="'/my/hr/admin/invoices/%s/reset-draft' % invoice.id"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="btn btn-outline-secondary">Reset Draft</button>
+                                    </form>
+
+                                    <form t-if="invoice.state != 'cancelled'"
+                                          t-att-action="'/my/hr/admin/invoices/%s/cancel' % invoice.id"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="btn btn-outline-danger">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card hr-content-card mb-4">
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-lg-7">
+                                    <div class="mb-3">
+                                        <img src="/hr_invoice_management/static/src/img/blimp_logo.png"
+                                             alt="Blimp"
+                                             style="max-width: 170px; max-height: 85px; object-fit: contain;"/>
+                                    </div>
+
+                                    <table class="table table-sm table-borderless mt-4">
+                                        <tr>
+                                            <th style="width: 140px;">Invoice ID</th>
+                                            <td t-esc="invoice.invoice_number"/>
+                                        </tr>
+                                        <tr>
+                                            <th>Issue Date</th>
+                                            <td t-esc="invoice.issue_date"/>
+                                        </tr>
+                                        <tr>
+                                            <th>Due Date</th>
+                                            <td t-esc="invoice.due_date"/>
+                                        </tr>
+                                        <tr>
+                                            <th>Subject</th>
+                                            <td t-esc="invoice.subject"/>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="col-lg-5">
+                                    <h5>From</h5>
+                                    <p class="mb-3">
+                                        <strong>Blimp Digital Marketing &amp; PR</strong><br/>
+                                        Office # 2, Basement, My Health Wellness Centre,<br/>
+                                        Adjacent Taroon Hall, Jamrud Road, Peshawar<br/>
+                                        T: 091 581 1991<br/>
+                                        E: hello@blimp.pk<br/>
+                                        NTN: 4146511-3<br/>
+                                        KPRA STRN: K4146511-3
+                                    </p>
+
+                                    <h5>Invoice For</h5>
+                                    <p class="mb-0">
+                                        <strong t-esc="invoice.client_name"/>
+                                        <t t-if="invoice.client_employee_id">
+                                            <br/>
+                                            <span class="text-muted">
+                                                Employee:
+                                                <t t-esc="invoice.client_employee_id.name"/>
+                                            </span>
+                                        </t>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-4">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Type</th>
+                                            <th>Description</th>
+                                            <th class="text-end">Quantity</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="invoice.line_ids" t-as="line">
+                                            <td t-esc="dict(line._fields['item_type'].selection).get(line.item_type, line.item_type)"/>
+                                            <td t-esc="line.description"/>
+                                            <td class="text-end" t-esc="'%.2f' % (line.quantity or 0.0)"/>
+                                            <td class="text-end" t-esc="format_amount(line.unit_price)"/>
+                                            <td class="text-end" t-esc="format_amount(line.amount)"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="row justify-content-end mt-4">
+                                <div class="col-lg-5">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Gross Amount</th>
+                                            <td class="text-end" t-esc="format_amount(invoice.amount_gross)"/>
+                                        </tr>
+
+                                        <tr t-if="invoice.apply_discount">
+                                            <th>
+                                                Discount
+                                                <t t-if="invoice.discount_mode == 'manual'">
+                                                    <small class="text-muted">(Manual)</small>
+                                                </t>
+                                                <t t-if="invoice.discount_mode == 'percentage'">
+                                                    <small class="text-muted">
+                                                        (<t t-esc="'{:g}'.format(invoice.discount_percentage or 0.0)"/>%)
+                                                    </small>
+                                                </t>
+                                            </th>
+                                            <td class="text-end" t-esc="format_amount(invoice.amount_discount)"/>
+                                        </tr>
+
+                                        <tr t-if="invoice.apply_discount">
+                                            <th>Net Amount</th>
+                                            <td class="text-end" t-esc="format_amount(invoice.amount_net)"/>
+                                        </tr>
+
+                                        <tr>
+                                            <th>
+                                                Sales Tax
+                                                <small class="text-muted">
+                                                    (<t t-esc="'{:g}'.format(invoice.sales_tax_percent or 0.0)"/>%)
+                                                </small>
+                                            </th>
+                                            <td class="text-end" t-esc="format_amount(invoice.amount_tax)"/>
+                                        </tr>
+
+                                        <tr>
+                                            <th>Final Total</th>
+                                            <td class="text-end">
+                                                <strong t-esc="format_amount(invoice.amount_total)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th>Paid</th>
+                                            <td class="text-end" t-esc="format_amount(invoice.amount_paid)"/>
+                                        </tr>
+
+                                        <tr class="table-light">
+                                            <th>Amount Due</th>
+                                            <td class="text-end">
+                                                <strong t-esc="format_amount(invoice.amount_due)"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <h5>Notes</h5>
+                            <pre style="white-space: pre-wrap; font-family: inherit;" t-esc="invoice.notes or '-'"/>
+                        </div>
+                    </div>
+
+                    <div class="card hr-content-card">
+                        <div class="card-body">
+                            <h3 class="hr-subsection-title">Invoice History</h3>
+
+                            <div t-if="invoice.history_ids">
+                                <div t-foreach="invoice.history_ids" t-as="history"
+                                     class="border-bottom py-2">
+                                    <strong t-esc="history.description"/>
+                                    <div class="text-muted">
+                                        <span t-esc="history.user_id.name or '-'"/>
+                                        on
+                                        <span t-esc="history.action_date"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p t-if="not invoice.history_ids" class="text-muted mb-0">
+                                No history yet.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
+    </t>
+</template>
+
+</odoo>

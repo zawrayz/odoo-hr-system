@@ -5,7 +5,6 @@
         var closeBtn = document.getElementById("hrPortalChatClose");
 
         if (!launcher || !widget || !closeBtn) {
-            console.log("HR chatbot widget elements not found.");
             return;
         }
 
@@ -21,7 +20,6 @@
             } else {
                 widget.style.display = "none";
             }
-            console.log("HR chatbot launcher clicked.");
         });
 
         closeBtn.addEventListener("click", function () {
@@ -33,8 +31,6 @@
                 widget.style.display = "none";
             }
         });
-
-        console.log("HR chatbot initialized.");
     }
 
     if (document.readyState === "loading") {

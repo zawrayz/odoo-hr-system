@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+*.env
+.env.*
+
+# Odoo / backups / filestore
+*.dump
+*.backup
+*.zip
+*.tar
+*.tar.gz
+filestore/
+sessions/
+*.log
+
+# Private data files
+*.xlsx
+*.xls
+*.csv
+*.pdf
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

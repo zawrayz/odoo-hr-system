@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_blimp_invoice" model="report.paperformat">
+        <field name="name">Blimp Invoice A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_blimp_invoice" model="ir.actions.report">
+        <field name="name">Blimp Invoice</field>
+        <field name="model">hr.invoice.management</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_invoice_management.report_blimp_invoice_document</field>
+        <field name="report_file">hr_invoice_management.report_blimp_invoice_document</field>
+        <field name="print_report_name">'Invoice - %s' % (object.invoice_number)</field>
+        <field name="binding_model_id" ref="model_hr_invoice_management"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="hr_invoice_management.paperformat_blimp_invoice"/>
+    </record>
+
+    <template id="report_blimp_invoice_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page">
+
+                    <style>
+                        .blimp-invoice-page {
+                            font-family: Arial, sans-serif;
+                            color: #222222;
+                            font-size: 13px;
+                            padding: 0;
+                            line-height: 1.35;
+                        }
+
+                        .invoice-top {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 42px;
+                        }
+
+                        .invoice-top td {
+                            vertical-align: top;
+                        }
+
+                        .logo-cell {
+                            width: 55%;
+                        }
+
+                        .from-cell {
+                            width: 45%;
+                            padding-left: 20px;
+                        }
+
+                        .blimp-logo {
+                            width: 220px;
+                            max-height: 95px;
+                        }
+
+                        .from-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        .from-label {
+                            width: 55px;
+                            color: #666666;
+                            font-size: 13px;
+                            vertical-align: top;
+                            padding-top: 2px;
+                        }
+
+                        .from-detail {
+                            border-left: 1px solid #999999;
+                            padding-left: 12px;
+                            color: #222222;
+                            line-height: 1.35;
+                        }
+
+                        .from-detail strong {
+                            font-size: 15px;
+                        }
+
+                        .draft-stamp {
+                            position: absolute;
+                            top: 95px;
+                            left: 380px;
+                            font-size: 34px;
+                            font-weight: 700;
+                            color: #8a8a8a;
+                            border: 4px solid #9a9a9a;
+                            padding: 4px 18px;
+                            transform: rotate(-12deg);
+                            opacity: 0.65;
+                            letter-spacing: 2px;
+                        }
+
+                        .invoice-info-wrap {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 44px;
+                        }
+
+                        .invoice-info-left {
+                            width: 55%;
+                            vertical-align: top;
+                        }
+
+                        .invoice-info-right {
+                            width: 45%;
+                            vertical-align: top;
+                            padding-left: 20px;
+                        }
+
+                        .invoice-meta-table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        .invoice-meta-table th {
+                            width: 95px;
+                            text-align: left;
+                            font-weight: 400;
+                            color: #666666;
+                            padding: 6px 10px 6px 0;
+                            border-right: 1px solid #999999;
+                        }
+
+                        .invoice-meta-table td {
+                            font-weight: 700;
+                            padding: 6px 0 6px 12px;
+                        }
+
+                        .invoice-for-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        .invoice-for-label {
+                            width: 85px;
+                            color: #666666;
+                            font-size: 13px;
+                            vertical-align: top;
+                            padding-top: 3px;
+                        }
+
+                        .invoice-for-value {
+                            border-left: 1px solid #999999;
+                            padding-left: 12px;
+                            font-weight: 700;
+                            font-size: 15px;
+                        }
+
+                        .items-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 26px;
+                        }
+
+                        .items-table th {
+                            font-weight: 700;
+                            text-align: left;
+                            padding: 8px 8px;
+                            border-bottom: 1px solid #aaaaaa;
+                            border-right: 1px solid #cccccc;
+                        }
+
+                        .items-table th:last-child {
+                            border-right: 0;
+                        }
+
+                        .items-table td {
+                            padding: 8px 8px;
+                            border-bottom: 1px solid #dddddd;
+                            border-right: 1px solid #dddddd;
+                            vertical-align: top;
+                        }
+
+                        .items-table td:last-child {
+                            border-right: 0;
+                        }
+
+                        .text-right {
+                            text-align: right;
+                        }
+
+                        .totals-wrap {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 8px;
+                            margin-bottom: 64px;
+                        }
+
+                        .totals-left {
+                            width: 62%;
+                        }
+
+                        .totals-right {
+                            width: 38%;
+                        }
+
+                        .totals-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+
+                        .totals-table th {
+                            text-align: right;
+                            font-weight: 400;
+                            color: #555555;
+                            padding: 5px 12px 5px 0;
+                        }
+
+                        .totals-table td {
+                            text-align: right;
+                            font-weight: 700;
+                            padding: 5px 4px;
+                        }
+
+                        .amount-due-row th,
+                        .amount-due-row td {
+                            border-top: 2px solid #222222;
+                            padding-top: 11px;
+                            font-size: 18px;
+                            color: #222222;
+                            font-weight: 700;
+                        }
+
+                        .notes-section {
+                            border-top: 1px solid #aaaaaa;
+                            padding-top: 8px;
+                            margin-top: 10px;
+                        }
+
+                        .notes-title {
+                            font-weight: 700;
+                            margin-bottom: 14px;
+                        }
+
+                        .notes-text {
+                            white-space: pre-wrap;
+                            line-height: 1.35;
+                            color: #222222;
+                        }
+
+                        .footer-page {
+                            position: fixed;
+                            bottom: 8px;
+                            left: 0;
+                            right: 0;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #222222;
+                        }
+                    </style>
+
+                    <div class="blimp-invoice-page">
+
+                        <t t-if="doc.state == 'draft'">
+                            <div class="draft-stamp">DRAFT</div>
+                        </t>
+
+                        <table class="invoice-top">
+                            <tr>
+                                <td class="logo-cell">
+                                    <t t-set="blimp_logo_src" t-value="doc.get_blimp_logo_data_uri()"/>
+                                    <t t-if="blimp_logo_src">
+                                        <img class="blimp-logo" t-att-src="blimp_logo_src"/>
+                                    </t>
+                                    <t t-else="">
+                                        <div style="font-size: 46px; font-weight: 800; color: #0d6fb8;">blimp</div>
+                                    </t>
+                                </td>
+
+                                <td class="from-cell">
+                                    <table class="from-table">
+                                        <tr>
+                                            <td class="from-label">From</td>
+                                            <td class="from-detail">
+                                                <strong>Blimp Digital Marketing &amp; PR</strong><br/>
+                                                Office # 2, Basement, My Health<br/>
+                                                Wellness Centre,<br/>
+                                                Adjacent Taroon Hall, Jamrud Road,<br/>
+                                                Peshawar<br/>
+                                                T: 091 581 1991<br/>
+                                                E: hello@blimp.pk<br/><br/>
+                                                NTN: 4146511-3<br/>
+                                                KPRA STRN: K4146511-3
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="invoice-info-wrap">
+                            <tr>
+                                <td class="invoice-info-left">
+                                    <table class="invoice-meta-table">
+                                        <tr>
+                                            <th>Invoice ID</th>
+                                            <td t-esc="doc.invoice_number"/>
+                                        </tr>
+                                        <tr>
+                                            <th>Issue Date</th>
+                                            <td>
+                                                <span t-if="doc.issue_date" t-esc="doc.issue_date.strftime('%d/%m/%Y')"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Due Date</th>
+                                            <td>
+                                                <span t-if="doc.due_date" t-esc="doc.due_date.strftime('%d/%m/%Y')"/>
+                                                <span t-if="doc.due_date"> (upon receipt)</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Subject</th>
+                                            <td t-esc="doc.subject"/>
+                                        </tr>
+                                    </table>
+                                </td>
+
+                                <td class="invoice-info-right">
+                                    <table class="invoice-for-table">
+                                        <tr>
+                                            <td class="invoice-for-label">Invoice For</td>
+                                            <td class="invoice-for-value" t-esc="doc.client_name"/>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 13%;">Item Type</th>
+                                    <th>Description</th>
+                                    <th style="width: 10%;" class="text-right">Quantity</th>
+                                    <th style="width: 14%;" class="text-right">Unit Price</th>
+                                    <th style="width: 14%;" class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.line_ids" t-as="line">
+                                    <td t-esc="dict(line._fields['item_type'].selection).get(line.item_type, line.item_type)"/>
+                                    <td t-esc="line.description"/>
+                                    <td class="text-right" t-esc="'%.2f' % (line.quantity or 0.0)"/>
+                                    <td class="text-right">
+                                        <span>Rs. </span>
+                                        <span t-esc="'%.2f' % (line.unit_price or 0.0)"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span>Rs. </span>
+                                        <span t-esc="'%.2f' % (line.amount or 0.0)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="totals-wrap">
+                            <tr>
+                                <td class="totals-left"></td>
+                                <td class="totals-right">
+                                    <table class="totals-table">
+                                        <tr>
+                                            <th>Gross Amount</th>
+                                            <td>
+                                                <span>Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_gross or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr t-if="doc.apply_discount">
+                                            <th>
+                                                Discount
+                                                <t t-if="doc.discount_mode == 'manual'">
+                                                    <span> (Manual)</span>
+                                                </t>
+                                                <t t-if="doc.discount_mode == 'percentage'">
+                                                    <span> (</span>
+                                                    <span t-esc="'{:g}'.format(doc.discount_percentage or 0.0)"/>
+                                                    <span>%)</span>
+                                                </t>
+                                            </th>
+                                            <td>
+                                                <span>- Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_discount or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr t-if="doc.apply_discount">
+                                            <th>Net Amount</th>
+                                            <td>
+                                                <span>Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_net or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th>
+                                                Sales Tax
+                                                <span> (</span>
+                                                <span t-esc="'{:g}'.format(doc.sales_tax_percent or 0.0)"/>
+                                                <span>%)</span>
+                                            </th>
+                                            <td>
+                                                <span>Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_tax or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th>Final Total</th>
+                                            <td>
+                                                <span>Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_total or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr t-if="doc.amount_paid">
+                                            <th>Paid</th>
+                                            <td>
+                                                <span>- Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_paid or 0.0)"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="amount-due-row">
+                                            <th>Amount Due</th>
+                                            <td>
+                                                <span>Rs. </span>
+                                                <span t-esc="'%.2f' % (doc.amount_due or 0.0)"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="notes-section">
+                            <div class="notes-title">Notes</div>
+                            <div class="notes-text" t-esc="doc.get_report_notes()"/>
+                        </div>
+
+                        <div class="footer-page">Page 1 of 1</div>
+
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

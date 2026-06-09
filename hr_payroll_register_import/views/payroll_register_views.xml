@@ -11,9 +11,14 @@
                 <field name="employee_code"/>
                 <field name="designation"/>
                 <field name="basic_salary"/>
+                <field name="basic_actual"/>
+                <field name="project_salary"/>
+                <field name="bonus"/>
                 <field name="income_tax_deduction"/>
                 <field name="total_salary"/>
                 <field name="payment_date"/>
+                <field name="source"/>
+                <field name="is_manually_adjusted"/>
             </list>
         </field>
     </record>
@@ -23,57 +28,79 @@
         <field name="model">hr.payroll.register.line</field>
         <field name="arch" type="xml">
             <form string="Payroll Register Line">
+                <header>
+                    <button name="action_recalculate_manual_payroll"
+                            string="Recalculate Payroll"
+                            type="object"
+                            class="btn-primary"/>
+                </header>
+
                 <sheet>
-                    <group>
+                    <group string="Employee / Period">
                         <group>
                             <field name="employee_id"/>
-                            <field name="employee_code"/>
+                            <field name="employee_code" readonly="1"/>
                             <field name="employee_name_text"/>
-                            <field name="fiscal_year_label"/>
-                            <field name="month_date"/>
-                            <field name="month_label"/>
                             <field name="designation"/>
                             <field name="payment_method"/>
                         </group>
                         <group>
-                            <field name="basic_salary"/>
-                            <field name="basic_actual"/>
-                            <field name="medical_allowance"/>
-                            <field name="advertised_salary"/>
-                            <field name="project_salary"/>
-                            <field name="bonus"/>
-                            <field name="allowance"/>
-                            <field name="allowance_detail"/>
+                            <field name="fiscal_year_label"/>
+                            <field name="month_date"/>
+                            <field name="month_label" readonly="1"/>
+                            <field name="payment_date"/>
+                            <field name="period_label"/>
+                            <field name="paid_at"/>
                         </group>
                     </group>
 
-                    <group>
+                    <group string="Manual Inputs">
+                        <group>
+                            <field name="basic_salary"/>
+                            <field name="basic_actual"/>
+                            <field name="project_salary"/>
+                            <field name="project_detail"/>
+                            <field name="bonus"/>
+                            <field name="bonus_detail"/>
+                        </group>
+                        <group>
+                            <field name="income_tax_deduction"/>
+                            <field name="other_deductions"/>
+                            <field name="deduction_detail"/>
+                            <field name="loans_from_cash"/>
+                            <field name="comments"/>
+                        </group>
+                    </group>
+
+                    <group string="Calculated / Imported Amounts">
+                        <group>
+                            <field name="medical_allowance"/>
+                            <field name="advertised_salary"/>
+                            <field name="allowance"/>
+                            <field name="allowance_detail"/>
+                            <field name="overtime"/>
+                            <field name="overtime_detail"/>
+                        </group>
                         <group>
                             <field name="taxable_income"/>
                             <field name="yearly_income"/>
-                            <field name="income_tax_deduction"/>
-                            <field name="other_deductions"/>
-                        </group>
-                        <group>
                             <field name="total"/>
                             <field name="total_round"/>
                             <field name="total_salary"/>
-                            <field name="loans_from_cash"/>
                         </group>
                     </group>
 
-                    <group>
+                    <group string="Payment / Tracking">
                         <group>
-                            <field name="payment_date"/>
                             <field name="payment"/>
                             <field name="inclusive_of_tax"/>
                             <field name="remaining"/>
+                            <field name="source"/>
                         </group>
                         <group>
-                            <field name="period_label"/>
-                            <field name="paid_at"/>
-                            <field name="comments"/>
-                            <field name="source"/>
+                            <field name="is_manually_adjusted"/>
+                            <field name="manual_update_user_id" readonly="1"/>
+                            <field name="manual_update_date" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
@@ -105,7 +132,8 @@
                         1. Payroll is matched by Employee Code first, then Employee Name.<br/>
                         2. One payroll line is stored per employee per month.<br/>
                         3. Existing employee/month rows are updated, not duplicated.<br/>
-                        4. Unknown employees are skipped and shown in summary.
+                        4. Unknown employees are skipped and shown in summary.<br/>
+                        5. Imported historical totals are preserved. Manual recalculation is done separately.
                     </div>
                 </group>
 
