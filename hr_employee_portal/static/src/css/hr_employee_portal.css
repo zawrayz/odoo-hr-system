@@ -1974,3 +1974,18 @@
     border: 1px solid #ececec;
     border-radius: 14px;
 }
+/* Fix employee performance table extra white space caused by inline update form */
+.hr-employee-performance-table th:nth-child(9),
+.hr-employee-performance-table td:nth-child(9) {
+    display: none !important;
+}
+
+.hr-employee-performance-table {
+    min-width: 1120px !important;
+}
+
+.hr-employee-performance-table tbody td {
+    height: auto !important;
+    min-height: 0 !important;
+    vertical-align: top;
+}
