@@ -1702,15 +1702,12 @@ def build_tax_rates_response():
 
 def get_employee_department_by_number(employee_number):
     try:
-        employee_number = str(employee_number or "").strip()
-        if not employee_number or employee_number.upper() == "N/A":
-            return "N/A"
-
         row = _fetchone(
             """
-            SELECT d.name AS department_name
+            SELECT d.name->>'en_US' AS department_name
             FROM hr_employee e
-            LEFT JOIN hr_department d ON e.department_id = d.id
+            LEFT JOIN hr_version v ON e.current_version_id = v.id
+            LEFT JOIN hr_department d ON v.department_id = d.id
             WHERE e.active = true
               AND e.employee_code = %s
             LIMIT 1;
@@ -1718,10 +1715,10 @@ def get_employee_department_by_number(employee_number):
             (employee_number,),
         )
         if not row:
-            return "N/A"
+            return "Not available in record."
         return not_available(row.get("department_name"))
     except Exception:
-        return "N/A"
+        return "Not available in record."
 
 
 def build_department_response(employee_number, is_admin=False):
