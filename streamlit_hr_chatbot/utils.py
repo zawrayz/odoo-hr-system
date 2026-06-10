@@ -560,6 +560,7 @@ def _employee_row_to_data(row):
         "employee_record": {
             "father_name": not_available(row.get("father_name")),
             "designation": not_available(designation),
+            "department": get_employee_department_by_number(employee_code),
             "doj": _format_date(row.get("joining_date")),
             "contract_start": _format_date(row.get("contract_start_date")),
             "contract_end": _format_date(row.get("contract_end_date")),
@@ -1693,3 +1694,186 @@ def build_tax_rates_response():
         )
 
     return "\n".join(lines)
+
+
+# ============================================================
+# Department and Invoice readers
+# ============================================================
+
+def get_employee_department_by_number(employee_number):
+    try:
+        employee_number = str(employee_number or "").strip()
+        if not employee_number or employee_number.upper() == "N/A":
+            return "N/A"
+
+        row = _fetchone(
+            """
+            SELECT d.name AS department_name
+            FROM hr_employee e
+            LEFT JOIN hr_department d ON e.department_id = d.id
+            WHERE e.active = true
+              AND e.employee_code = %s
+            LIMIT 1;
+            """,
+            (employee_number,),
+        )
+        if not row:
+            return "N/A"
+        return not_available(row.get("department_name"))
+    except Exception:
+        return "N/A"
+
+
+def build_department_response(employee_number, is_admin=False):
+    department = get_employee_department_by_number(employee_number)
+    if is_admin:
+        return f"Selected employee department is: {department}"
+    return f"Your department is: {department}"
+
+
+def build_all_departments_response():
+    try:
+        rows = _fetchall(
+            """
+            SELECT name
+            FROM hr_department
+            WHERE name IS NOT NULL
+            ORDER BY name;
+            """
+        )
+        names = [not_available(row.get("name")) for row in rows if row.get("name")]
+        if not names:
+            return "No departments are available in record."
+        return "Available departments are:\n\n" + "\n".join([f"- {name}" for name in names])
+    except Exception:
+        return "Department data is not available in record."
+
+
+def _invoice_number_from_question(question):
+    q = str(question or "").upper()
+    match = re.search(r"\bINV[A-Z0-9-]*\d+\b", q)
+    if match:
+        return match.group(0).replace(" ", "")
+    return None
+
+
+def _format_invoice_row(row):
+    return (
+        f"- **{not_available(row.get('invoice_number'))}** | "
+        f"Client: {not_available(row.get('client_name'))} | "
+        f"Subject: {not_available(row.get('subject'))} | "
+        f"Status: {not_available(row.get('state')).title()} | "
+        f"Issue Date: {_format_date(row.get('issue_date'))} | "
+        f"Due Date: {_format_date(row.get('due_date'))} | "
+        f"Total: {_format_money(row.get('amount_total'))} | "
+        f"Paid: {_format_money(row.get('amount_paid'))} | "
+        f"Due: {_format_money(row.get('amount_due'))}"
+    )
+
+
+def build_invoice_response(question=None, is_admin=False):
+    if not is_admin:
+        return "Invoice information is available for admin users only."
+
+    q = str(question or "").lower()
+    invoice_number = _invoice_number_from_question(q)
+
+    try:
+        if invoice_number:
+            row = _fetchone(
+                """
+                SELECT invoice_number, client_name, subject, issue_date, due_date,
+                       state, amount_total, amount_paid, amount_due
+                FROM hr_invoice_management
+                WHERE UPPER(invoice_number) = %s
+                LIMIT 1;
+                """,
+                (invoice_number.upper(),),
+            )
+            if not row:
+                return f"{invoice_number} is not available in record."
+            return "## Invoice Details\n\n" + _format_invoice_row(row)
+
+        if any(word in q for word in ["summary", "total", "overall", "dashboard", "how many"]):
+            row = _fetchone(
+                """
+                SELECT
+                    COUNT(*) AS total_invoices,
+                    COALESCE(SUM(amount_total), 0) AS total_amount,
+                    COALESCE(SUM(amount_paid), 0) AS paid_amount,
+                    COALESCE(SUM(amount_due), 0) AS due_amount,
+                    COUNT(*) FILTER (WHERE state = 'draft') AS draft_count,
+                    COUNT(*) FILTER (WHERE state = 'sent') AS sent_count,
+                    COUNT(*) FILTER (WHERE state = 'paid') AS paid_count,
+                    COUNT(*) FILTER (WHERE state = 'cancelled') AS cancelled_count
+                FROM hr_invoice_management;
+                """
+            )
+            return (
+                "## Invoice Summary\n\n"
+                f"- Total invoices: {not_available(row.get('total_invoices'))}\n"
+                f"- Total amount: {_format_money(row.get('total_amount'))}\n"
+                f"- Paid amount: {_format_money(row.get('paid_amount'))}\n"
+                f"- Due amount: {_format_money(row.get('due_amount'))}\n"
+                f"- Draft: {not_available(row.get('draft_count'))}\n"
+                f"- Sent: {not_available(row.get('sent_count'))}\n"
+                f"- Paid: {not_available(row.get('paid_count'))}\n"
+                f"- Cancelled: {not_available(row.get('cancelled_count'))}"
+            )
+
+        if "due" in q or "unpaid" in q or "pending" in q or "receivable" in q:
+            rows = _fetchall(
+                """
+                SELECT invoice_number, client_name, subject, issue_date, due_date,
+                       state, amount_total, amount_paid, amount_due
+                FROM hr_invoice_management
+                WHERE amount_due > 0
+                ORDER BY issue_date DESC NULLS LAST, id DESC
+                LIMIT 10;
+                """
+            )
+            if not rows:
+                return "No due/unpaid invoices are available in record."
+            return "## Due / Unpaid Invoices\n\n" + "\n".join(_format_invoice_row(row) for row in rows)
+
+        state = None
+        if "draft" in q:
+            state = "draft"
+        elif "sent" in q:
+            state = "sent"
+        elif "paid" in q:
+            state = "paid"
+        elif "cancel" in q:
+            state = "cancelled"
+
+        if state:
+            rows = _fetchall(
+                """
+                SELECT invoice_number, client_name, subject, issue_date, due_date,
+                       state, amount_total, amount_paid, amount_due
+                FROM hr_invoice_management
+                WHERE state = %s
+                ORDER BY issue_date DESC NULLS LAST, id DESC
+                LIMIT 10;
+                """,
+                (state,),
+            )
+            if not rows:
+                return f"No {state} invoices are available in record."
+            return f"## {state.title()} Invoices\n\n" + "\n".join(_format_invoice_row(row) for row in rows)
+
+        rows = _fetchall(
+            """
+            SELECT invoice_number, client_name, subject, issue_date, due_date,
+                   state, amount_total, amount_paid, amount_due
+            FROM hr_invoice_management
+            ORDER BY issue_date DESC NULLS LAST, id DESC
+            LIMIT 5;
+            """
+        )
+        if not rows:
+            return "No invoices are available in record."
+        return "## Latest Invoices\n\n" + "\n".join(_format_invoice_row(row) for row in rows)
+
+    except Exception:
+        return "Invoice data is not available in record."

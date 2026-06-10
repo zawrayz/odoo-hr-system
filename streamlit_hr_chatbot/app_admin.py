@@ -22,6 +22,9 @@ from utils import (
     build_tax_calculator_response,
     build_tax_rates_response,
     build_hr_request_response,
+    build_department_response,
+    build_all_departments_response,
+    build_invoice_response,
 )
 
 load_dotenv()
@@ -1137,6 +1140,16 @@ def get_local_answer(question: str, employee_data: dict):
         payroll = question_payroll
 
     employee_number = main.get("employee_number")
+
+
+    if has_any(q, ["invoice", "invoices", "client invoice", "paid invoice", "unpaid invoice", "amount due", "receivable", "draft invoice", "sent invoice"]):
+        return build_invoice_response(q, is_admin=True)
+
+    if has_any(q, ["all departments", "department list", "list departments", "departments list"]):
+        return build_all_departments_response()
+
+    if has_any(q, ["department", "dept"]):
+        return build_department_response(employee_number, is_admin=True)
 
     if is_hr_request_question(q):
         return build_hr_request_response(
