@@ -2310,6 +2310,7 @@ nav.o_portal_submenu {
                                         <thead>
                                             <tr class="hr-fy-summary-top">
                                                 <th rowspan="2" class="hr-fy-black-cell">FY-<t t-esc="selected_fiscal_year_code"/></th>
+                                                <th class="hr-fy-policy-cell"></th>
                                                 <th colspan="4" class="hr-fy-policy-cell">Policy Sick Leaves = 10</th>
                                                 <th colspan="4" class="hr-fy-policy-cell">Casual Leaves = 20</th>
                                                 <th colspan="2" class="hr-fy-policy-cell">Todate</th>
@@ -2330,6 +2331,7 @@ nav.o_portal_submenu {
                                         </thead>
                                         <tbody>
                                             <tr>
+                                                <td class="hr-fy-black-cell"></td>
                                                 <td class="hr-month-value"><t t-esc="attendance_fy_summary['selected_month_label']"/></td>
                                                 <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_opening']"/></td>
                                                 <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_availed']"/></td>
@@ -2852,11 +2854,12 @@ nav.o_portal_submenu {
                     <thead>
                         <tr class="hr-fy-summary-top">
                             <th rowspan="2" class="hr-fy-black-cell">
-                                FY-<t t-esc="selected_fiscal_year_code"/>
-                            </th>
-                            <th colspan="4" class="hr-fy-policy-cell">
-                                Policy Sick Leaves = 10
-                            </th>
+    FY-<t t-esc="selected_fiscal_year_code"/>
+</th>
+<th class="hr-fy-policy-cell"></th>
+<th colspan="4" class="hr-fy-policy-cell">
+    Policy Sick Leaves = 10
+</th>
                             <th colspan="4" class="hr-fy-policy-cell">
                                 Casual Leaves = 20
                             </th>
@@ -2882,9 +2885,10 @@ nav.o_portal_submenu {
 
                     <tbody>
                         <tr>
-                            <td class="hr-month-value">
-                                <t t-esc="attendance_fy_summary['selected_month_label']"/>
-                            </td>
+    <td class="hr-fy-black-cell"></td>
+    <td class="hr-month-value">
+        <t t-esc="attendance_fy_summary['selected_month_label']"/>
+    </td>
                             <td class="hr-sick-value">
                                 <t t-esc="attendance_fy_summary['sick_opening']"/>
                             </td>
