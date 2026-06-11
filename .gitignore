@@ -36,4 +36,4 @@ sessions/
 .DS_Store
 Thumbs.db
 .vscode/
-.idea/
+.idea/streamlit_hr_chatbot/.env
