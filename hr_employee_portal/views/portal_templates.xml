@@ -4863,4 +4863,20 @@ nav.o_portal_submenu {
         </t>
     </xpath>
 </template>
+<template id="hide_portal_employee_security_and_home_links" inherit_id="website.layout">
+    <xpath expr="//head" position="inside">
+        <t t-if="request.env.user.has_group('base.group_portal') and not request.env.user.has_group('base.group_user')">
+            <style>
+                header a[href="/"],
+                header a[href="/jobs"],
+                header a[href="/contactus"],
+                a[href="/my/security"],
+                a[href*="/my/security"],
+                a[href*="change_password"] {
+                    display: none !important;
+                }
+            </style>
+        </t>
+    </xpath>
+</template>
 </odoo>
