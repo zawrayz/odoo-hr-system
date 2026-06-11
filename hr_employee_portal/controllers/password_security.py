@@ -23,6 +23,11 @@ def _is_portal_employee_user():
 
 
 class HrPortalSecurityBlock(CustomerPortal):
+    @http.route(['/my', '/my/home'], type='http', auth='user', website=True)
+    def home(self, **kw):
+        if _is_portal_employee_user():
+            return request.redirect('/my/hr')
+        return super().home(**kw)
 
     @http.route(['/my/security'], type='http', auth='user', website=True)
     def security(self, **kw):
