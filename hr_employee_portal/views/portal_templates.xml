@@ -4850,4 +4850,17 @@ nav.o_portal_submenu {
         <i class="fa fa-comments" style="font-size: 26px; margin-top: 4px;"/>
     </button>
 </template>
+<template id="hide_password_change_for_portal_employees" inherit_id="portal.frontend_layout">
+    <xpath expr="//head" position="inside">
+        <t t-if="request.env.user.has_group('base.group_portal') and not request.env.user.has_group('base.group_user')">
+            <style>
+                a[href="/my/security"],
+                a[href*="/my/security"],
+                a[href*="change_password"] {
+                    display: none !important;
+                }
+            </style>
+        </t>
+    </xpath>
+</template>
 </odoo>
