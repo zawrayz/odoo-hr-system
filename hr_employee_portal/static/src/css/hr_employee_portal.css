@@ -2029,3 +2029,44 @@
     white-space: normal !important;
     line-height: 1.3 !important;
 }
+/* FIX payroll table layout after full text update */
+.hr-payroll-admin-table {
+    table-layout: auto !important;
+    width: max-content !important;
+    min-width: 3000px !important;
+}
+
+.hr-payroll-admin-table th,
+.hr-payroll-admin-table td {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    vertical-align: top !important;
+}
+
+/* Only long description/detail columns should wrap */
+.hr-payroll-admin-table th:nth-child(13),
+.hr-payroll-admin-table td:nth-child(13),
+.hr-payroll-admin-table th:nth-child(15),
+.hr-payroll-admin-table td:nth-child(15),
+.hr-payroll-admin-table th:nth-child(17),
+.hr-payroll-admin-table td:nth-child(17),
+.hr-payroll-admin-table th:nth-child(22),
+.hr-payroll-admin-table td:nth-child(22),
+.hr-payroll-admin-table th:nth-child(29),
+.hr-payroll-admin-table td:nth-child(29) {
+    white-space: normal !important;
+    min-width: 240px !important;
+    max-width: 320px !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    line-height: 1.4 !important;
+}
+
+/* Make sure parent area scrolls horizontally instead of squeezing columns */
+.hr-payroll-admin-table-wrapper,
+.hr-payroll-table-wrapper,
+.table-responsive,
+.o_portal_wrap {
+    overflow-x: auto !important;
+}
