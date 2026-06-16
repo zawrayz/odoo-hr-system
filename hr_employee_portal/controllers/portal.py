@@ -358,10 +358,23 @@ class HrEmployeePortal(http.Controller):
     def _get_payroll_fiscal_year_options(self):
         today = fields.Date.context_today(request.env.user)
         current_fy_start, _current_fy_end = self._get_fiscal_year_bounds(today)
-        current_fy_start_year = current_fy_start.year
+
+        start_years = set()
+
+        # Add old years from existing payroll records
+        Payroll = request.env['hr.payroll.register.line'].sudo()
+        payroll_months = Payroll.search([('month_date', '!=', False)]).mapped('month_date')
+
+        for month_date in payroll_months:
+            fy_start, _fy_end = self._get_fiscal_year_bounds(month_date)
+            start_years.add(fy_start.year)
+
+        # Add previous year, current year, and next 5 future years
+        for year in range(current_fy_start.year - 1, current_fy_start.year + 6):
+            start_years.add(year)
 
         options = []
-        for start_year in range(current_fy_start_year - 2, current_fy_start_year + 1):
+        for start_year in sorted(start_years):
             end_year = start_year + 1
             options.append({
                 'value': f'{start_year}-{end_year}',
@@ -369,6 +382,7 @@ class HrEmployeePortal(http.Controller):
                 'start_year': start_year,
                 'end_year': end_year,
             })
+
         return options
 
     def _parse_payroll_fiscal_year_value(self, fy_value):
