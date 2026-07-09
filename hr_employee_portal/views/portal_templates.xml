@@ -3369,9 +3369,30 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                 <div class="hr-content-wrap">
                     <div class="mb-3">
-                        <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Root
+                        
+                    <div class="d-flex align-items-center justify-content-between mb-3 hr-maintenance-topbar">
+                        <a href="/my/hr/admin" class="fw-bold text-decoration-none">
+                            <i class="fa fa-arrow-left me-1"/> Back to Admin Root
                         </a>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span t-attf-class="badge #{'bg-warning text-dark' if hr_maintenance_enabled else 'bg-success'}">
+                                <t t-if="hr_maintenance_enabled">Maintenance ON</t>
+                                <t t-else="">Maintenance OFF</t>
+                            </span>
+
+                            <form action="/my/hr/admin/maintenance/toggle" method="post" class="m-0">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="maintenance_action" t-att-value="hr_maintenance_enabled and 'off' or 'on'"/>
+                                <button type="submit"
+                                        t-attf-class="btn btn-sm #{'btn-success' if hr_maintenance_enabled else 'btn-danger'}">
+                                    <t t-if="hr_maintenance_enabled">Turn OFF</t>
+                                    <t t-else="">Turn ON</t>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
                     </div>
 
                     <div class="card hr-page-header-card mb-4">
@@ -3410,7 +3431,8 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 </t>
 
                     
-                      <div class="card hr-content-card">
+                      
+                    <div class="card hr-content-card">
     <div class="card-body">
         <div class="hr-subsection-title">Employee Directory</div>
 
@@ -5044,4 +5066,23 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         </t>
     </xpath>
 </template>
+
+    <template id="hr_employee_maintenance_page" name="HR Employee Maintenance Page">
+        <t t-call="portal.portal_layout">
+            <t t-set="no_breadcrumbs" t-value="1"/>
+            <div class="container mt-5 mb-5">
+                <div class="card hr-content-card text-center">
+                    <div class="card-body" style="padding: 48px 24px;">
+                        <div style="font-size: 46px; color: #006BB6; margin-bottom: 16px;">
+                            <i class="fa fa-tools"/>
+                        </div>
+                        <h2 class="hr-page-title">HR Portal Under Maintenance</h2>
+                        <p class="hr-page-subtitle mb-4">
+                            We are updating the system to improve your experience. Please try again after some time.
+                        </p>                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
 </odoo>

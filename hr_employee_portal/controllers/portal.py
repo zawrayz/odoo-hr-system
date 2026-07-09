@@ -491,6 +491,10 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/chatbot/employee/frame', type='http', auth='user', website=True)
     def my_hr_employee_chatbot_frame(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         employee = request.env['hr.employee'].sudo().search([
             ('user_id', '=', request.env.user.id)
         ], limit=1)
@@ -692,8 +696,36 @@ class HrEmployeePortal(http.Controller):
         return True
 
     # ---------------------------------------------------------
-    # Daily work report helpers
+
     # ---------------------------------------------------------
+    # HR Portal Maintenance Mode
+    # ---------------------------------------------------------
+    def _is_hr_portal_maintenance_enabled(self):
+        return request.env['ir.config_parameter'].sudo().get_param(
+            'hr_employee_portal.maintenance_mode', '0'
+        ) == '1'
+
+    def _redirect_if_hr_portal_maintenance(self):
+        if not self._is_hr_portal_maintenance_enabled():
+            return False
+
+        current_path = request.httprequest.path or ''
+
+        # Admin HR portal must remain available during maintenance.
+        if current_path.startswith('/my/hr/admin'):
+            return False
+
+        # If an HR manager/admin opens an employee HR URL, send them back to admin.
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        # Employees are blocked from all employee HR portal pages.
+        return request.render('hr_employee_portal.hr_employee_maintenance_page', {
+            'page_name': 'hr_maintenance',
+            'no_breadcrumbs': True,
+        })
+
+
     def _get_valid_work_modes(self):
         return ['office', 'wfh', 'field', 'leave']
 
@@ -1517,6 +1549,10 @@ class HrEmployeePortal(http.Controller):
         return attendance_display
     @http.route('/my/hr/performance', type='http', auth='user', website=True)
     def my_hr_performance(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1593,6 +1629,10 @@ class HrEmployeePortal(http.Controller):
         return request.render('hr_employee_portal.hr_employee_performance_page', values)
     @http.route('/my/hr/performance/submit', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_performance_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1677,6 +1717,10 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/performance/update', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_performance_update(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1763,10 +1807,17 @@ class HrEmployeePortal(http.Controller):
     # =========================================================
     @http.route('/my/hr/request/submit', type='http', auth='user', website=True, methods=['POST'])
     def my_hr_request_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         if not employee:
             return request.redirect(self._build_redirect_url('/my/hr', {
                 'request_status': 'error',
@@ -1850,6 +1901,15 @@ class HrEmployeePortal(http.Controller):
     # =========================================================
     @http.route('/my/hr', type='http', auth='user', website=True)
     def my_hr_dashboard(self, **kwargs):
+        # Hard maintenance guard for employee dashboard route.
+        if self._is_hr_portal_maintenance_enabled():
+            if self._is_hr_manager():
+                return request.redirect('/my/hr/admin')
+            return request.render('hr_employee_portal.hr_employee_maintenance_page', {
+                'page_name': 'hr_maintenance',
+                'no_breadcrumbs': True,
+            })
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
@@ -1879,10 +1939,17 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/profile', type='http', auth='user', website=True)
     def my_hr_profile(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         missing_employee = True if kwargs.get('missing_employee') else False
         values = self._prepare_portal_values(employee, {
             'missing_employee': missing_employee,
@@ -1891,10 +1958,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/employee-record', type='http', auth='user', website=True)
     def my_hr_profile_employee_record(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1906,10 +1980,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/bank-account', type='http', auth='user', website=True)
     def my_hr_profile_bank_account(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1921,10 +2002,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/personal-details', type='http', auth='user', website=True)
     def my_hr_profile_personal_details(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1936,10 +2024,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/emergency-contact', type='http', auth='user', website=True)
     def my_hr_profile_emergency_contact(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1951,10 +2046,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/employment-history', type='http', auth='user', website=True)
     def my_hr_profile_employment_history(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -2054,10 +2156,17 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/attendance', type='http', auth='user', website=True)
     def my_hr_attendance(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -2101,10 +2210,17 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/daily-work-report', type='http', auth='user', website=True)
     def my_hr_daily_work_report(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -2133,10 +2249,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/daily-work-report/submit', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_daily_work_report_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         if not employee:
             redirect_url = self._build_redirect_url('/my/hr', {
                 'report_status': 'error',
@@ -2475,6 +2598,10 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/documents', type='http', auth='user', website=True)
     def my_hr_documents(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
@@ -2485,10 +2612,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/payroll', type='http', auth='user', website=True)
     def my_hr_payroll(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         fy_value = kwargs.get('fy')
         month_value = kwargs.get('month')
 
@@ -2524,16 +2658,27 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/payslips', type='http', auth='user', website=True)
     def my_hr_payslips(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
         return request.redirect('/my/hr/payroll')
 
     @http.route('/my/hr/leaves', type='http', auth='user', website=True)
     def my_hr_leaves(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         hr_requests = request.env['hr.employee.portal.request'].sudo()
 
         try:
@@ -2627,16 +2772,44 @@ class HrEmployeePortal(http.Controller):
             ('submitted_at', '<', fields.Datetime.to_string(next_day_start)),
         ])
 
+        hr_maintenance_enabled = self._is_hr_portal_maintenance_enabled()
+
         values = self._prepare_portal_values(None, {
             'employees': all_employees,
             'total_employees': total_employees,
             'present_employees': present_employee_count,
             'task_reports_submitted_today': task_reports_submitted_today,
+            'hr_maintenance_enabled': hr_maintenance_enabled,
             'employee_status': (kwargs.get('employee_status') or '').strip(),
             'employee_message': (kwargs.get('employee_message') or '').strip(),
         })
         return request.render('hr_employee_portal.hr_admin_dashboard_page', values)
 
+
+
+    @http.route('/my/hr/admin/maintenance/toggle', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_maintenance_toggle(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        action = (post.get('maintenance_action') or '').strip()
+        enabled = '1' if action == 'on' else '0'
+
+        request.env['ir.config_parameter'].sudo().set_param(
+            'hr_employee_portal.maintenance_mode',
+            enabled
+        )
+
+        message = (
+            'Employee HR portal maintenance mode enabled. Employees are temporarily blocked.'
+            if enabled == '1'
+            else 'Employee HR portal maintenance mode disabled. Employees can access the portal again.'
+        )
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin', {
+            'employee_status': 'success',
+            'employee_message': message,
+        }))
 
     @http.route('/my/hr/admin/portal-accounts', type='http', auth='user', website=True)
     def my_hr_admin_portal_accounts_page(self, **kwargs):
