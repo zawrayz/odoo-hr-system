@@ -44,6 +44,7 @@ class HrDailyWorkReport(models.Model):
         [
             ('office', 'Work from Office'),
             ('wfh', 'Work from Home'),
+            ('field', 'Field Work'),
             ('leave', 'Leave'),
         ],
         string='Work Mode',
@@ -68,6 +69,23 @@ class HrDailyWorkReport(models.Model):
         required=True,
     )
 
+    is_late_submission = fields.Boolean(
+        string='Late Submitted',
+        compute='_compute_is_late_submission',
+        store=True,
+    )
+
+    late_submission_source = fields.Selection(
+        [
+            ('auto_next_day', 'Automatic Next-Day Grace'),
+            ('admin_temp_access', 'Admin Temporary Access'),
+        ],
+        string='Late Submission Source',
+        readonly=True,
+        copy=False,
+    )
+
+
     remarks = fields.Text(
         string='Remarks',
     )
@@ -79,6 +97,17 @@ class HrDailyWorkReport(models.Model):
             'Only one daily work report is allowed per employee per date.'
         ),
     ]
+
+
+    @api.depends('report_date', 'submitted_at')
+    def _compute_is_late_submission(self):
+        for rec in self:
+            if not rec.report_date or not rec.submitted_at:
+                rec.is_late_submission = False
+                continue
+
+            submitted_date = fields.Date.to_date(rec.submitted_at)
+            rec.is_late_submission = submitted_date > rec.report_date
 
     @api.depends('employee_id', 'report_date')
     def _compute_name(self):
@@ -112,6 +141,7 @@ class HrDailyWorkReport(models.Model):
         work_mode_code_map = {
             'office': 'P',
             'wfh': 'R',
+            'field': 'P',
             'leave': 'C',
         }
 
@@ -119,7 +149,11 @@ class HrDailyWorkReport(models.Model):
             if not rec.employee_id or not rec.report_date:
                 continue
 
-            attendance_code = work_mode_code_map.get(rec.work_mode)
+            if rec.is_late_submission:
+                attendance_code = 'D'
+            else:
+                attendance_code = work_mode_code_map.get(rec.work_mode)
+
             if not attendance_code:
                 continue
 
@@ -133,7 +167,7 @@ class HrDailyWorkReport(models.Model):
                 fiscal_year_label=fiscal_year_label,
                 month_label=month_label,
                 source='daily_work_report',
-                notes='Auto-synced from Daily Work Report',
+                notes='Late submitted Daily Work Report' if rec.is_late_submission else 'Auto-synced from Daily Work Report',
             )
 
     @api.model_create_multi
