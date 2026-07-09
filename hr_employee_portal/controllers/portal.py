@@ -1,12 +1,17 @@
+import time as pytime
 from datetime import datetime, time, timedelta, date
 import calendar
 
 from odoo import http, fields
+from odoo.tools import config
 from odoo.exceptions import ValidationError
 from odoo.http import request
+from urllib.parse import urlencode
 from werkzeug.urls import url_encode
 from io import BytesIO
 from openpyxl import Workbook
+import hmac
+import hashlib
 
 
 class HrEmployeePortal(http.Controller):
@@ -23,7 +28,7 @@ class HrEmployeePortal(http.Controller):
         ('casual_leave', 'Request for Casual Leave'),
     ]
 
-    REQUEST_EMAIL_TO = 'zoraizzia9@gmail.com'
+    REQUEST_EMAIL_TO = 'noreply@blimpglobal.com'
 
     ADMIN_PAYROLL_TAX_SLABS = [
         {
@@ -471,9 +476,79 @@ class HrEmployeePortal(http.Controller):
             'fiscal_year_options': fy_options,
             'fiscal_year_month_options': month_options,
         }
+
+    # ---------------------------------------------------------
+    # Secure Chatbot iframe routes
+    # ---------------------------------------------------------
+    def _get_chatbot_secret(self):
+        return (config.get('chatbot_shared_secret') or '').strip()
+
+    def _sign_chatbot_payload(self, payload):
+        secret = self._get_chatbot_secret()
+        if not secret:
+            return ''
+        return hmac.new(secret.encode('utf-8'), payload.encode('utf-8'), hashlib.sha256).hexdigest()
+
+    @http.route('/my/hr/chatbot/employee/frame', type='http', auth='user', website=True)
+    def my_hr_employee_chatbot_frame(self, **kwargs):
+        employee = request.env['hr.employee'].sudo().search([
+            ('user_id', '=', request.env.user.id)
+        ], limit=1)
+
+        if not employee or not employee.employee_code:
+            return request.make_response(
+                "Employee chatbot access denied: employee record not found.",
+                headers=[('Content-Type', 'text/plain')]
+            )
+
+        ts = str(int(pytime.time()))
+        employee_code = employee.employee_code.strip()
+        payload = f"employee|{employee_code}|{ts}"
+        sig = self._sign_chatbot_payload(payload)
+
+        if not sig:
+            return request.make_response(
+                "Employee chatbot security is not configured.",
+                headers=[('Content-Type', 'text/plain')]
+            )
+
+        query = urlencode({
+            'employee_code': employee_code,
+            'ts': ts,
+            'sig': sig,
+        })
+        return request.redirect('/chatbot/employee/?' + query)
+
+    @http.route('/my/hr/chatbot/admin/frame', type='http', auth='user', website=True)
+    def my_hr_admin_chatbot_frame(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.make_response(
+                "Admin chatbot access denied.",
+                headers=[('Content-Type', 'text/plain')]
+            )
+
+        ts = str(int(pytime.time()))
+        payload = f"admin|{ts}"
+        sig = self._sign_chatbot_payload(payload)
+
+        if not sig:
+            return request.make_response(
+                "Admin chatbot security is not configured.",
+                headers=[('Content-Type', 'text/plain')]
+            )
+
+        query = urlencode({
+            'ts': ts,
+            'sig': sig,
+        })
+        return request.redirect('/chatbot/admin/?' + query)
+
+
     # ---------------------------------------------------------
     # Request helpers
     # ---------------------------------------------------------
+
+
     def _get_request_type_label(self, request_type):
         for option_value, option_label in self.REQUEST_TYPE_OPTIONS:
             if option_value == request_type:
@@ -540,6 +615,12 @@ class HrEmployeePortal(http.Controller):
                         <td style="padding: 8px; border: 1px solid #ddd;">{reason}</td>
                     </tr>
                 </table>
+                <div style="margin-top: 20px;">
+                    <a href="https://odoo.blimp.pk/my/hr/admin/leaves#hr-requests"
+                       style="background-color: #006BB6; color: #ffffff; padding: 12px 18px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                        Respond to this request
+                    </a>
+                </div>
             </div>
         """
 
@@ -614,7 +695,7 @@ class HrEmployeePortal(http.Controller):
     # Daily work report helpers
     # ---------------------------------------------------------
     def _get_valid_work_modes(self):
-        return ['office', 'wfh', 'leave']
+        return ['office', 'wfh', 'field', 'leave']
 
     def _build_redirect_url(self, base_path, params=None):
         params = params or {}
@@ -2555,6 +2636,143 @@ class HrEmployeePortal(http.Controller):
             'employee_message': (kwargs.get('employee_message') or '').strip(),
         })
         return request.render('hr_employee_portal.hr_admin_dashboard_page', values)
+
+
+    @http.route('/my/hr/admin/portal-accounts', type='http', auth='user', website=True)
+    def my_hr_admin_portal_accounts_page(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        values = self._prepare_portal_values(None, {
+            'employee_status': (kwargs.get('employee_status') or '').strip(),
+            'employee_message': (kwargs.get('employee_message') or '').strip(),
+        })
+        return request.render('hr_employee_portal.hr_admin_portal_accounts_page', values)
+
+    @http.route('/my/hr/admin/employee/portal-account/save', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_employee_portal_account_save(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_code = (post.get('employee_code') or '').strip()
+        employee_name = (post.get('employee_name') or '').strip()
+        work_email = (post.get('work_email') or '').strip().lower()
+        temp_password = (post.get('temp_password') or '').strip()
+        department_name = (post.get('department_name') or '').strip()
+        job_title = (post.get('job_title') or '').strip()
+
+        if not employee_code or not employee_name or not work_email or not temp_password:
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Employee code, name, official email, and temporary password are required.',
+            }))
+
+        if '@' not in work_email or '.' not in work_email:
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Please enter a valid official email.',
+            }))
+
+        Employee = request.env['hr.employee'].sudo().with_context(active_test=False)
+        User = request.env['res.users'].sudo().with_context(
+            active_test=False,
+            no_reset_password=True,
+            tracking_disable=True,
+            mail_notrack=True,
+            mail_create_nosubscribe=True,
+            mail_notify_noemail=True,
+        )
+        Department = request.env['hr.department'].sudo()
+        Job = request.env['hr.job'].sudo()
+
+        existing_code_employee = Employee.search([('employee_code', '=', employee_code)], limit=1)
+        existing_email_user = User.search(['|', ('login', '=', work_email), ('email', '=', work_email)], limit=1)
+
+        department = False
+        if department_name:
+            department = Department.search([('name', '=ilike', department_name)], limit=1)
+            if not department:
+                department = Department.create({'name': department_name})
+
+        job = False
+        if job_title:
+            job = Job.search([('name', '=ilike', job_title)], limit=1)
+            if not job:
+                job = Job.create({'name': job_title})
+
+        employee_vals = {
+            'name': employee_name,
+            'employee_code': employee_code,
+            'work_email': work_email,
+            'active': True,
+        }
+        if department:
+            employee_vals['department_id'] = department.id
+        if job:
+            employee_vals['job_id'] = job.id
+
+        if existing_code_employee:
+            employee = existing_code_employee
+            employee.write(employee_vals)
+            employee_action = 'updated'
+        else:
+            employee = Employee.create(employee_vals)
+            employee_action = 'created'
+
+        portal_group = request.env.ref('base.group_portal')
+        company = employee.company_id or request.env.company
+
+        user = employee.user_id or existing_email_user
+
+        # Do not convert internal/admin users into portal users.
+        if user and not user.share:
+            employee.write({'user_id': user.id})
+            return request.redirect(self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'error',
+                'employee_message': 'Employee updated, but linked user is an internal/admin user. Portal role was not changed for safety.',
+            }))
+
+        user_vals = {
+            'name': employee.name,
+            'login': work_email,
+            'email': work_email,
+            'active': True,
+            'company_id': company.id,
+            'company_ids': [(6, 0, [company.id])],
+            'group_ids': [(6, 0, [portal_group.id])],
+            'password': temp_password,
+        }
+
+        if user:
+            user.write(user_vals)
+            user_action = 'updated'
+        else:
+            user = User.create(user_vals)
+            user_action = 'created'
+
+        employee.write({'user_id': user.id})
+
+        # Remove unwanted automatic account/security emails generated by user creation/password changes.
+        blocked_subject_parts = [
+            'Welcome',
+            'Password Changed',
+            'Login Changed',
+            'Your account',
+            'Security Update',
+        ]
+        Mail = request.env['mail.mail'].sudo()
+        mails = Mail.search([('email_to', 'ilike', work_email)])
+        for mail in mails:
+            subject = (mail.mail_message_id.subject or '')
+            if any(part.lower() in subject.lower() for part in blocked_subject_parts):
+                mail.unlink()
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin', {
+            'employee_status': 'success',
+            'employee_message': f'Employee {employee_action} and portal account {user_action} for {employee.name}. No account email was sent.',
+        }))
+
+
     @http.route('/my/hr/admin/employee/status/update', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_admin_employee_status_update(self, **post):
         if not self._is_hr_manager():
@@ -3085,6 +3303,8 @@ class HrEmployeePortal(http.Controller):
                 work_mode = 'Work from Office'
             elif report.work_mode == 'wfh':
                 work_mode = 'Work from Home'
+            elif report.work_mode == 'field':
+                work_mode = 'Field Work'
             elif report.work_mode == 'leave':
                 work_mode = 'Leave'
             else:

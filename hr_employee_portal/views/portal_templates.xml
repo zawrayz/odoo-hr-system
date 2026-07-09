@@ -988,6 +988,32 @@ nav.o_portal_submenu {
 .hr-chatbot-launcher-old:hover {
     background: #084f88;
 }
+
+/* Strong hide for default Odoo portal breadcrumb/home icon */
+body:has(.hr-sidebar-wrap) .breadcrumb,
+body:has(.hr-sidebar-wrap) .o_portal_submenu,
+body:has(.hr-sidebar-wrap) nav[aria-label="breadcrumb"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Hide default Odoo /my home icon link on HR portal pages */
+body:has(.hr-sidebar-wrap) a[href="/my"]:has(.fa-home),
+body:has(.hr-sidebar-wrap) a[href="/my/"]:has(.fa-home),
+body:has(.hr-sidebar-wrap) a[href="/my"] .fa-home,
+body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 </style>
 </template>
 
@@ -1106,6 +1132,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_portal_page" name="HR Employee Portal Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'dashboard'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -1354,6 +1381,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_daily_work_report_page" name="HR Employee Daily Work Report">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'daily_work_report'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -1415,6 +1443,7 @@ nav.o_portal_submenu {
         <strong>Work Mode:</strong>
         <span t-if="existing_report.work_mode == 'office'">Work from Office</span>
         <span t-elif="existing_report.work_mode == 'wfh'">Work from Home</span>
+        <span t-elif="existing_report.work_mode == 'field'">Field Work</span>
         <span t-elif="existing_report.work_mode == 'leave'">Leave</span>
     </p>
     <p class="mb-1">
@@ -1459,6 +1488,7 @@ nav.o_portal_submenu {
                                                     <option value="" disabled="disabled" selected="selected">-- Select Work Mode --</option>
                                                     <option value="office">Work from Office</option>
                                                     <option value="wfh">Work from Home</option>
+                                                    <option value="field">Field Work</option>
                                                     <option value="leave">Leave</option>
                                                 </select>
                                             </div>
@@ -1487,6 +1517,7 @@ nav.o_portal_submenu {
     </template>
     <template id="hr_employee_performance_page" name="HR Employee Performance Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'performance'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -1693,6 +1724,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_page" name="HR Employee Profile Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -1856,6 +1888,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_employee_record_page" name="HR Employee Profile Employee Record Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -1941,6 +1974,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_bank_account_page" name="HR Employee Profile Bank Account Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -2008,6 +2042,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_personal_details_page" name="HR Employee Profile Personal Details Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -2120,6 +2155,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_emergency_contact_page" name="HR Employee Profile Emergency Contact Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -2186,6 +2222,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_profile_employment_history_page" name="HR Employee Profile Employment History Page">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
 
             <div class="container oe_structure mt-4 mb-5">
@@ -2226,6 +2263,7 @@ nav.o_portal_submenu {
     </template>
     <template id="hr_employee_attendance_page" name="HR Employee Attendance Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'attendance'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -2298,6 +2336,99 @@ nav.o_portal_submenu {
                                         </div>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <div class="hr-subsection-title">Monthly Attendance Register</div>
+                                <p class="hr-page-subtitle mb-3">Review your monthly attendance code matrix.</p>
+
+                                <div class="hr-attendance-toolbar">
+                                    <div class="hr-attendance-month-nav">
+                                        <a t-attf-href="/my/hr/attendance?fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
+                                            <i class="fa fa-chevron-left"/> Previous
+                                        </a>
+                                        <div class="hr-attendance-month-label" t-esc="month_display"/>
+                                        <a t-attf-href="/my/hr/attendance?fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
+                                            Next <i class="fa fa-chevron-right"/>
+                                        </a>
+                                    </div>
+
+                                    <div class="hr-page-header-meta">
+                                        <div class="hr-page-header-pill">
+                                            <i class="fa fa-user me-1"/>
+                                            <span t-esc="employee.name if employee else '-'"/>
+                                        </div>
+                                        <div class="hr-page-header-pill">
+                                            <i class="fa fa-id-badge me-1"/>
+                                            <span t-esc="employee.employee_code if employee and employee.employee_code else '-'"/>
+                                        </div>
+                                        <div class="hr-page-header-pill">
+                                            <i class="fa fa-building me-1"/>
+                                            <span t-esc="employee.department_id.name if employee and employee.department_id else '-'"/>
+                                        </div>
+                                        <div class="hr-page-header-pill">
+                                            <i class="fa fa-calendar me-1"/>
+                                            <span t-esc="month_display"/> (<t t-esc="fiscal_year_label"/>)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <t t-if="attendance_matrix_row">
+                                    <div class="hr-attendance-matrix-wrap">
+                                        <table class="hr-attendance-matrix">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee</th>
+                                                    <t t-foreach="attendance_days" t-as="day_item">
+                                                        <th class="hr-attendance-day-head">
+                                                            <div class="day-no" t-esc="day_item.get('day_number', '')"/>
+                                                            <div class="day-name" t-esc="day_item.get('day_name') or day_item.get('day_label') or day_item.get('title') or ''"/>
+                                                        </th>
+                                                    </t>
+                                                    <th class="hr-attendance-total-col">P</th>
+                                                    <th class="hr-attendance-total-col">R</th>
+                                                    <th class="hr-attendance-total-col">H</th>
+                                                    <th class="hr-attendance-total-col">S</th>
+                                                    <th class="hr-attendance-total-col">C</th>
+                                                    <th class="hr-attendance-total-col">U</th>
+                                                    <th class="hr-attendance-total-col">D</th>
+                                                    <th class="hr-attendance-total-col">OT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <strong t-esc="attendance_matrix_row['employee_name']"/>
+                                                    </td>
+                                                    <t t-foreach="attendance_matrix_row['days']" t-as="day_data">
+                                                        <td t-attf-class="hr-day-cell hr-code-#{day_data['code'] if day_data['code'] else 'empty'} #{'hr-day-weekend' if day_data.get('is_weekend') else ''}">
+                                                            <t t-esc="day_data['code'] or '-'"/>
+                                                        </td>
+                                                    </t>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('P', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('R', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('H', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('S', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('C', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('U', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('D', 0)"/>
+                                                    <td class="hr-attendance-total-col" t-esc="attendance_matrix_row['summary'].get('OT', 0)"/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+
+                                <t t-if="not attendance_matrix_row">
+                                    <div class="card hr-empty-state-card mt-3">
+                                        <div class="card-body">
+                                            <div class="hr-empty-state-title">No attendance found</div>
+                                            <p class="hr-empty-state-text">No attendance register exists for your selected month.</p>
+                                        </div>
+                                    </div>
+                                </t>
                             </div>
                         </div>
 
@@ -2386,6 +2517,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_documents_page" name="HR Employee Documents Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'documents'"/>
 
         <div class="container mt-4 mb-5">
@@ -2455,6 +2587,7 @@ nav.o_portal_submenu {
 
 <template id="hr_employee_payslips_page" name="HR Employee Payslips Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'payslips'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -2731,6 +2864,7 @@ nav.o_portal_submenu {
 
 <template id="hr_admin_attendances_page" name="HR Admin Attendances">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_attendances'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -3106,6 +3240,7 @@ nav.o_portal_submenu {
 
     <template id="hr_employee_leaves_page" name="HR Employee Leaves Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'leaves'"/>
 
         <div class="container mt-4 mb-5">
@@ -3223,6 +3358,7 @@ nav.o_portal_submenu {
 
     <template id="hr_admin_dashboard_page" name="HR Admin Dashboard">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -3273,7 +3409,8 @@ nav.o_portal_submenu {
     </div>
 </t>
 
-                    <div class="card hr-content-card">
+                    
+                      <div class="card hr-content-card">
     <div class="card-body">
         <div class="hr-subsection-title">Employee Directory</div>
 
@@ -3392,8 +3529,93 @@ nav.o_portal_submenu {
     </t>
 </template>
 
+
+  <template id="hr_admin_portal_accounts_page" name="HR Admin Portal Accounts">
+      <t t-call="portal.frontend_layout">
+          <div class="container-fluid py-4">
+              <div class="hr-portal-layout">
+                  <div class="hr-sidebar-wrap">
+                      <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                  </div>
+
+                  <div class="hr-content-wrap">
+                      <div class="mb-3">
+                          <a href="/my/hr/admin" class="hr-back-link">
+                              <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                          </a>
+                      </div>
+
+                      <div class="card hr-page-header-card mb-4">
+                          <div class="card-body">
+                              <h2 class="hr-page-title">Portal Accounts</h2>
+                              <p class="hr-page-subtitle">Create or update employee portal login accounts without sending automatic invite emails.</p>
+                          </div>
+                      </div>
+
+                      <t t-if="employee_message">
+                          <div t-attf-class="alert #{'alert-success' if employee_status == 'success' else 'alert-danger'} mb-4" role="alert">
+                              <t t-esc="employee_message"/>
+                          </div>
+                      </t>
+
+                      <div class="card hr-content-card">
+                          <div class="card-body">
+                              <div class="hr-subsection-title mb-1">Create / Update Employee Portal Account</div>
+                              <p class="text-muted mb-3">Use this form for normal employees only. It creates portal access, sets the password, and avoids automatic invite emails.</p>
+
+                              <form action="/my/hr/admin/employee/portal-account/save" method="post" class="row g-3">
+                                  <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                  <div class="col-md-3">
+                                      <label class="form-label fw-bold">Employee Code *</label>
+                                      <input type="text" name="employee_code" class="form-control" placeholder="e.g. BLMP01" required="required"/>
+                                  </div>
+
+                                  <div class="col-md-3">
+                                      <label class="form-label fw-bold">Employee Name *</label>
+                                      <input type="text" name="employee_name" class="form-control" placeholder="Employee full name" required="required"/>
+                                  </div>
+
+                                  <div class="col-md-3">
+                                      <label class="form-label fw-bold">Official Email *</label>
+                                      <input type="email" name="work_email" class="form-control" placeholder="name@blimpglobal.com" required="required"/>
+                                  </div>
+
+                                  <div class="col-md-3">
+                                      <label class="form-label fw-bold">Temporary Password *</label>
+                                      <input type="text" name="temp_password" class="form-control" placeholder="Set manually" required="required"/>
+                                  </div>
+
+                                  <div class="col-md-4">
+                                      <label class="form-label fw-bold">Department</label>
+                                      <input type="text" name="department_name" class="form-control" placeholder="e.g. IT / Development"/>
+                                  </div>
+
+                                  <div class="col-md-4">
+                                      <label class="form-label fw-bold">Job Position</label>
+                                      <input type="text" name="job_title" class="form-control" placeholder="e.g. Web Developer"/>
+                                  </div>
+
+                                  <div class="col-md-4 d-flex align-items-end">
+                                      <button type="submit" class="hr-request-btn border-0 w-100 justify-content-center">
+                                          <i class="fa fa-user-plus"/> Create / Update Portal Account
+                                      </button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
+      </t>
+  </template>
+
+
 <template id="hr_admin_task_reports_page" name="HR Admin Task Reports">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_task_reports'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -3497,11 +3719,14 @@ nav.o_portal_submenu {
                                                     <td>
                                                         <span t-if="report.work_mode == 'office'">Work from Office</span>
                                                         <span t-elif="report.work_mode == 'wfh'">Work from Home</span>
+                                                        <span t-elif="report.work_mode == 'field'">Field Work</span>
                                                         <span t-elif="report.work_mode == 'leave'">Leave</span>
                                                         <span t-else="">-</span>
                                                     </td>
                                                     <td t-esc="report.state or '-'"/>
-                                                    <td style="white-space: pre-wrap; min-width: 260px;" t-esc="report.task_report or '-'"/>
+                                                    <td style="min-width: 300px; max-width: 420px; vertical-align: top;">
+                                                        <div style="max-height: 130px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.5; padding-right: 6px;" t-esc="report.task_report or '-'"/>
+                                                    </td>
                                                     <td style="white-space: pre-wrap; min-width: 200px;" t-esc="report.remarks or '-'"/>
                                                     <td class="hr-task-report-update-col">
                                                         <button class="hr-row-edit-toggle"
@@ -3583,6 +3808,7 @@ nav.o_portal_submenu {
                                         <select name="work_mode" class="form-select">
                                             <option value="office" t-att-selected="report.work_mode == 'office' and 'selected' or None">Work from Office</option>
                                             <option value="wfh" t-att-selected="report.work_mode == 'wfh' and 'selected' or None">Work from Home</option>
+                                            <option value="field" t-att-selected="report.work_mode == 'field' and 'selected' or None">Field Work</option>
                                             <option value="leave" t-att-selected="report.work_mode == 'leave' and 'selected' or None">Leave</option>
                                         </select>
 
@@ -3617,6 +3843,7 @@ nav.o_portal_submenu {
 </template>
 <template id="hr_admin_performance_page" name="HR Admin Performance Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_performance'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -3864,6 +4091,7 @@ nav.o_portal_submenu {
 
     <template id="hr_admin_leaves_page" name="HR Admin Leaves">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_leaves'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -3918,7 +4146,7 @@ nav.o_portal_submenu {
 
                     <div class="card hr-content-card">
                         <div class="card-body">
-                            <div class="hr-subsection-title">Employee HR Requests</div>
+                            <div id="hr-requests" class="hr-subsection-title" style="scroll-margin-top: 120px;">Employee HR Requests</div>
 
                             <div class="hr-requests-table-wrap">
                                 <table class="table table-bordered table-striped align-middle hr-admin-requests-table">
@@ -4069,6 +4297,7 @@ nav.o_portal_submenu {
 
     <template id="hr_admin_documents_page" name="HR Admin Documents">
         <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'admin_documents'"/>
             <div class="container oe_structure mt-4 mb-5">
                 <div class="hr-layout-row">
@@ -4096,6 +4325,7 @@ nav.o_portal_submenu {
 
    <template id="hr_admin_payslips_page" name="HR Admin Payslips Page">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_payslips'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -4575,6 +4805,7 @@ nav.o_portal_submenu {
 
 <template id="hr_admin_payslips_tax_calculator_page" name="HR Admin Payslips Tax Calculator">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_payslips_tax_calculator'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -4661,6 +4892,7 @@ nav.o_portal_submenu {
 
 <template id="hr_admin_payslips_tax_rates_page" name="HR Admin Payslips Tax Rates">
     <t t-call="portal.portal_layout">
+        <t t-set="no_breadcrumbs" t-value="1"/>
         <t t-set="current_page" t-value="'admin_payslips_tax_rates'"/>
 
         <div class="container oe_structure mt-4 mb-5">
@@ -4781,75 +5013,8 @@ nav.o_portal_submenu {
 </template>
 
     <template id="hr_employee_chatbot_widget" name="HR Chatbot Widget">
-    <div id="hrPortalChatWidget"
-         style="position: fixed;
-                bottom: 90px;
-                right: 24px;
-                width: min(430px, calc(100vw - 32px));
-                height: min(650px, calc(100vh - 125px));
-                border-radius: 18px;
-                overflow: hidden;
-                z-index: 99999;
-                display: none;
-                background: #ffffff;
-                border: 1px solid #dbeaf5;
-                box-shadow: 0 12px 34px rgba(0,0,0,0.18);">
-
-        <div style="height: 58px;
-                    background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%);
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 0 16px;
-                    color: white;
-                    font-weight: 700;">
-            <div>
-                <i class="fa fa-comments me-2"/>
-                <t t-if="is_hr_manager">Admin HR Chatbot</t>
-                <t t-else="">Employee HR Chatbot</t>
-            </div>
-
-            <button id="hrPortalChatClose"
-                    type="button"
-                    style="background: transparent;
-                           border: none;
-                           color: white;
-                           font-size: 20px;
-                           cursor: pointer;">
-                <i class="fa fa-times"/>
-            </button>
-        </div>
-
-        <div style="height: calc(100% - 58px);">
-            <t t-if="is_hr_manager">
-                <iframe src="http://localhost:8502"
-                        style="width: 100%; height: 100%; border: none;"></iframe>
-            </t>
-
-            <t t-else="">
-                <iframe t-att-src="'http://localhost:8501?employee_code=%s' % (employee.employee_code if employee and employee.employee_code else '')"
-                        style="width: 100%; height: 100%; border: none;"></iframe>
-            </t>
-        </div>
-    </div>
-
-    <button id="hrPortalChatLauncher"
-            type="button"
-            style="position: fixed;
-                   bottom: 24px;
-                   right: 24px;
-                   border-radius: 50%;
-                   width: 60px;
-                   height: 60px;
-                   background: #0d6fb8;
-                   color: white;
-                   border: none;
-                   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-                   z-index: 99999;
-                   cursor: pointer;">
-        <i class="fa fa-comments" style="font-size: 26px; margin-top: 4px;"/>
-    </button>
-</template>
+        <!-- Chatbot disabled for live employee launch because it contains dummy data. -->
+    </template>
 <template id="hide_password_change_for_portal_employees" inherit_id="portal.frontend_layout">
     <xpath expr="//head" position="inside">
         <t t-if="request.env.user.has_group('base.group_portal') and not request.env.user.has_group('base.group_user')">

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_hr_portal_account_wizard_form" model="ir.ui.view">
+        <field name="name">hr.portal.account.wizard.form</field>
+        <field name="model">hr.portal.account.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create / Update Portal Account">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_code" placeholder="e.g. BLMP01"/>
+                            <field name="employee_name" placeholder="Employee full name"/>
+                            <field name="work_email" placeholder="name@blimpglobal.com"/>
+                        </group>
+                        <group>
+                            <field name="temp_password" password="False" placeholder="Set manually"/>
+                            <field name="department_name" placeholder="e.g. IT / Development"/>
+                            <field name="job_title" placeholder="e.g. Web Developer"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        This creates/updates a portal user, sets the password, and does not send automatic invite emails.
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_create_update_account" type="object" string="Create / Update Account" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_portal_account_wizard" model="ir.actions.act_window">
+        <field name="name">Portal Accounts</field>
+        <field name="res_model">hr.portal.account.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_hr_portal_account_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="menu_hr_portal_accounts_external"
+        name="Portal Accounts"
+        parent="hr.menu_hr_root"
+        action="action_hr_portal_account_wizard"
+        sequence="85"
+       />
+</odoo>

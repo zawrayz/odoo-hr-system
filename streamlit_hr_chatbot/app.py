@@ -5,6 +5,9 @@ import time
 from datetime import datetime, date
 
 import streamlit as st
+import hmac
+import hashlib
+import time
 from dotenv import load_dotenv
 from google import genai
 
@@ -30,6 +33,53 @@ from utils import (
 load_dotenv()
 
 st.set_page_config(page_title="Blimp Employee Chatbot", layout="wide")
+
+# CHATBOT_TOKEN_GUARD_START
+def _chatbot_query_param(name, default=""):
+    try:
+        value = st.query_params.get(name, default)
+        if isinstance(value, list):
+            return str(value[0] if value else default).strip()
+        return str(value or default).strip()
+    except Exception:
+        return str(default).strip()
+
+def _validate_chatbot_token(expected_role):
+    secret = os.environ.get("CHATBOT_SHARED_SECRET", "").strip()
+    if not secret:
+        st.error("Chatbot security is not configured.")
+        st.stop()
+
+    ts = _chatbot_query_param("ts")
+    sig = _chatbot_query_param("sig")
+
+    try:
+        ts_int = int(ts)
+    except Exception:
+        st.error("Chatbot access denied.")
+        st.stop()
+
+    if abs(int(time.time()) - ts_int) > 600:
+        st.error("Chatbot session expired. Please refresh the HR portal and open chatbot again.")
+        st.stop()
+
+    if expected_role == "employee":
+        employee_code = _chatbot_query_param("employee_code")
+        if not employee_code:
+            st.error("Chatbot access denied.")
+            st.stop()
+        payload = f"employee|{employee_code}|{ts}"
+    else:
+        payload = f"admin|{ts}"
+
+    expected_sig = hmac.new(secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+
+    if not hmac.compare_digest(expected_sig, sig):
+        st.error("Chatbot access denied.")
+        st.stop()
+
+_validate_chatbot_token("employee")
+# CHATBOT_TOKEN_GUARD_END
 
 st.markdown("""
 <style>

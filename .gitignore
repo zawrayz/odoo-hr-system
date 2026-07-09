@@ -37,3 +37,12 @@ sessions/
 Thumbs.db
 .vscode/
 .idea/streamlit_hr_chatbot/.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Local backup files created during live patches
+*.before_*
+*.before*

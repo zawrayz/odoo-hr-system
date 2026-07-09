@@ -15,6 +15,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/portal_templates.xml',
+        'views/portal_account_wizard_views.xml',
         'views/hr_chatbot_menu.xml',
     ],
     'assets': {
