@@ -44,6 +44,7 @@ class HrDailyWorkReport(models.Model):
         [
             ('office', 'Work from Office'),
             ('wfh', 'Work from Home'),
+            ('field', 'Field Work'),
             ('leave', 'Leave'),
         ],
         string='Work Mode',
@@ -112,6 +113,7 @@ class HrDailyWorkReport(models.Model):
         work_mode_code_map = {
             'office': 'P',
             'wfh': 'R',
+            'field': 'P',
             'leave': 'C',
         }
 

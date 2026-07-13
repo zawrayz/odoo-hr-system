@@ -256,6 +256,39 @@ class HrEmployeePortal(http.Controller):
         except (TypeError, ValueError):
             return 0.0
 
+
+    # ---------------------------------------------------------
+    # Pakistan timezone display helpers
+    # Odoo stores datetimes in UTC; portal should display Pakistan time.
+    # ---------------------------------------------------------
+    def _to_pakistan_datetime(self, value):
+        if not value:
+            return False
+        try:
+            if isinstance(value, str):
+                value = fields.Datetime.from_string(value)
+            return fields.Datetime.context_timestamp(
+                request.env.user.with_context(tz='Asia/Karachi'),
+                value
+            )
+        except Exception:
+            try:
+                return value + timedelta(hours=5)
+            except Exception:
+                return value
+
+    def _format_pakistan_datetime(self, value, fmt='%Y-%m-%d %I:%M:%S %p'):
+        value = self._to_pakistan_datetime(value)
+        if not value:
+            return '-'
+        try:
+            formatted = value.strftime(fmt)
+            if '%I' in fmt:
+                formatted = formatted.replace(' 0', ' ').lstrip('0')
+            return formatted
+        except Exception:
+            return '-'
+
     # ---------------------------------------------------------
     # Common page values
     # ---------------------------------------------------------
@@ -264,6 +297,8 @@ class HrEmployeePortal(http.Controller):
             'employee': employee,
             'is_hr_manager': self._is_hr_manager(),
             'request_type_options': self.REQUEST_TYPE_OPTIONS,
+            'format_pk_datetime': self._format_pakistan_datetime,
+            'to_pk_datetime': self._to_pakistan_datetime,
         }
         if extra_values:
             values.update(extra_values)
@@ -2822,11 +2857,12 @@ class HrEmployeePortal(http.Controller):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
-        hr_employee_env = request.env['hr.employee'].sudo()
+        hr_employee_env = request.env['hr.employee'].sudo().with_context(active_test=False).with_context(active_test=False)
         employees = hr_employee_env.search([], order='name asc')
 
         selected_employee = False
-        selected_employee_id = kwargs.get('employee_id')
+        selected_employee_id = ''
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
         fy_value = kwargs.get('fy')
         month_value = kwargs.get('month')
 
@@ -2838,37 +2874,46 @@ class HrEmployeePortal(http.Controller):
         month_navigation = self._get_month_navigation(selected_month)
         fiscal_context = self._get_fiscal_year_context(selected_month)
 
-        if selected_employee_id:
+        if employee_id_raw:
             try:
-                selected_employee_id = int(selected_employee_id)
+                selected_employee_id = int(employee_id_raw)
                 selected_employee = hr_employee_env.browse(selected_employee_id).exists()
             except (TypeError, ValueError):
                 selected_employee = False
-
-        if not selected_employee and employees:
-            selected_employee = employees[0]
-            selected_employee_id = selected_employee.id
+                selected_employee_id = ''
         elif selected_employee:
             selected_employee_id = selected_employee.id
         else:
-            selected_employee_id = False
+            selected_employee_id = ''
 
         attendance_matrix_row = False
+        attendance_matrix_rows = []
         attendance_days = []
         attendance_display = []
         attendance_fy_summary = False
 
         if selected_employee:
             attendance_matrix_row = self._build_attendance_matrix(selected_employee, selected_month)
+            attendance_matrix_row['employee_id'] = selected_employee.id
+            attendance_matrix_rows = [attendance_matrix_row]
             attendance_days = attendance_matrix_row['days']
             attendance_display = self._get_attendance_logs(selected_employee)
             attendance_fy_summary = self._get_employee_attendance_fy_summary(selected_employee, selected_month)
+        else:
+            for emp in employees:
+                matrix_row = self._build_attendance_matrix(emp, selected_month)
+                matrix_row['employee_id'] = emp.id
+                attendance_matrix_rows.append(matrix_row)
+
+            if attendance_matrix_rows:
+                attendance_days = attendance_matrix_rows[0]['days']
 
         values = self._prepare_portal_values(None, {
             'employees': employees,
             'selected_employee': selected_employee,
             'selected_employee_id': selected_employee_id,
             'attendance_matrix_row': attendance_matrix_row,
+            'attendance_matrix_rows': attendance_matrix_rows,
             'attendance_days': attendance_days,
             'attendances': attendance_display,
             'attendance_fy_summary': attendance_fy_summary,
