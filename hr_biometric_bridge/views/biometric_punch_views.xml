@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+  <record id="view_hr_biometric_punch_list" model="ir.ui.view">
+    <field name="name">hr.biometric.punch.list</field>
+    <field name="model">hr.biometric.punch</field>
+    <field name="arch" type="xml">
+      <list string="Biometric Punches" create="0" edit="0" delete="0" default_order="received_at desc, id desc" decoration-success="state == 'mapped'" decoration-warning="state == 'received'" decoration-danger="state == 'error'">
+        <field name="received_at"/>
+        <field name="punch_time"/>
+        <field name="device_code"/>
+        <field name="employee_code"/>
+        <field name="employee_id"/>
+        <field name="event_type" widget="badge"/>
+        <field name="state" widget="badge"/>
+        <field name="source_ip" optional="hide"/>
+      </list>
+    </field>
+  </record>
+  <record id="view_hr_biometric_punch_form" model="ir.ui.view">
+    <field name="name">hr.biometric.punch.form</field>
+    <field name="model">hr.biometric.punch</field>
+    <field name="arch" type="xml">
+      <form string="Biometric Punch" create="0" edit="0" delete="0">
+        <sheet>
+          <div class="oe_title">
+            <h1>
+              <field name="employee_code" readonly="1"/>
+            </h1>
+          </div>
+          <group>
+            <group string="Punch Information">
+              <field name="device_code" readonly="1"/>
+              <field name="employee_code" readonly="1"/>
+              <field name="employee_id" readonly="1"/>
+              <field name="event_type" readonly="1"/>
+              <field name="state" readonly="1"/>
+            </group>
+            <group string="Timing and Source">
+              <field name="punch_time" readonly="1"/>
+              <field name="received_at" readonly="1"/>
+              <field name="source_ip" readonly="1"/>
+              <field name="request_hash" readonly="1"/>
+            </group>
+          </group>
+          <notebook>
+            <page string="Raw Request">
+              <field name="raw_payload" readonly="1" nolabel="1"/>
+            </page>
+            <page string="Error Details">
+              <field name="error_message" readonly="1" nolabel="1"/>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+  <record id="view_hr_biometric_punch_search" model="ir.ui.view">
+    <field name="name">hr.biometric.punch.search</field>
+    <field name="model">hr.biometric.punch</field>
+    <field name="arch" type="xml">
+      <search string="Search Biometric Punches">
+        <field name="employee_code"/>
+        <field name="employee_id"/>
+        <field name="device_code"/>
+        <field name="punch_time"/>
+        <field name="source_ip"/>
+        <separator/>
+        <filter name="mapped" string="Mapped" domain="[('employee_id', '!=', False)]"/>
+        <filter name="unmapped" string="Unmapped" domain="[('employee_id', '=', False)]"/>
+        <separator/>
+        <filter name="check_in" string="Check In" domain="[('event_type', '=', 'check_in')]"/>
+        <filter name="check_out" string="Check Out" domain="[('event_type', '=', 'check_out')]"/>
+        <filter name="errors" string="Errors" domain="[('state', '=', 'error')]"/>
+        <group>
+          <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+          <filter name="group_device" string="Device" context="{'group_by': 'device_code'}"/>
+          <filter name="group_event" string="Event" context="{'group_by': 'event_type'}"/>
+          <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+          <filter name="group_date" string="Punch Date" context="{'group_by': 'punch_time'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+  <record id="action_hr_biometric_punch" model="ir.actions.act_window">
+    <field name="name">Biometric Sync</field>
+    <field name="res_model">hr.biometric.punch</field>
+    <field name="view_mode">list,form</field>
+    <field name="search_view_id" ref="view_hr_biometric_punch_search"/>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+                No biometric punches have been received.
+            </p>
+      <p>
+                Punches received from the office biometric bridge
+                will appear here for verification.
+            </p>
+    </field>
+  </record>
+  <menuitem id="menu_hr_biometric_punch" name="Biometric Sync" parent="hr.menu_hr_root" action="action_hr_biometric_punch" sequence="95" groups="hr.group_hr_manager"/>
+</odoo>
