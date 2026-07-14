@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_hr_biometric_employee_map_list" model="ir.ui.view">
+        <field name="name">hr.biometric.employee.map.list</field>
+        <field name="model">hr.biometric.employee.map</field>
+        <field name="arch" type="xml">
+            <list
+                string="Biometric Employee Mappings"
+                default_order="device_code, biometric_code">
+
+                <field name="biometric_code"/>
+                <field name="employee_id"/>
+                <field name="device_code"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_biometric_employee_map_form" model="ir.ui.view">
+        <field name="name">hr.biometric.employee.map.form</field>
+        <field name="model">hr.biometric.employee.map</field>
+        <field name="arch" type="xml">
+            <form string="Biometric Employee Mapping">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="biometric_code"/>
+                        <h1>
+                            <field name="biometric_code"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Mapping">
+                            <field name="employee_id"/>
+                            <field name="device_code"/>
+                            <field name="active"/>
+                        </group>
+
+                        <group string="Help">
+                            <div class="text-muted">
+                                Leave Device empty when this biometric
+                                user ID should work with every device.
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_biometric_employee_map_search" model="ir.ui.view">
+        <field name="name">hr.biometric.employee.map.search</field>
+        <field name="model">hr.biometric.employee.map</field>
+        <field name="arch" type="xml">
+            <search string="Search Biometric Mappings">
+                <field name="biometric_code"/>
+                <field name="employee_id"/>
+                <field name="device_code"/>
+
+                <filter
+                    name="active_mappings"
+                    string="Active"
+                    domain="[('active', '=', True)]"/>
+
+                <filter
+                    name="inactive_mappings"
+                    string="Inactive"
+                    domain="[('active', '=', False)]"/>
+
+                <group>
+                    <filter
+                        name="group_employee"
+                        string="Employee"
+                        context="{'group_by': 'employee_id'}"/>
+
+                    <filter
+                        name="group_device"
+                        string="Device"
+                        context="{'group_by': 'device_code'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_biometric_employee_map" model="ir.actions.act_window">
+        <field name="name">Biometric Mappings</field>
+        <field name="res_model">hr.biometric.employee.map</field>
+        <field name="view_mode">list,form</field>
+        <field
+            name="search_view_id"
+            ref="view_hr_biometric_employee_map_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first biometric employee mapping.
+            </p>
+            <p>
+                Connect a user identifier from the biometric
+                machine with an Odoo employee.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_hr_biometric_employee_map"
+        name="Biometric Mappings"
+        parent="hr.menu_hr_root"
+        action="action_hr_biometric_employee_map"
+        sequence="94"
+        groups="hr.group_hr_manager"/>
+
+</odoo>

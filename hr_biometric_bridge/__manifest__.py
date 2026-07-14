@@ -8,6 +8,7 @@
     "depends": ["hr"],
     "data": [
         "security/ir.model.access.csv",
+        "views/biometric_mapping_views.xml",
         "views/biometric_punch_views.xml",
     ],
     "installable": True,

@@ -187,10 +187,37 @@ class HrBiometricBridgeController(http.Controller):
         Employee = request.env["hr.employee"].sudo().with_context(
             active_test=False
         )
-        employee = Employee.search(
-            [("employee_code", "=", employee_code)],
+
+        Mapping = request.env[
+            "hr.biometric.employee.map"
+        ].sudo()
+
+        mapping = Mapping.search(
+            [
+                ("biometric_code", "=", employee_code),
+                ("device_code", "=", device_code),
+                ("active", "=", True),
+            ],
             limit=1,
         )
+
+        if not mapping:
+            mapping = Mapping.search(
+                [
+                    ("biometric_code", "=", employee_code),
+                    ("device_code", "=", False),
+                    ("active", "=", True),
+                ],
+                limit=1,
+            )
+
+        if mapping:
+            employee = mapping.employee_id
+        else:
+            employee = Employee.search(
+                [("employee_code", "=", employee_code)],
+                limit=1,
+            )
 
         forwarded_for = request.httprequest.headers.get("X-Forwarded-For", "")
         source_ip = (
