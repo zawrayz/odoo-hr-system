@@ -1,5 +1,6 @@
+import pytz
 import time as pytime
-from datetime import datetime, time, timedelta, date
+from datetime import timedelta,  datetime, time, timedelta, date
 import calendar
 
 from odoo import http, fields
@@ -526,6 +527,10 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/chatbot/employee/frame', type='http', auth='user', website=True)
     def my_hr_employee_chatbot_frame(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         employee = request.env['hr.employee'].sudo().search([
             ('user_id', '=', request.env.user.id)
         ], limit=1)
@@ -727,8 +732,36 @@ class HrEmployeePortal(http.Controller):
         return True
 
     # ---------------------------------------------------------
-    # Daily work report helpers
+
     # ---------------------------------------------------------
+    # HR Portal Maintenance Mode
+    # ---------------------------------------------------------
+    def _is_hr_portal_maintenance_enabled(self):
+        return request.env['ir.config_parameter'].sudo().get_param(
+            'hr_employee_portal.maintenance_mode', '0'
+        ) == '1'
+
+    def _redirect_if_hr_portal_maintenance(self):
+        if not self._is_hr_portal_maintenance_enabled():
+            return False
+
+        current_path = request.httprequest.path or ''
+
+        # Admin HR portal must remain available during maintenance.
+        if current_path.startswith('/my/hr/admin'):
+            return False
+
+        # If an HR manager/admin opens an employee HR URL, send them back to admin.
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        # Employees are blocked from all employee HR portal pages.
+        return request.render('hr_employee_portal.hr_employee_maintenance_page', {
+            'page_name': 'hr_maintenance',
+            'no_breadcrumbs': True,
+        })
+
+
     def _get_valid_work_modes(self):
         return ['office', 'wfh', 'field', 'leave']
 
@@ -766,6 +799,54 @@ class HrEmployeePortal(http.Controller):
                 return datetime.strptime((datetime_string or '').strip(), '%Y-%m-%dT%H:%M')
             except ValueError:
                 return False
+
+
+
+    def _expire_late_report_accesses(self):
+        if 'hr.late.report.access' not in request.env:
+            return
+
+        expired_accesses = request.env['hr.late.report.access'].sudo().search([
+            ('state', '=', 'active'),
+            ('expires_at', '<=', fields.Datetime.now()),
+        ])
+
+        if expired_accesses:
+            expired_accesses.write({'state': 'expired'})
+
+    def _get_active_late_report_access(self, employee, report_date):
+        self._expire_late_report_accesses()
+
+        if 'hr.late.report.access' not in request.env or not employee or not report_date:
+            return False
+
+        today = fields.Date.context_today(request.env.user)
+        yesterday = today - timedelta(days=1)
+        if report_date >= yesterday:
+            return False
+
+        return request.env['hr.late.report.access'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('report_date', '=', report_date),
+            ('state', '=', 'active'),
+            ('expires_at', '>', fields.Datetime.now()),
+        ], limit=1)
+
+    def _get_active_late_report_accesses(self, employee):
+        self._expire_late_report_accesses()
+
+        if 'hr.late.report.access' not in request.env or not employee:
+            return request.env['hr.late.report.access'].sudo().browse([])
+
+        today = fields.Date.context_today(request.env.user)
+        yesterday = today - timedelta(days=1)
+
+        return request.env['hr.late.report.access'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('report_date', '<', yesterday),
+            ('state', '=', 'active'),
+            ('expires_at', '>', fields.Datetime.now()),
+        ], order='report_date desc, expires_at asc')
 
     def _get_task_report_search_domain(self, employee_id=None, date_from=None, date_to=None):
         domain = []
@@ -1552,6 +1633,10 @@ class HrEmployeePortal(http.Controller):
         return attendance_display
     @http.route('/my/hr/performance', type='http', auth='user', website=True)
     def my_hr_performance(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1628,6 +1713,10 @@ class HrEmployeePortal(http.Controller):
         return request.render('hr_employee_portal.hr_employee_performance_page', values)
     @http.route('/my/hr/performance/submit', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_performance_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1712,6 +1801,10 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/performance/update', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_performance_update(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin/performance')
 
@@ -1798,10 +1891,17 @@ class HrEmployeePortal(http.Controller):
     # =========================================================
     @http.route('/my/hr/request/submit', type='http', auth='user', website=True, methods=['POST'])
     def my_hr_request_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         if not employee:
             return request.redirect(self._build_redirect_url('/my/hr', {
                 'request_status': 'error',
@@ -1857,6 +1957,7 @@ class HrEmployeePortal(http.Controller):
                 'reason': reason,
                 'state': 'submitted',
                 'submitted_at': fields.Datetime.now(),
+                'late_submission_source': late_submission_source,
             })
         except Exception:
             return request.redirect(self._build_redirect_url('/my/hr', {
@@ -1885,6 +1986,15 @@ class HrEmployeePortal(http.Controller):
     # =========================================================
     @http.route('/my/hr', type='http', auth='user', website=True)
     def my_hr_dashboard(self, **kwargs):
+        # Hard maintenance guard for employee dashboard route.
+        if self._is_hr_portal_maintenance_enabled():
+            if self._is_hr_manager():
+                return request.redirect('/my/hr/admin')
+            return request.render('hr_employee_portal.hr_employee_maintenance_page', {
+                'page_name': 'hr_maintenance',
+                'no_breadcrumbs': True,
+            })
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
@@ -1914,10 +2024,17 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/profile', type='http', auth='user', website=True)
     def my_hr_profile(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         missing_employee = True if kwargs.get('missing_employee') else False
         values = self._prepare_portal_values(employee, {
             'missing_employee': missing_employee,
@@ -1926,10 +2043,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/employee-record', type='http', auth='user', website=True)
     def my_hr_profile_employee_record(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1941,10 +2065,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/bank-account', type='http', auth='user', website=True)
     def my_hr_profile_bank_account(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1956,10 +2087,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/personal-details', type='http', auth='user', website=True)
     def my_hr_profile_personal_details(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1971,10 +2109,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/emergency-contact', type='http', auth='user', website=True)
     def my_hr_profile_emergency_contact(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -1986,10 +2131,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/profile/employment-history', type='http', auth='user', website=True)
     def my_hr_profile_employment_history(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -2089,10 +2241,17 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/attendance', type='http', auth='user', website=True)
     def my_hr_attendance(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
@@ -2136,22 +2295,42 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/daily-work-report', type='http', auth='user', website=True)
     def my_hr_daily_work_report(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         redirect_response = self._redirect_if_no_employee(employee)
         if redirect_response:
             return redirect_response
 
         today = fields.Date.context_today(request.env.user)
+        yesterday = today - timedelta(days=1)
         existing_report = False
+        yesterday_report = False
+        can_submit_yesterday_late = False
+        temp_late_accesses = self._get_active_late_report_accesses(employee)
 
         if 'hr.daily.work.report' in request.env:
-            existing_report = request.env['hr.daily.work.report'].sudo().search([
+            report_env = request.env['hr.daily.work.report'].sudo()
+
+            existing_report = report_env.search([
                 ('employee_id', '=', employee.id),
                 ('report_date', '=', today),
             ], limit=1)
+
+            yesterday_report = report_env.search([
+                ('employee_id', '=', employee.id),
+                ('report_date', '=', yesterday),
+            ], limit=1)
+
+            can_submit_yesterday_late = not bool(yesterday_report)
 
         report_status = (kwargs.get('report_status') or '').strip()
         report_message = (kwargs.get('report_message') or '').strip()
@@ -2159,7 +2338,11 @@ class HrEmployeePortal(http.Controller):
 
         values = self._prepare_portal_values(employee, {
             'today': today,
+            'yesterday': yesterday,
             'existing_report': existing_report,
+            'yesterday_report': yesterday_report,
+            'can_submit_yesterday_late': can_submit_yesterday_late,
+            'temp_late_accesses': temp_late_accesses,
             'success': success,
             'report_status': report_status,
             'report_message': report_message,
@@ -2168,10 +2351,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/daily-work-report/submit', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_daily_work_report_submit(self, **post):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         if not employee:
             redirect_url = self._build_redirect_url('/my/hr', {
                 'report_status': 'error',
@@ -2188,7 +2378,30 @@ class HrEmployeePortal(http.Controller):
 
         work_mode = (post.get('work_mode') or '').strip()
         task_report = (post.get('task_report') or '').strip()
-        report_date = fields.Date.context_today(request.env.user)
+
+        today = fields.Date.context_today(request.env.user)
+        yesterday = today - timedelta(days=1)
+        requested_report_date = self._parse_portal_date(post.get('report_date')) or today
+
+        temp_late_access = False
+
+        if requested_report_date == today:
+            report_date = today
+            late_submission_source = False
+        elif requested_report_date == yesterday:
+            report_date = yesterday
+            late_submission_source = 'auto_next_day'
+        else:
+            temp_late_access = self._get_active_late_report_access(employee, requested_report_date)
+            if not temp_late_access:
+                redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
+                    'report_status': 'error',
+                    'report_message': 'Temporary access is not available or has expired for this missed report date.',
+                })
+                return request.redirect(redirect_url)
+
+            report_date = requested_report_date
+            late_submission_source = 'admin_temp_access'
 
         valid_work_modes = self._get_valid_work_modes()
         if work_mode not in valid_work_modes:
@@ -2212,12 +2425,12 @@ class HrEmployeePortal(http.Controller):
         if existing_report:
             redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
                 'report_status': 'error',
-                'report_message': 'You have already submitted your report for today.',
+                'report_message': 'You have already submitted your report for this date.',
             })
             return request.redirect(redirect_url)
 
         try:
-            request.env['hr.daily.work.report'].sudo().with_context(
+            new_report = request.env['hr.daily.work.report'].sudo().with_context(
                 enforce_employee_portal_rule=True
             ).create({
                 'employee_id': employee.id,
@@ -2226,7 +2439,20 @@ class HrEmployeePortal(http.Controller):
                 'task_report': task_report,
                 'state': 'submitted',
                 'submitted_at': fields.Datetime.now(),
+                'late_submission_source': late_submission_source,
             })
+
+            if late_submission_source == 'admin_temp_access':
+                used_accesses = request.env['hr.late.report.access'].sudo().search([
+                    ('employee_id', '=', employee.id),
+                    ('report_date', '=', report_date),
+                    ('state', '=', 'active'),
+                ])
+                if used_accesses:
+                    used_accesses.write({
+                        'state': 'used',
+                        'used_report_id': new_report.id,
+                    })
         except ValidationError as error:
             redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
                 'report_status': 'error',
@@ -2240,15 +2466,23 @@ class HrEmployeePortal(http.Controller):
             })
             return request.redirect(redirect_url)
 
+        success_message = (
+            'Late work report submitted successfully for %s.' % report_date
+            if late_submission_source
+            else 'Daily work report submitted successfully.'
+        )
+
         redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
             'report_status': 'success',
-            'report_message': 'Daily work report submitted successfully.',
+            'report_message': success_message,
         })
         return request.redirect(redirect_url)
     @http.route('/my/hr/admin/performance', type='http', auth='user', website=True)
     def my_hr_admin_performance(self, **kwargs):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
+
+        self._expire_late_report_accesses()
 
         performance_env = request.env['hr.daily.performance.plan'].sudo()
         employee_env = request.env['hr.employee'].sudo()
@@ -2510,6 +2744,10 @@ class HrEmployeePortal(http.Controller):
     # ---------------------------------------------------------
     @http.route('/my/hr/documents', type='http', auth='user', website=True)
     def my_hr_documents(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
@@ -2520,10 +2758,17 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/payroll', type='http', auth='user', website=True)
     def my_hr_payroll(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         fy_value = kwargs.get('fy')
         month_value = kwargs.get('month')
 
@@ -2559,16 +2804,27 @@ class HrEmployeePortal(http.Controller):
 
     @http.route('/my/hr/payslips', type='http', auth='user', website=True)
     def my_hr_payslips(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
         return request.redirect('/my/hr/payroll')
 
     @http.route('/my/hr/leaves', type='http', auth='user', website=True)
     def my_hr_leaves(self, **kwargs):
+        hr_maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
         if self._is_hr_manager():
             return request.redirect('/my/hr/admin')
 
         employee = self._get_employee()
+        maintenance_response = self._redirect_if_hr_portal_maintenance()
+        if maintenance_response is not False:
+            return maintenance_response
         hr_requests = request.env['hr.employee.portal.request'].sudo()
 
         try:
@@ -2662,16 +2918,44 @@ class HrEmployeePortal(http.Controller):
             ('submitted_at', '<', fields.Datetime.to_string(next_day_start)),
         ])
 
+        hr_maintenance_enabled = self._is_hr_portal_maintenance_enabled()
+
         values = self._prepare_portal_values(None, {
             'employees': all_employees,
             'total_employees': total_employees,
             'present_employees': present_employee_count,
             'task_reports_submitted_today': task_reports_submitted_today,
+            'hr_maintenance_enabled': hr_maintenance_enabled,
             'employee_status': (kwargs.get('employee_status') or '').strip(),
             'employee_message': (kwargs.get('employee_message') or '').strip(),
         })
         return request.render('hr_employee_portal.hr_admin_dashboard_page', values)
 
+
+
+    @http.route('/my/hr/admin/maintenance/toggle', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_maintenance_toggle(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        action = (post.get('maintenance_action') or '').strip()
+        enabled = '1' if action == 'on' else '0'
+
+        request.env['ir.config_parameter'].sudo().set_param(
+            'hr_employee_portal.maintenance_mode',
+            enabled
+        )
+
+        message = (
+            'Employee HR portal maintenance mode enabled. Employees are temporarily blocked.'
+            if enabled == '1'
+            else 'Employee HR portal maintenance mode disabled. Employees can access the portal again.'
+        )
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin', {
+            'employee_status': 'success',
+            'employee_message': message,
+        }))
 
     @http.route('/my/hr/admin/portal-accounts', type='http', auth='user', website=True)
     def my_hr_admin_portal_accounts_page(self, **kwargs):
@@ -3118,6 +3402,8 @@ class HrEmployeePortal(http.Controller):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
+        self._expire_late_report_accesses()
+
         hr_employee_env = request.env['hr.employee'].sudo()
         report_env = request.env['hr.daily.work.report'].sudo()
 
@@ -3182,8 +3468,50 @@ class HrEmployeePortal(http.Controller):
             next_params['page'] = page + 1
             next_page_url = self._build_redirect_url('/my/hr/admin/task-reports', next_params)
 
+        late_accesses = False
+        late_access_employee_id_raw = (kwargs.get('late_access_employee_id') or '').strip()
+        late_access_report_date = self._parse_portal_date(kwargs.get('late_access_report_date'))
+        late_access_state = (kwargs.get('late_access_state') or '').strip()
+
+        selected_late_access_employee_id = False
+        if late_access_employee_id_raw:
+            try:
+                selected_late_access_employee_id = int(late_access_employee_id_raw)
+            except (TypeError, ValueError):
+                selected_late_access_employee_id = False
+
+        if late_access_state not in ['active', 'used', 'expired', 'revoked']:
+            late_access_state = ''
+
+        late_access_filter_applied = bool(
+            selected_late_access_employee_id or late_access_report_date or late_access_state
+        )
+
+        if 'hr.late.report.access' in request.env and late_access_filter_applied:
+            late_access_domain = []
+
+            if selected_late_access_employee_id:
+                late_access_domain.append(('employee_id', '=', selected_late_access_employee_id))
+
+            if late_access_report_date:
+                late_access_domain.append(('report_date', '=', late_access_report_date))
+
+            if late_access_state:
+                late_access_domain.append(('state', '=', late_access_state))
+
+            late_accesses = request.env['hr.late.report.access'].sudo().search(
+                late_access_domain,
+                order='create_date desc, id desc',
+                limit=50
+            )
+
         values = self._prepare_portal_values(None, {
             'employees': employees,
+            'late_accesses': late_accesses,
+            'late_access_filter_applied': late_access_filter_applied,
+            'selected_late_access_employee_id': selected_late_access_employee_id,
+            'late_access_report_date': late_access_report_date.strftime('%Y-%m-%d') if late_access_report_date else '',
+            'late_access_state': late_access_state,
             'selected_employee_id': selected_employee_id,
             'date_from': date_from.strftime('%Y-%m-%d') if date_from else '',
             'date_to': date_to.strftime('%Y-%m-%d') if date_to else '',
@@ -3203,7 +3531,176 @@ class HrEmployeePortal(http.Controller):
 
         return request.render('hr_employee_portal.hr_admin_task_reports_page', values)
 
-    @http.route('/my/hr/admin/task-reports/update', type='http', auth='user', methods=['POST'], website=True)
+
+
+    @http.route('/my/hr/admin/late-access', type='http', auth='user', website=True)
+    def my_hr_admin_late_access_page(self, **kwargs):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        self._expire_late_report_accesses()
+
+        employees = request.env['hr.employee'].sudo().search([], order='name asc')
+
+        employee_id_raw = (kwargs.get('employee_id') or '').strip()
+        report_date = self._parse_portal_date(kwargs.get('report_date'))
+        state = (kwargs.get('state') or '').strip()
+
+        selected_employee_id = False
+        if employee_id_raw:
+            try:
+                selected_employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                selected_employee_id = False
+
+        if state not in ['active', 'used', 'expired', 'revoked']:
+            state = ''
+
+        filter_applied = bool(selected_employee_id or report_date or state)
+        late_accesses = False
+
+        if 'hr.late.report.access' in request.env and filter_applied:
+            domain = []
+
+            if selected_employee_id:
+                domain.append(('employee_id', '=', selected_employee_id))
+
+            if report_date:
+                domain.append(('report_date', '=', report_date))
+
+            if state:
+                domain.append(('state', '=', state))
+
+            late_accesses = request.env['hr.late.report.access'].sudo().search(
+                domain,
+                order='create_date desc, id desc',
+                limit=50,
+            )
+
+        values = self._prepare_portal_values(None, {
+            'employees': employees,
+            'late_accesses': late_accesses,
+            'filter_applied': filter_applied,
+            'selected_employee_id': selected_employee_id,
+            'report_date': report_date.strftime('%Y-%m-%d') if report_date else '',
+            'state': state,
+            'report_status': (kwargs.get('report_status') or '').strip(),
+            'report_message': (kwargs.get('report_message') or '').strip(),
+        })
+        return request.render('hr_employee_portal.hr_admin_late_access_page', values)
+
+    @http.route('/my/hr/admin/task-reports/late-access/grant', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_late_access_grant(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id_raw = (post.get('employee_id') or '').strip()
+        report_date = self._parse_portal_date(post.get('report_date'))
+        expires_at_local = self._parse_portal_datetime_local(post.get('expires_at'))
+        notes = (post.get('notes') or '').strip()
+
+        expires_at = False
+        if expires_at_local:
+            user_tz_name = request.env.user.tz or 'Asia/Karachi'
+            if user_tz_name == 'UTC':
+                user_tz_name = 'Asia/Karachi'
+            user_tz = pytz.timezone(user_tz_name)
+            localized_expiry = user_tz.localize(expires_at_local)
+            expires_at = localized_expiry.astimezone(pytz.UTC).replace(tzinfo=None)
+
+        try:
+            employee_id = int(employee_id_raw)
+        except Exception:
+            employee_id = False
+
+        employee = request.env['hr.employee'].sudo().browse(employee_id).exists() if employee_id else False
+
+        if not employee or not report_date or not expires_at:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+                'report_status': 'error',
+                'report_message': 'Please select employee, missed date, and expiry time.',
+            }))
+
+        today = fields.Date.context_today(request.env.user)
+        yesterday = today - timedelta(days=1)
+        if report_date >= yesterday:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+                'report_status': 'error',
+                'report_message': 'Temporary access can only be granted after the automatic next-day late window has passed.',
+            }))
+
+        if expires_at <= fields.Datetime.now():
+            return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+                'report_status': 'error',
+                'report_message': 'Expiry time must be in the future.',
+            }))
+
+        existing_report = request.env['hr.daily.work.report'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('report_date', '=', report_date),
+        ], limit=1)
+
+        if existing_report:
+            return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+                'report_status': 'error',
+                'report_message': 'This employee already has a report for the selected date.',
+            }))
+
+        access_env = request.env['hr.late.report.access'].sudo()
+        existing_access = access_env.search([
+            ('employee_id', '=', employee.id),
+            ('report_date', '=', report_date),
+            ('state', '=', 'active'),
+        ], limit=1)
+
+        vals = {
+            'employee_id': employee.id,
+            'report_date': report_date,
+            'expires_at': fields.Datetime.to_string(expires_at),
+            'notes': notes,
+            'state': 'active',
+        }
+
+        if existing_access:
+            existing_access.write(vals)
+            message = 'Temporary access updated for %s on %s.' % (employee.name, report_date)
+        else:
+            access_env.create(vals)
+            message = 'Temporary access granted for %s on %s.' % (employee.name, report_date)
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+            'report_status': 'success',
+            'report_message': message,
+        }))
+
+    @http.route('/my/hr/admin/late-access/late-access/revoke', type='http', auth='user', methods=['POST'], website=True)
+    def my_hr_admin_late_access_revoke(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        access_id_raw = (post.get('access_id') or '').strip()
+
+        try:
+            access_id = int(access_id_raw)
+        except Exception:
+            access_id = False
+
+        access = request.env['hr.late.report.access'].sudo().browse(access_id).exists() if access_id else False
+
+        if access and access.state == 'active':
+            access.write({'state': 'revoked'})
+            status = 'success'
+            message = 'Temporary access revoked.'
+        else:
+            status = 'error'
+            message = 'Temporary access not found or already used.'
+
+        return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
+            'report_status': status,
+            'report_message': message,
+        }))
+
+    @http.route('/my/hr/admin/late-access/update', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_admin_task_reports_update(self, **post):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')

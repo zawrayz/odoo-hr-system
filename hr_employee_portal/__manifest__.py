@@ -10,6 +10,7 @@
         'hr_attendance',
         'hr_holidays',
         'hr_employee_extra_fields',
+        'hr_daily_work_report',
         'mail',
     ],
     'data': [
@@ -22,6 +23,7 @@
         'web.assets_frontend': [
             'hr_employee_portal/static/src/css/hr_employee_portal.css',
             'hr_employee_portal/static/src/js/hr_employee_portal_chatbot.js',
+            'hr_employee_portal/static/src/js/hr_late_access_countdown.js',
         ],
     },
     'installable': True,
