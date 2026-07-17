@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_hr_biometric_punch_list_attendance" model="ir.ui.view">
+        <field name="name">hr.biometric.punch.list.attendance</field>
+        <field name="model">hr.biometric.punch</field>
+        <field name="inherit_id" ref="hr_biometric_bridge.view_hr_biometric_punch_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='event_type']" position="after">
+                <field name="attendance_result" widget="badge"/>
+                <field name="attendance_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hr_biometric_punch_form_attendance" model="ir.ui.view">
+        <field name="name">hr.biometric.punch.form.attendance</field>
+        <field name="model">hr.biometric.punch</field>
+        <field name="inherit_id" ref="hr_biometric_bridge.view_hr_biometric_punch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='event_type']" position="after">
+                <field name="attendance_result" readonly="1"/>
+                <field name="attendance_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hr_biometric_punch_search_attendance" model="ir.ui.view">
+        <field name="name">hr.biometric.punch.search.attendance</field>
+        <field name="model">hr.biometric.punch</field>
+        <field name="inherit_id" ref="hr_biometric_bridge.view_hr_biometric_punch_search"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='source_ip']" position="after">
+                <field name="attendance_result"/>
+                <field name="attendance_id"/>
+            </xpath>
+
+            <xpath expr="//filter[@name='errors']" position="after">
+                <filter
+                    name="attendance_duplicates"
+                    string="Duplicate Scans"
+                    domain="[('attendance_result', '=', 'duplicate')]"
+                />
+                <filter
+                    name="attendance_errors"
+                    string="Attendance Errors"
+                    domain="[('attendance_result', '=', 'error')]"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
