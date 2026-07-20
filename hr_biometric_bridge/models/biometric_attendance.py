@@ -75,18 +75,6 @@ class HrBiometricPunchAttendance(models.Model):
             "on",
         }
 
-        allowed_codes = {
-            value.strip()
-            for value in str(
-                config.get_param(
-                    "hr_biometric_bridge.real_attendance_codes",
-                    "",
-                )
-                or ""
-            ).split(",")
-            if value.strip()
-        }
-
         try:
             duplicate_seconds = int(
                 config.get_param(
@@ -105,7 +93,6 @@ class HrBiometricPunchAttendance(models.Model):
 
         return (
             enabled,
-            allowed_codes,
             duplicate_seconds,
         )
 
@@ -178,13 +165,56 @@ class HrBiometricPunchAttendance(models.Model):
 
         (
             enabled,
-            allowed_codes,
             duplicate_seconds,
         ) = self._attendance_config()
 
+        Mapping = self.env[
+            "hr.biometric.employee.map"
+        ].sudo()
+
+        biometric_code = (
+            self.employee_code or ""
+        ).strip()
+
+        device_code = (
+            self.device_code or ""
+        ).strip()
+
+        attendance_mapping = Mapping.search(
+            [
+                ("active", "=", True),
+                (
+                    "biometric_code",
+                    "=",
+                    biometric_code,
+                ),
+                (
+                    "device_code",
+                    "=",
+                    device_code,
+                ),
+            ],
+            limit=1,
+        )
+
+        if not attendance_mapping:
+            attendance_mapping = Mapping.search(
+                [
+                    ("active", "=", True),
+                    (
+                        "biometric_code",
+                        "=",
+                        biometric_code,
+                    ),
+                    ("device_code", "=", False),
+                ],
+                limit=1,
+            )
+
         if (
             not enabled
-            or self.employee_code not in allowed_codes
+            or not attendance_mapping
+            or not attendance_mapping.attendance_enabled
         ):
             self.sudo().write({
                 "attendance_result": "disabled",

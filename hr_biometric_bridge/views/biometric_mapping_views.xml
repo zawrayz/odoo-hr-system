@@ -12,6 +12,10 @@
                 <field name="biometric_code"/>
                 <field name="employee_id"/>
                 <field name="device_code"/>
+                <field
+                    name="attendance_enabled"
+                    string="Process Attendance"
+                    widget="boolean_toggle"/>
                 <field name="active" widget="boolean_toggle"/>
             </list>
         </field>
@@ -34,6 +38,7 @@
                         <group string="Mapping">
                             <field name="employee_id"/>
                             <field name="device_code"/>
+                            <field name="attendance_enabled"/>
                             <field name="active"/>
                         </group>
 
@@ -61,6 +66,19 @@
                 <field name="biometric_code"/>
                 <field name="employee_id"/>
                 <field name="device_code"/>
+                <field name="attendance_enabled"/>
+
+                <filter
+                    name="processing_attendance"
+                    string="Processing Attendance"
+                    domain="[('attendance_enabled', '=', True)]"/>
+
+                <filter
+                    name="not_processing_attendance"
+                    string="Not Processing Attendance"
+                    domain="[('attendance_enabled', '=', False)]"/>
+
+                <separator/>
 
                 <filter
                     name="active_mappings"

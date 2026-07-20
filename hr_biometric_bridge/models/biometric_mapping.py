@@ -41,6 +41,15 @@ class HrBiometricEmployeeMap(models.Model):
         string="Notes",
     )
 
+    attendance_enabled = fields.Boolean(
+        string="Process Attendance",
+        default=False,
+        help=(
+            "When enabled, scans from this biometric user "
+            "may create Odoo check-in and check-out records."
+        ),
+    )
+
     @api.constrains(
         "biometric_code",
         "device_code",
