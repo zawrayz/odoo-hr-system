@@ -2070,3 +2070,27 @@
 .o_portal_wrap {
     overflow-x: auto !important;
 }
+/* Attendance sticky employee column v1 */
+.hr-attendance-matrix thead th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 10 !important;
+    min-width: 230px !important;
+    width: 230px !important;
+    background: #eef4f8 !important;
+    box-shadow: 4px 0 8px rgba(0, 0, 0, 0.08);
+}
+
+.hr-attendance-matrix tbody td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 5 !important;
+    min-width: 230px !important;
+    width: 230px !important;
+    background: #ffffff !important;
+    box-shadow: 4px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.hr-attendance-matrix tbody tr:hover td:first-child {
+    background: #f8fbfd !important;
+}
