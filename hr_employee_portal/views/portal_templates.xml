@@ -2883,7 +2883,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
 
                                 <t t-if="attendance_matrix_row">
-                                    <div class="hr-attendance-matrix-wrap">
+                                    <div class="hr-attendance-matrix-wrap hr-attendance-matrix-wrap-single hr-employee-attendance-matrix-wrap">
                                         <table class="hr-attendance-matrix">
                                             <thead>
                                                 <tr>
@@ -2995,14 +2995,6 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </form>
                             </dialog>
 
-                            <t t-if="not attendance_matrix_rows">
-                                    <div class="card hr-empty-state-card mt-3">
-                                        <div class="card-body">
-                                            <div class="hr-empty-state-title">No attendance found</div>
-                                            <p class="hr-empty-state-text">No attendance register exists for your selected month.</p>
-                                        </div>
-                                    </div>
-                                </t>
                             </div>
                         </div>
 
