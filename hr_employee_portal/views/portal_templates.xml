@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <odoo>
     <template id="hr_employee_portal_shared_styles" name="HR Employee Portal Shared Styles">
     <style>
@@ -463,8 +463,8 @@
         }
 
         .hr-day-weekend { background: #f6fbfe; }
-        .hr-code-P { background: #f6fbf6; color: #1f7a36; }
-        .hr-code-R { background: #fff7e8; color: #8c5a00; }
+        .hr-code-P { background: #dbeafe; color: #1d4ed8; }
+        .hr-code-R { background: #dcfce7; color: #15803d; }
         .hr-code-H { background: #edf6fd; color: #0d6fb8; }
         .hr-code-S { background: #f3efff; color: #6b46c1; }
         .hr-code-C { background: #edf8ea; color: #2f855a; }
@@ -1450,7 +1450,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <t t-if="request_status">
                     <div t-attf-class="alert #{'alert-success' if request_status == 'success' else 'alert-danger'} alert-dismissible fade show" role="alert">
                         <t t-esc="request_message.replace('+', ' ')"/>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"/>
                     </div>
                 </t>
 
@@ -1567,7 +1567,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         </div>
                                         <div class="col-12">
                                             <label class="form-label" style="font-weight: 600;">Reason / Details <span class="text-danger">*</span></label>
-                                            <textarea name="reason" class="form-control" rows="2" required="required" placeholder="Briefly describe your request..."></textarea>
+                                            <textarea name="reason" class="form-control" rows="2" required="required" placeholder="Briefly describe your request..."/>
                                         </div>
                                         <div class="col-12 text-end">
                                             <button type="submit" class="hr-request-btn border-0">
@@ -1687,7 +1687,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 </div>
             </div>
 
-            
+
 
             <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
         </t>
@@ -1732,7 +1732,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-esc="report_message"/>
     </div>
 </t>
-                                
+
                                 <t t-if="success">
                                     <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
                                         <i class="fa fa-check-circle fa-2x me-3"/>
@@ -1780,7 +1780,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                                 <div class="col-md-12">
                                                     <label class="form-label fw-bold" style="color: #084f88;">Task Report <span class="text-danger">*</span></label>
-                                                    <textarea name="task_report" class="form-control" rows="8" required="required" placeholder="Write missed work report..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"></textarea>
+                                                    <textarea name="task_report" class="form-control" rows="8" required="required" placeholder="Write missed work report..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"/>
                                                 </div>
                                             </div>
 
@@ -1829,7 +1829,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                             <div class="col-md-12">
                                                 <label class="form-label fw-bold" style="color: #084f88;">Late Task Report <span class="text-danger">*</span></label>
-                                                <textarea name="task_report" class="form-control" rows="8" required="required" placeholder="Write previous working day missed work report..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"></textarea>
+                                                <textarea name="task_report" class="form-control" rows="8" required="required" placeholder="Write previous working day missed work report..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"/>
                                             </div>
                                         </div>
 
@@ -1880,13 +1880,13 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 <t t-if="not existing_report">
                                     <form action="/my/hr/daily-work-report/submit" method="post" class="needs-validation">
                                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                        
+
                                         <div class="row g-4 mb-4">
                                             <div class="col-md-6">
                                                 <label class="form-label fw-bold" style="color: #084f88;">Employee Name</label>
                                                 <input type="text" class="form-control bg-light" t-att-value="employee.name" readonly="readonly" style="border-radius: 10px; border: 1px solid #ececec; color: #666;"/>
                                             </div>
-                                            
+
                                             <div class="col-md-6">
                                                 <label class="form-label fw-bold" style="color: #084f88;">Date</label>
                                                 <input type="date" class="form-control bg-light" t-att-value="today" readonly="readonly" style="border-radius: 10px; border: 1px solid #ececec; color: #666;"/>
@@ -1902,17 +1902,17 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     <option value="" disabled="disabled" selected="selected">-- Select Work Mode --</option>
                                                     <option value="office">Work from Office</option>
                                                     <option value="wfh">Work from Home</option>
-                                                    <option value="field">Field Work</option>
-                                                    <option value="leave">Leave</option>
+                                                    <option t-if="not is_weekend_today" value="field">Field Work</option>
+                                                    <option t-if="not is_weekend_today" value="leave">Leave</option>
                                                 </select>
                                             </div>
-                                            
+
                                             <div class="col-md-12">
                                                 <label class="form-label fw-bold" style="color: #084f88;">Task Report <span class="text-danger">*</span></label>
-                                                <textarea name="task_report" class="form-control" rows="10" required="required" placeholder="1. Completed module architecture&#10;2. Fixed portal routing bugs&#10;3. Conducted team meeting..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"></textarea>
+                                                <textarea name="task_report" class="form-control" rows="10" required="required" placeholder="1. Completed module architecture&#10;2. Fixed portal routing bugs&#10;3. Conducted team meeting..." style="border-radius: 10px; border: 1px solid #ececec; resize: vertical;"/>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="text-end">
                                             <button type="submit" class="btn" style="background: linear-gradient(135deg, #0d6fb8 0%, #084f88 100%); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; border: none;">
                                                 <i class="fa fa-paper-plane me-2"/> Submit Report
@@ -1927,9 +1927,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 </div>
             </div>
             <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
-        
+
             <script type="text/javascript">
-            <![CDATA[
+
             (function () {
                 function parseExpiry(value) {
                     if (!value) return null;
@@ -1961,12 +1961,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                         var diff = expiry.getTime() - Date.now();
 
-                        if (diff <= 0) {
+                        if (diff &lt;= 0) {
                             if (countdown) countdown.textContent = 'Expired. Please refresh the page or contact admin.';
                             if (submitButton) {
                                 submitButton.disabled = true;
                                 submitButton.classList.add('disabled');
-                                submitButton.innerHTML = '<i class="fa fa-lock me-2"></i> Access Expired';
+                                submitButton.innerHTML = '&lt;i class="fa fa-lock me-2"&gt;&lt;/i&gt; Access Expired';
                             }
                             return;
                         }
@@ -1977,7 +1977,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         var seconds = totalSeconds % 60;
 
                         var label = '';
-                        if (hours > 0) label += hours + 'h ';
+                        if (hours &gt; 0) label += hours + 'h ';
                         label += minutes + 'm ' + seconds + 's';
 
                         if (countdown) countdown.textContent = label;
@@ -1989,7 +1989,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         var expiry = parseExpiry(row.getAttribute('data-expires-utc'));
                         if (!expiry) return;
 
-                        if (expiry.getTime() <= Date.now()) {
+                        if (expiry.getTime() &lt;= Date.now()) {
                             var status = row.querySelector('.hr-late-access-status');
                             var revokeForm = row.querySelector('.hr-late-access-revoke-form');
 
@@ -2019,13 +2019,13 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     if (!form.classList || !form.classList.contains('hr-late-access-form')) return;
 
                     var expiry = parseExpiry(form.getAttribute('data-expires-utc'));
-                    if (expiry && expiry.getTime() <= Date.now()) {
+                    if (expiry &amp;&amp; expiry.getTime() &lt;= Date.now()) {
                         event.preventDefault();
                         alert('Temporary access has expired. Please refresh the page or contact admin.');
                     }
                 });
             })();
-            ]]>
+
             </script>
 
 </t>
@@ -2104,7 +2104,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                     <div class="col-md-12">
                                         <label class="form-label fw-bold">Task Description</label>
-                                        <textarea name="task_description" class="form-control" rows="4" required="required"></textarea>
+                                        <textarea name="task_description" class="form-control" rows="4" required="required"/>
                                     </div>
 
                                     <div class="col-12 text-end">
@@ -2210,9 +2210,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 
     <div class="hr-pagination-actions">
-        <a t-if="previous_page_url"
-           t-att-href="previous_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="previous_page_url" t-att-href="previous_page_url" class="btn btn-light fw-bold">
             <i class="fa fa-chevron-left"/> Previous
         </a>
 
@@ -2220,9 +2218,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
             Page <t t-esc="performance_page"/> / <t t-esc="performance_page_count"/>
         </span>
 
-        <a t-if="next_page_url"
-           t-att-href="next_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="next_page_url" t-att-href="next_page_url" class="btn btn-light fw-bold">
             Next <i class="fa fa-chevron-right"/>
         </a>
     </div>
@@ -2808,12 +2804,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     <div class="row g-3 align-items-end">
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold">Fiscal Year</label>
-                                            <select name="fy"
-                                            class="form-select"
-                                            onchange="this.form.submit();">
+                                            <select name="fy" class="form-select" onchange="this.form.submit();">
                                                 <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                                    <option t-att-value="fy_opt['value']"
-                                                            t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                    <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                                                         <t t-esc="fy_opt['label']"/>
                                                     </option>
                                                 </t>
@@ -2824,8 +2817,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                             <label class="form-label fw-bold">Select FY Month</label>
                                             <select name="month" class="form-select">
                                                 <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                                    <option t-att-value="month_opt['value']"
-                                                            t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                    <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                                                         <t t-esc="month_opt['label']"/>
                                                     </option>
                                                 </t>
@@ -2937,7 +2929,73 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </div>
                                 </t>
 
-                                <t t-if="not attendance_matrix_rows">
+
+                            <dialog id="attendanceColumnDialog" class="hr-column-edit-dialog">
+
+                                <form action="/my/hr/admin/attendances/update-column" method="post">
+
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <input type="hidden" name="fy" t-att-value="selected_fiscal_year_value"/>
+
+                                    <input type="hidden" name="month" t-att-value="selected_month_value"/>
+
+                                    <input type="hidden" name="employee_id" t-att-value="selected_employee_id"/>
+
+                                    <input type="hidden" id="attendanceColumnDate" name="attendance_date"/>
+
+                                    <div class="hr-column-dialog-header">
+                                        <h5 class="mb-0">
+                                            Edit Attendance ?
+                                            <span id="attendanceColumnLabel"/>
+                                        </h5>
+
+                                        <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('attendanceColumnDialog').close(); return false;" aria-label="Close"/>
+                                    </div>
+
+                                    <div class="hr-column-dialog-body">
+                                        <div class="alert alert-warning">
+                                            <t t-if="selected_employee">
+                                                This will update
+                                                <strong t-esc="selected_employee.name"/>
+                                                for this date.
+                                            </t>
+
+                                            <t t-if="not selected_employee">
+                                                This will update
+                                                <strong>all employees shown in the table</strong>
+                                                for this date.
+                                            </t>
+                                        </div>
+
+                                        <label class="form-label fw-bold">
+                                            Attendance Status
+                                        </label>
+
+                                        <select name="attendance_code" class="form-select" required="required">
+                                            <option value="" disabled="disabled" selected="selected">
+                                                -- Select Status --
+                                            </option>
+                                            <option value="P">Present</option>
+                                            <option value="R">WFH</option>
+                                            <option value="C">Leave</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="hr-column-dialog-footer">
+                                        <button type="button" class="btn btn-light" onclick="document.getElementById('attendanceColumnDialog').close(); return false;">
+                                            Cancel
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary" onclick="return confirm('Apply this status to the whole selected date column?');">
+                                            Apply to Column
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </dialog>
+
+                            <t t-if="not attendance_matrix_rows">
                                     <div class="card hr-empty-state-card mt-3">
                                         <div class="card-body">
                                             <div class="hr-empty-state-title">No attendance found</div>
@@ -2957,7 +3015,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <thead>
                                             <tr class="hr-fy-summary-top">
                                                 <th rowspan="2" class="hr-fy-black-cell">FY-<t t-esc="selected_fiscal_year_code"/></th>
-                                                <th class="hr-fy-policy-cell"></th>
+                                                <th class="hr-fy-policy-cell"/>
                                                 <th colspan="4" class="hr-fy-policy-cell">Policy Sick Leaves = 10</th>
                                                 <th colspan="4" class="hr-fy-policy-cell">Casual Leaves = 20</th>
                                                 <th colspan="2" class="hr-fy-policy-cell">Todate</th>
@@ -2978,7 +3036,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td class="hr-fy-black-cell"></td>
+                                                <td class="hr-fy-black-cell"/>
                                                 <td class="hr-month-value"><t t-esc="attendance_fy_summary['selected_month_label']"/></td>
                                                 <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_opening']"/></td>
                                                 <td class="hr-sick-value"><t t-esc="attendance_fy_summary['sick_availed']"/></td>
@@ -3142,12 +3200,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 <div class="row g-3 mt-2 align-items-end">
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold">Fiscal Year</label>
-                                        <select name="fy"
-                                                class="form-select"
-                                                onchange="this.form.month.value=''; this.form.submit();">
+                                        <select name="fy" class="form-select" onchange="this.form.month.value=''; this.form.submit();">
                                             <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                                <option t-att-value="fy_opt['value']"
-                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                                                     <t t-esc="fy_opt['label']"/>
                                                 </option>
                                             </t>
@@ -3159,8 +3214,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <select name="month" class="form-select">
                                             <option value="">Select Month</option>
                                             <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                                <option t-att-value="month_opt['value']"
-                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                                                     <t t-esc="month_opt['label']"/>
                                                 </option>
                                             </t>
@@ -3414,7 +3468,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </a>
                                 </div>
                             </div>
-                                                        
+
 
                             <form action="/my/hr/admin/attendances" method="get">
                                 <div class="row g-3 mt-2 align-items-end">
@@ -3423,8 +3477,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <select name="employee_id" class="form-select">
                                             <option value="" t-att-selected="not selected_employee_id and 'selected' or None">All Employees</option>
                                             <t t-foreach="employees" t-as="emp">
-                                                <option t-att-value="emp.id"
-                                                        t-att-selected="selected_employee_id == emp.id and 'selected' or None">
+                                                <option t-att-value="emp.id" t-att-selected="selected_employee_id == emp.id and 'selected' or None">
                                                     <t t-esc="emp.name"/>
                                                     <t t-if="emp.employee_code"> (<t t-esc="emp.employee_code"/>)</t>
                                                 </option>
@@ -3434,12 +3487,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                     <div class="col-md-3">
                                         <label class="form-label fw-bold">Fiscal Year</label>
-                                        <select name="fy"
-                                                class="form-select"
-                                                onchange="this.form.month.value=''; this.form.submit();">
+                                        <select name="fy" class="form-select" onchange="this.form.month.value=''; this.form.submit();">
                                             <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                                <option t-att-value="fy_opt['value']"
-                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                                                     <t t-esc="fy_opt['label']"/>
                                                 </option>
                                             </t>
@@ -3451,8 +3501,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <select name="month" class="form-select">
                                             <option value="">Select Month</option>
                                             <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                                <option t-att-value="month_opt['value']"
-                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                                                     <t t-esc="month_opt['label']"/>
                                                 </option>
                                             </t>
@@ -3473,19 +3522,14 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <button type="button"
-                            class="hr-request-btn border-0 w-100 justify-content-center"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#attendanceEditDrawer"
-                            aria-controls="attendanceEditDrawer">
+                    <button type="button" class="hr-request-btn border-0 w-100 justify-content-center" data-bs-toggle="offcanvas" data-bs-target="#attendanceEditDrawer" aria-controls="attendanceEditDrawer">
                         <i class="fa fa-pencil"/>
                         Edit Attendance
                     </button>
                 </div>
 
                 <div class="col-md-6">
-                    <a t-attf-href="/my/hr/admin/attendances/export?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}"
-                       class="hr-request-btn w-100 justify-content-center text-decoration-none">
+                    <a t-attf-href="/my/hr/admin/attendances/export?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}" class="hr-request-btn w-100 justify-content-center text-decoration-none">
                         <i class="fa fa-download"/>
                         Download Excel
                     </a>
@@ -3495,7 +3539,128 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 </t>
 
-<t t-if="selected_employee and attendance_fy_summary">
+<div class="card hr-content-card mb-4">
+                        <div class="card-body">
+                            <div class="hr-subsection-title">Monthly Attendance Register</div>
+                            <p class="hr-page-subtitle mb-3">Review the selected employee monthly attendance code matrix and work-report activity.</p>
+
+                            <div class="hr-attendance-toolbar">
+                                <div class="hr-attendance-month-nav">
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
+                                        <i class="fa fa-chevron-left"/> Previous
+                                    </a>
+                                    <div class="hr-attendance-month-label" t-esc="month_display"/>
+                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
+                                        Next <i class="fa fa-chevron-right"/>
+                                    </a>
+                                </div>
+
+                                <div class="hr-page-header-meta">
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-user me-1"/>
+                                        <span t-esc="selected_employee.name if selected_employee else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-id-badge me-1"/>
+                                        <span t-esc="selected_employee.employee_code if selected_employee and selected_employee.employee_code else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-building me-1"/>
+                                        <span t-esc="selected_employee.department_id.name if selected_employee and selected_employee.department_id else '-'"/>
+                                    </div>
+                                    <div class="hr-page-header-pill">
+                                        <i class="fa fa-calendar me-1"/>
+                                        <span t-esc="month_display"/> (<t t-esc="fiscal_year_label"/>)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <t t-if="attendance_matrix_rows">
+                                    <div t-attf-class="hr-attendance-matrix-wrap #{'hr-attendance-matrix-wrap-single' if selected_employee else 'hr-attendance-matrix-wrap-all'}">
+                                        <table class="hr-attendance-matrix">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee</th>
+                                                    <t t-foreach="attendance_days" t-as="day_item">
+                                                        <th class="hr-attendance-day-head">
+                                                            <form action="/my/hr/admin/attendances/update-column" method="post" class="hr-date-column-form">
+
+                                                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                                                <input type="hidden" name="fy" t-att-value="selected_fiscal_year_value"/>
+
+                                                                <input type="hidden" name="month" t-att-value="selected_month_value"/>
+
+                                                                <input type="hidden" name="employee_id" t-att-value="selected_employee_id"/>
+
+                                                                <input type="hidden" name="attendance_date" t-att-value="'%s-%02d' % (selected_month_value, day_item.get('day_number'))"/>
+
+                                                                <select name="attendance_code" class="hr-date-column-select" required="required" title="Select column status" onchange="this.form.querySelector(&quot;.hr-date-column-apply&quot;).style.display = this.value ? &quot;block&quot; : &quot;none&quot;;">
+<option value="">Edit</option>
+<option value="P">Present</option>
+<option value="H">Holiday</option>
+<option value="R">WFH</option>
+</select>
+
+                                                                <button type="submit" class="hr-date-column-apply" title="Apply to entire date column" onclick="return confirm('Apply this status to the entire selected date column?');" style="display: none;">Apply</button>
+                                                            </form>
+                                                            <div class="day-no" t-esc="day_item.get('day_number', '')"/>
+                                                            <div class="day-name" t-esc="day_item.get('day_name') or day_item.get('day_label') or day_item.get('weekday_short') or ''"/>
+                                                        </th>
+                                                    </t>
+                                                    <th class="hr-attendance-edit-col">Edit</th>
+                                                    <th class="hr-attendance-total-col">P</th>
+                                                    <th class="hr-attendance-total-col">R</th>
+                                                    <th class="hr-attendance-total-col">H</th>
+                                                    <th class="hr-attendance-total-col">S</th>
+                                                    <th class="hr-attendance-total-col">C</th>
+                                                    <th class="hr-attendance-total-col">U</th>
+                                                    <th class="hr-attendance-total-col">D</th>
+                                                    <th class="hr-attendance-total-col">OT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="attendance_matrix_rows" t-as="matrix_row">
+                                                    <tr t-att-data-inactive="'1' if matrix_row.get('is_inactive') else '0'">
+                                                        <td>
+                                                            <strong t-esc="matrix_row['employee_name']"/>
+                                                        </td>
+                                                        <t t-foreach="matrix_row['days']" t-as="day_data">
+                                                            <td t-attf-class="hr-day-cell hr-code-#{day_data['code'] if day_data['code'] else 'empty'} #{'hr-day-weekend' if day_data.get('is_weekend') else ''}">
+                                                                <t t-esc="day_data['code'] or '-'"/>
+                                                            </td>
+                                                        </t>
+                                                        <td class="hr-attendance-edit-col">
+                                                            <a class="btn btn-outline-primary btn-sm hr-attendance-edit-btn" t-att-href="'/my/hr/admin/attendances?employee_id=%s' % matrix_row.get('employee_id')">
+                                                                Edit
+                                                            </a>
+                                                        </td>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('P', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('R', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('H', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('S', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('C', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('U', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('D', 0)"/>
+                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('OT', 0)"/>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+
+                            <t t-if="not attendance_matrix_rows">
+                                <div class="card hr-empty-state-card mt-3">
+                                    <div class="card-body">
+                                        <div class="hr-empty-state-title">No attendance found</div>
+                                        <p class="hr-empty-state-text">No attendance register exists for the selected employee and month.</p>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                <t t-if="selected_employee and attendance_fy_summary">
     <div class="card hr-content-card mb-4">
         <div class="card-body">
             <div class="hr-subsection-title">Attendance &amp; Leave Summary</div>
@@ -3507,7 +3672,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                             <th rowspan="2" class="hr-fy-black-cell">
     FY-<t t-esc="selected_fiscal_year_code"/>
 </th>
-<th class="hr-fy-policy-cell"></th>
+<th class="hr-fy-policy-cell"/>
 <th colspan="4" class="hr-fy-policy-cell">
     Policy Sick Leaves = 10
 </th>
@@ -3536,7 +3701,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                     <tbody>
                         <tr>
-    <td class="hr-fy-black-cell"></td>
+    <td class="hr-fy-black-cell"/>
     <td class="hr-month-value">
         <t t-esc="attendance_fy_summary['selected_month_label']"/>
     </td>
@@ -3577,145 +3742,16 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         </div>
     </div>
 </t>
-<t t-if="selected_employee">
-    <div class="card hr-content-card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <button type="button"
-        class="hr-request-btn border-0 w-100 justify-content-center"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#attendanceEditDrawer"
-        aria-controls="attendanceEditDrawer">
-    <i class="fa fa-pencil"/> Edit Attendance
-</button>
-                </div>
-
-                <div class="col-md-6">
-                    <a t-attf-href="/my/hr/admin/attendances/export?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}"
-                       class="hr-request-btn w-100 justify-content-center text-decoration-none">
-                        <i class="fa fa-download"/> Download Excel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</t>
-
-                    <div class="card hr-content-card mb-4">
-                        <div class="card-body">
-                            <div class="hr-subsection-title">Monthly Attendance Register</div>
-                            <p class="hr-page-subtitle mb-3">Review the selected employee monthly attendance code matrix and work-report activity.</p>
-
-                            <div class="hr-attendance-toolbar">
-                                <div class="hr-attendance-month-nav">
-                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}" class="hr-attendance-nav-btn">
-                                        <i class="fa fa-chevron-left"/> Previous
-                                    </a>
-                                    <div class="hr-attendance-month-label" t-esc="month_display"/>
-                                    <a t-attf-href="/my/hr/admin/attendances?employee_id=#{selected_employee_id}&amp;fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}" class="hr-attendance-nav-btn">
-                                        Next <i class="fa fa-chevron-right"/>
-                                    </a>
-                                </div>
-
-                                <div class="hr-page-header-meta">
-                                    <div class="hr-page-header-pill">
-                                        <i class="fa fa-user me-1"/>
-                                        <span t-esc="selected_employee.name if selected_employee else '-'"/>
-                                    </div>
-                                    <div class="hr-page-header-pill">
-                                        <i class="fa fa-id-badge me-1"/>
-                                        <span t-esc="selected_employee.employee_code if selected_employee and selected_employee.employee_code else '-'"/>
-                                    </div>
-                                    <div class="hr-page-header-pill">
-                                        <i class="fa fa-building me-1"/>
-                                        <span t-esc="selected_employee.department_id.name if selected_employee and selected_employee.department_id else '-'"/>
-                                    </div>
-                                    <div class="hr-page-header-pill">
-                                        <i class="fa fa-calendar me-1"/>
-                                        <span t-esc="month_display"/> (<t t-esc="fiscal_year_label"/>)
-                                    </div>
-                                </div>
-                            </div>
-
-                            <t t-if="attendance_matrix_rows">
-                                    <div class="hr-attendance-matrix-wrap">
-                                        <table class="hr-attendance-matrix">
-                                            <thead>
-                                                <tr>
-                                                    <th>Employee</th>
-                                                    <t t-foreach="attendance_days" t-as="day_item">
-                                                        <th class="hr-attendance-day-head">
-                                                            <div class="day-no" t-esc="day_item.get('day_number', '')"/>
-                                                            <div class="day-name" t-esc="day_item.get('day_name') or day_item.get('day_label') or day_item.get('weekday_short') or ''"/>
-                                                        </th>
-                                                    </t>
-                                                    <th class="hr-attendance-edit-col">Edit</th>
-                                                    <th class="hr-attendance-total-col">P</th>
-                                                    <th class="hr-attendance-total-col">R</th>
-                                                    <th class="hr-attendance-total-col">H</th>
-                                                    <th class="hr-attendance-total-col">S</th>
-                                                    <th class="hr-attendance-total-col">C</th>
-                                                    <th class="hr-attendance-total-col">U</th>
-                                                    <th class="hr-attendance-total-col">D</th>
-                                                    <th class="hr-attendance-total-col">OT</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <t t-foreach="attendance_matrix_rows" t-as="matrix_row">
-                                                    <tr>
-                                                        <td>
-                                                            <strong t-esc="matrix_row['employee_name']"/>
-                                                        </td>
-                                                        <t t-foreach="matrix_row['days']" t-as="day_data">
-                                                            <td t-attf-class="hr-day-cell hr-code-#{day_data['code'] if day_data['code'] else 'empty'} #{'hr-day-weekend' if day_data.get('is_weekend') else ''}">
-                                                                <t t-esc="day_data['code'] or '-'"/>
-                                                            </td>
-                                                        </t>
-                                                        <td class="hr-attendance-edit-col">
-                                                            <a class="btn btn-outline-primary btn-sm hr-attendance-edit-btn"
-                                                               t-att-href="'/my/hr/admin/attendances?employee_id=%s' % matrix_row.get('employee_id')">
-                                                                Edit
-                                                            </a>
-                                                        </td>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('P', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('R', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('H', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('S', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('C', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('U', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('D', 0)"/>
-                                                        <td class="hr-attendance-total-col" t-esc="matrix_row['summary'].get('OT', 0)"/>
-                                                    </tr>
-                                                </t>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </t>
-
-                            <t t-if="not attendance_matrix_rows">
-                                <div class="card hr-empty-state-card mt-3">
-                                    <div class="card-body">
-                                        <div class="hr-empty-state-title">No attendance found</div>
-                                        <p class="hr-empty-state-text">No attendance register exists for the selected employee and month.</p>
-                                    </div>
-                                </div>
-                            </t>
-                        </div>
-                    </div>
-                </div>
+</div>
             </div>
                                 <t t-if="attendance_matrix_row">
-                        <div class="offcanvas offcanvas-end hr-edit-drawer"
-                             tabindex="-1"
-                             id="attendanceEditDrawer"
-                             aria-labelledby="attendanceEditDrawerLabel">
+                        <div class="offcanvas offcanvas-end hr-edit-drawer" tabindex="-1" id="attendanceEditDrawer" aria-labelledby="attendanceEditDrawerLabel">
 
                             <div class="offcanvas-header">
                                 <h5 class="offcanvas-title" id="attendanceEditDrawerLabel">
                                     Edit Attendance - <t t-esc="selected_employee.name if selected_employee else '-'"/>
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"/>
                             </div>
 
                             <div class="offcanvas-body">
@@ -3815,9 +3851,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     <td t-esc="portal_req.date_from or '-'"/>
                                                     <td t-esc="portal_req.date_to or '-'"/>
                                                     <td style="width:270px; max-width:270px; vertical-align:top;">
-                                                        <div class="hr-my-request-reason-scroll-force"
-                                                             style="display:block; height:95px; max-height:95px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.35; padding-right:8px;"
-                                                             t-esc="portal_req.reason or '-'"></div>
+                                                        <div class="hr-my-request-reason-scroll-force" style="display:block; height:95px; max-height:95px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.35; padding-right:8px;" t-esc="portal_req.reason or '-'"/>
                                                     </td>
                                                     <td>
                                                         <span t-if="portal_req.state == 'submitted'" class="badge bg-warning text-dark">Submitted</span>
@@ -3826,9 +3860,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                         <span t-else="" class="badge bg-secondary" t-esc="portal_req.state"/>
                                                     </td>
                                                     <td style="width:170px; max-width:170px; vertical-align:top;">
-                                                        <div class="hr-my-request-remarks-scroll-force"
-                                                             style="display:block; height:95px; max-height:95px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.35; padding-right:8px;"
-                                                             t-esc="portal_req.admin_remarks or '-'"></div>
+                                                        <div class="hr-my-request-remarks-scroll-force" style="display:block; height:95px; max-height:95px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.35; padding-right:8px;" t-esc="portal_req.admin_remarks or '-'"/>
                                                     </td>
                                                     <td t-esc="format_pk_datetime(portal_req.submitted_at)"/>
                                                 </tr>
@@ -3856,9 +3888,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
 
                                 <div class="hr-pagination-actions">
-                                    <a t-if="previous_request_page_url"
-                                       t-att-href="previous_request_page_url"
-                                       class="btn btn-light fw-bold">
+                                    <a t-if="previous_request_page_url" t-att-href="previous_request_page_url" class="btn btn-light fw-bold">
                                         <i class="fa fa-chevron-left"/> Previous
                                     </a>
 
@@ -3866,9 +3896,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         Page <t t-esc="request_page"/> / <t t-esc="request_page_count"/>
                                     </span>
 
-                                    <a t-if="next_request_page_url"
-                                       t-att-href="next_request_page_url"
-                                       class="btn btn-light fw-bold">
+                                    <a t-if="next_request_page_url" t-att-href="next_request_page_url" class="btn btn-light fw-bold">
                                         Next <i class="fa fa-chevron-right"/>
                                     </a>
                                 </div>
@@ -3903,7 +3931,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                 <div class="hr-content-wrap">
                     <div class="mb-3">
-                        
+
                     <div class="d-flex align-items-center justify-content-between mb-3 hr-maintenance-topbar">
                         <a href="/my/hr/admin" class="fw-bold text-decoration-none">
                             <i class="fa fa-arrow-left me-1"/> Back to Admin Root
@@ -3918,8 +3946,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                             <form action="/my/hr/admin/maintenance/toggle" method="post" class="m-0">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                 <input type="hidden" name="maintenance_action" t-att-value="hr_maintenance_enabled and 'off' or 'on'"/>
-                                <button type="submit"
-                                        t-attf-class="btn btn-sm #{'btn-success' if hr_maintenance_enabled else 'btn-danger'}">
+                                <button type="submit" t-attf-class="btn btn-sm #{'btn-success' if hr_maintenance_enabled else 'btn-danger'}">
                                     <t t-if="hr_maintenance_enabled">Turn OFF</t>
                                     <t t-else="">Turn ON</t>
                                 </button>
@@ -3964,11 +3991,11 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 </t>
 
-                    
-                      
+
+
                     <div class="card hr-content-card">
     <div class="card-body">
-        <div class="hr-subsection-title">Employee Directory</div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3 hr-employee-directory-toolbar"><div class="hr-subsection-title">Employee Directory</div><a href="/my/hr/admin/portal-accounts" class="btn btn-primary fw-bold px-4 py-2 text-decoration-none hr-add-employee-btn" title="Create an employee and portal login account"><i class="fa fa-user-plus me-2"/>Add New Employee</a></div>
 
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
@@ -3994,67 +4021,52 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 <td style="min-width: 280px;">
                                     <!-- Normal View -->
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <span t-if="emp.active"
-                                              class="badge bg-success"
-                                              style="font-size: 13px; padding: 7px 10px;">
+                                        <span t-if="emp.active" class="badge bg-success" style="font-size: 13px; padding: 7px 10px;">
                                             Active
                                         </span>
 
-                                        <span t-if="not emp.active"
-                                              class="badge bg-secondary"
-                                              style="font-size: 13px; padding: 7px 10px;">
+                                        <span t-if="not emp.active" class="badge bg-secondary" style="font-size: 13px; padding: 7px 10px;">
                                             Inactive
                                         </span>
 
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary fw-bold"
-                                                data-bs-toggle="collapse"
-                                                t-att-data-bs-target="'#employeeStatusEdit_%s' % emp.id"
-                                                t-att-aria-controls="'employeeStatusEdit_%s' % emp.id">
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="collapse" t-att-data-bs-target="'#employeeStatusEdit_%s' % emp.id" t-att-aria-controls="'employeeStatusEdit_%s' % emp.id">
                                             <i class="fa fa-pencil"/>
                                             Edit
                                         </button>
                                     </div>
 
                                     <!-- Edit View -->
-                                    <div class="collapse mt-2"
-                                         t-att-id="'employeeStatusEdit_%s' % emp.id">
+                                    <div class="collapse mt-2" t-att-id="'employeeStatusEdit_%s' % emp.id">
 
-                                        <form action="/my/hr/admin/employee/status/update"
-                                              method="post"
-                                              class="d-flex gap-2 align-items-center flex-wrap">
+                                        <form action="/my/hr/admin/employee/status/update" method="post" class="d-flex gap-2 align-items-center flex-wrap">
 
-                                            <input type="hidden"
-                                                   name="csrf_token"
-                                                   t-att-value="request.csrf_token()"/>
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
-                                            <input type="hidden"
-                                                   name="employee_id"
-                                                   t-att-value="emp.id"/>
+                                            <input type="hidden" name="employee_id" t-att-value="emp.id"/>
 
-                                            <select name="active"
-                                                    class="form-select form-select-sm"
-                                                    style="max-width: 130px;">
-                                                <option value="1"
-                                                        t-att-selected="emp.active and 'selected' or None">
+                                            <select name="active" class="form-select form-select-sm" style="max-width: 130px;">
+                                                <option value="1" t-att-selected="emp.active and 'selected' or None">
                                                     Active
                                                 </option>
 
-                                                <option value="0"
-                                                        t-att-selected="not emp.active and 'selected' or None">
+                                                <option value="0" t-att-selected="not emp.active and 'selected' or None">
                                                     Inactive
                                                 </option>
                                             </select>
+                                            <div class="employee-status-last-working-date" style="min-width: 175px;">
+                                                <label class="form-label mb-1" style="font-size: 11px; font-weight: 700;">
+                                                    Last Working Date
+                                                </label>
 
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-primary fw-bold">
+                                                <input type="date" name="last_working_date" class="form-control form-control-sm" t-att-value="emp.last_working_date or ''" title="Required when setting employee to Inactive"/>
+                                            </div>
+
+
+                                            <button type="submit" class="btn btn-sm btn-primary fw-bold">
                                                 Save
                                             </button>
 
-                                            <button type="button"
-                                                    class="btn btn-sm btn-light fw-bold"
-                                                    data-bs-toggle="collapse"
-                                                    t-att-data-bs-target="'#employeeStatusEdit_%s' % emp.id">
+                                            <button type="button" class="btn btn-sm btn-light fw-bold" data-bs-toggle="collapse" t-att-data-bs-target="'#employeeStatusEdit_%s' % emp.id">
                                                 Cancel
                                             </button>
                                         </form>
@@ -4087,9 +4099,11 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
 
   <template id="hr_admin_portal_accounts_page" name="HR Admin Portal Accounts">
-      <t t-call="portal.frontend_layout">
-          <div class="container-fluid py-4">
-              <div class="hr-portal-layout">
+      <t t-call="portal.portal_layout">
+          <t t-set="no_breadcrumbs" t-value="1"/>
+          <t t-set="current_page" t-value="'admin'"/>
+          <div class="container oe_structure mt-4 mb-5">
+              <div class="hr-layout-row">
                   <div class="hr-sidebar-wrap">
                       <t t-call="hr_employee_portal.hr_employee_sidebar"/>
                   </div>
@@ -4387,7 +4401,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         </div>
                     </t>
 
-                                        
+
                     <div class="card hr-content-card mb-4">
                         <div class="card-body">
                             <form action="/my/hr/admin/task-reports" method="get">
@@ -4424,8 +4438,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                             <div class="row g-3 mt-2">
                                 <div class="col-md-3 ms-auto">
-                                    <a class="hr-request-btn w-100 justify-content-center"
-                                       t-attf-href="/my/hr/admin/task-reports/export?employee_id=#{selected_employee_id or ''}&amp;date_from=#{date_from or ''}&amp;date_to=#{date_to or ''}">
+                                    <a class="hr-request-btn w-100 justify-content-center" t-attf-href="/my/hr/admin/task-reports/export?employee_id=#{selected_employee_id or ''}&amp;date_from=#{date_from or ''}&amp;date_to=#{date_to or ''}">
                                         <i class="fa fa-download"/> Download Excel
                                     </a>
                                 </div>
@@ -4445,7 +4458,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     <span class="hr-task-report-zoom-label" id="hrTaskZoomLabel">85%</span>
 </div>
 <script type="text/javascript">
-<![CDATA[
+
 (function () {
     function initTaskReportZoom() {
         var toolbar = document.getElementById('hrTaskReportZoomToolbar');
@@ -4468,7 +4481,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
         var parent = table.parentElement;
         var safety = 0;
-        while (parent && safety < 4) {
+        while (parent &amp;&amp; safety &lt; 4) {
             parent.classList.add('hr-task-reports-table-wrap');
             parent = parent.parentElement;
             safety += 1;
@@ -4535,7 +4548,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         initTaskReportZoom();
     }
 })();
-]]>
+
 </script>
 
 
@@ -4571,21 +4584,13 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     </td>
                                                     <td t-esc="report.state or '-'"/>
                                                     <td style="min-width: 240px; max-width: 340px; vertical-align: top;">
-                                                        <div class="hr-task-report-text-compact"
-                                                             style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;"
-                                                             t-esc="report.task_report or '-'"/>
+                                                        <div class="hr-task-report-text-compact" style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;" t-esc="report.task_report or '-'"/>
                                                     </td>
                                                     <td style="min-width: 180px; max-width: 260px; vertical-align: top;">
-                                                        <div class="hr-task-remarks-text-compact"
-                                                             style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;"
-                                                             t-esc="report.remarks or '-'"/>
+                                                        <div class="hr-task-remarks-text-compact" style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;" t-esc="report.remarks or '-'"/>
                                                     </td>
                                                     <td class="hr-task-report-update-col">
-                                                        <button class="hr-row-edit-toggle"
-                                                                type="button"
-                                                                data-bs-toggle="offcanvas"
-                                                                t-att-data-bs-target="'#taskReportDrawer_%s' % report.id"
-                                                                t-att-aria-controls="'taskReportDrawer_%s' % report.id">
+                                                        <button class="hr-row-edit-toggle" type="button" data-bs-toggle="offcanvas" t-att-data-bs-target="'#taskReportDrawer_%s' % report.id" t-att-aria-controls="'taskReportDrawer_%s' % report.id">
                                                             <i class="fa fa-pencil"/> Edit
                                                         </button>
                                                     </td>
@@ -4612,9 +4617,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 
     <div class="d-flex gap-2 align-items-center">
-        <a t-if="previous_page_url"
-           t-att-href="previous_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="previous_page_url" t-att-href="previous_page_url" class="btn btn-light fw-bold">
             <i class="fa fa-chevron-left"/> Previous
         </a>
 
@@ -4622,9 +4625,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
             Page <t t-esc="task_report_page"/> / <t t-esc="task_report_page_count"/>
         </span>
 
-        <a t-if="next_page_url"
-           t-att-href="next_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="next_page_url" t-att-href="next_page_url" class="btn btn-light fw-bold">
             Next <i class="fa fa-chevron-right"/>
         </a>
     </div>
@@ -4634,14 +4635,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                     <t t-if="task_reports">
                         <t t-foreach="task_reports" t-as="report">
-                            <div class="offcanvas offcanvas-end hr-edit-drawer"
-                                 tabindex="-1"
-                                 t-att-id="'taskReportDrawer_%s' % report.id">
+                            <div class="offcanvas offcanvas-end hr-edit-drawer" tabindex="-1" t-att-id="'taskReportDrawer_%s' % report.id">
                                 <div class="offcanvas-header">
                                     <h5 class="offcanvas-title">
                                         Edit Task Report - <t t-esc="report.employee_id.name or '-'"/>
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"/>
                                 </div>
 
                                 <div class="offcanvas-body">
@@ -4653,8 +4652,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <input type="date" name="report_date" class="form-control" t-att-value="report.report_date or ''"/>
 
                                         <label class="form-label fw-bold">Submitted At</label>
-                                        <input type="datetime-local" name="submitted_at" class="form-control"
-                                               t-att-value="report.submitted_at and format_pk_datetime(report.submitted_at, '%Y-%m-%dT%I:%M:%S %p') or ''"/>
+                                        <input type="datetime-local" name="submitted_at" class="form-control" t-att-value="report.submitted_at and format_pk_datetime(report.submitted_at, '%Y-%m-%dT%I:%M:%S %p') or ''"/>
 
                                         <label class="form-label fw-bold">Work Mode</label>
                                         <select name="work_mode" class="form-select">
@@ -4691,9 +4689,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         </div>
 
         <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
-    
+
             <script type="text/javascript">
-            <![CDATA[
+
             (function () {
                 function parseExpiry(value) {
                     if (!value) return null;
@@ -4725,12 +4723,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                         var diff = expiry.getTime() - Date.now();
 
-                        if (diff <= 0) {
+                        if (diff &lt;= 0) {
                             if (countdown) countdown.textContent = 'Expired. Please refresh the page or contact admin.';
                             if (submitButton) {
                                 submitButton.disabled = true;
                                 submitButton.classList.add('disabled');
-                                submitButton.innerHTML = '<i class="fa fa-lock me-2"></i> Access Expired';
+                                submitButton.innerHTML = '&lt;i class="fa fa-lock me-2"&gt;&lt;/i&gt; Access Expired';
                             }
                             return;
                         }
@@ -4741,7 +4739,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         var seconds = totalSeconds % 60;
 
                         var label = '';
-                        if (hours > 0) label += hours + 'h ';
+                        if (hours &gt; 0) label += hours + 'h ';
                         label += minutes + 'm ' + seconds + 's';
 
                         if (countdown) countdown.textContent = label;
@@ -4753,7 +4751,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         var expiry = parseExpiry(row.getAttribute('data-expires-utc'));
                         if (!expiry) return;
 
-                        if (expiry.getTime() <= Date.now()) {
+                        if (expiry.getTime() &lt;= Date.now()) {
                             var status = row.querySelector('.hr-late-access-status');
                             var revokeForm = row.querySelector('.hr-late-access-revoke-form');
 
@@ -4783,13 +4781,13 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     if (!form.classList || !form.classList.contains('hr-late-access-form')) return;
 
                     var expiry = parseExpiry(form.getAttribute('data-expires-utc'));
-                    if (expiry && expiry.getTime() <= Date.now()) {
+                    if (expiry &amp;&amp; expiry.getTime() &lt;= Date.now()) {
                         event.preventDefault();
                         alert('Temporary access has expired. Please refresh the page or contact admin.');
                     }
                 });
             })();
-            ]]>
+
             </script>
 
 </t>
@@ -4861,8 +4859,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                             <div class="row g-3 mt-2">
                                 <div class="col-md-3 ms-auto">
-                                    <a class="hr-request-btn w-100 justify-content-center"
-                                       t-attf-href="/my/hr/admin/performance/export?employee_id=#{selected_employee_id or ''}&amp;date_from=#{date_from or ''}&amp;date_to=#{date_to or ''}">
+                                    <a class="hr-request-btn w-100 justify-content-center" t-attf-href="/my/hr/admin/performance/export?employee_id=#{selected_employee_id or ''}&amp;date_from=#{date_from or ''}&amp;date_to=#{date_to or ''}">
                                         <i class="fa fa-download"/> Download Excel
                                     </a>
                                 </div>
@@ -4915,11 +4912,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     <td><span t-esc="rec.completion_percent or 0.0"/>%</td>
                                                     <td style="white-space: pre-wrap; min-width: 180px;" t-esc="rec.supervisor_remarks or '-'"/>
                                                     <td class="hr-performance-update-col">
-                                                        <button class="hr-row-edit-toggle"
-                                                                type="button"
-                                                                data-bs-toggle="offcanvas"
-                                                                t-att-data-bs-target="'#performanceDrawer_%s' % rec.id"
-                                                                t-att-aria-controls="'performanceDrawer_%s' % rec.id">
+                                                        <button class="hr-row-edit-toggle" type="button" data-bs-toggle="offcanvas" t-att-data-bs-target="'#performanceDrawer_%s' % rec.id" t-att-aria-controls="'performanceDrawer_%s' % rec.id">
                                                             <i class="fa fa-pencil"/> Edit
                                                         </button>
                                                     </td>
@@ -4947,9 +4940,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 
     <div class="d-flex gap-2 align-items-center">
-        <a t-if="previous_page_url"
-           t-att-href="previous_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="previous_page_url" t-att-href="previous_page_url" class="btn btn-light fw-bold">
             <i class="fa fa-chevron-left"/> Previous
         </a>
 
@@ -4957,9 +4948,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
             Page <t t-esc="performance_page"/> / <t t-esc="performance_page_count"/>
         </span>
 
-        <a t-if="next_page_url"
-           t-att-href="next_page_url"
-           class="btn btn-light fw-bold">
+        <a t-if="next_page_url" t-att-href="next_page_url" class="btn btn-light fw-bold">
             Next <i class="fa fa-chevron-right"/>
         </a>
     </div>
@@ -4969,14 +4958,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                     <t t-if="performance_records">
                         <t t-foreach="performance_records" t-as="rec">
-                            <div class="offcanvas offcanvas-end hr-edit-drawer"
-                                 tabindex="-1"
-                                 t-att-id="'performanceDrawer_%s' % rec.id">
+                            <div class="offcanvas offcanvas-end hr-edit-drawer" tabindex="-1" t-att-id="'performanceDrawer_%s' % rec.id">
                                 <div class="offcanvas-header">
                                     <h5 class="offcanvas-title">
                                         Edit Performance - <t t-esc="rec.employee_id.name or '-'"/>
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"/>
                                 </div>
 
                                 <div class="offcanvas-body">
@@ -5145,9 +5132,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     </td>
 
                                                     <td class="hr-admin-request-reason-col">
-                                                        <div class="hr-admin-request-reason-scroll-v2"
-                                                             style="display:block; height:85px; max-height:85px; overflow-y:scroll; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.45; padding-right:8px;"
-                                                             t-esc="portal_req.reason or '-'"></div>
+                                                        <div class="hr-admin-request-reason-scroll-v2" style="display:block; height:85px; max-height:85px; overflow-y:scroll; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.45; padding-right:8px;" t-esc="portal_req.reason or '-'"/>
                                                     </td>
 
                                                     <td class="hr-admin-request-status-col">
@@ -5165,22 +5150,13 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                                 <input type="hidden" name="request_state" t-att-value="selected_request_state or ''"/>
                                                                 <input type="hidden" name="page" t-att-value="request_page"/>
 
-                                                                <textarea name="admin_remarks"
-                                                                          class="form-control mb-2"
-                                                                          rows="3"
-                                                                          placeholder="Admin remarks..."></textarea>
+                                                                <textarea name="admin_remarks" class="form-control mb-2" rows="3" placeholder="Admin remarks..."/>
 
-                                                                <button type="submit"
-                                                                        name="action"
-                                                                        value="approved"
-                                                                        class="btn btn-success btn-sm fw-bold">
+                                                                <button type="submit" name="action" value="approved" class="btn btn-success btn-sm fw-bold">
                                                                     <i class="fa fa-check"/> Approve
                                                                 </button>
 
-                                                                <button type="submit"
-                                                                        name="action"
-                                                                        value="rejected"
-                                                                        class="btn btn-danger btn-sm fw-bold">
+                                                                <button type="submit" name="action" value="rejected" class="btn btn-danger btn-sm fw-bold">
                                                                     <i class="fa fa-times"/> Reject
                                                                 </button>
                                                             </form>
@@ -5228,9 +5204,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
 
                                 <div class="hr-pagination-actions">
-                                    <a t-if="previous_page_url"
-                                       t-att-href="previous_page_url"
-                                       class="btn btn-light fw-bold">
+                                    <a t-if="previous_page_url" t-att-href="previous_page_url" class="btn btn-light fw-bold">
                                         <i class="fa fa-chevron-left"/> Previous
                                     </a>
 
@@ -5238,9 +5212,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         Page <t t-esc="request_page"/> / <t t-esc="request_page_count"/>
                                     </span>
 
-                                    <a t-if="next_page_url"
-                                       t-att-href="next_page_url"
-                                       class="btn btn-light fw-bold">
+                                    <a t-if="next_page_url" t-att-href="next_page_url" class="btn btn-light fw-bold">
                                         Next <i class="fa fa-chevron-right"/>
                                     </a>
                                 </div>
@@ -5314,13 +5286,11 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
 
                                 <div class="hr-attendance-month-nav">
-                                    <a t-attf-href="/my/hr/admin/payslips?fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}&amp;employee_id=#{selected_employee_id or ''}"
-                                       class="hr-attendance-nav-btn">
+                                    <a t-attf-href="/my/hr/admin/payslips?fy=#{selected_fiscal_year_value}&amp;month=#{previous_month_value}&amp;employee_id=#{selected_employee_id or ''}" class="hr-attendance-nav-btn">
                                         <i class="fa fa-chevron-left"/> Previous
                                     </a>
                                     <div class="hr-attendance-month-label" t-esc="month_display"/>
-                                    <a t-attf-href="/my/hr/admin/payslips?fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}&amp;employee_id=#{selected_employee_id or ''}"
-                                       class="hr-attendance-nav-btn">
+                                    <a t-attf-href="/my/hr/admin/payslips?fy=#{selected_fiscal_year_value}&amp;month=#{next_month_value}&amp;employee_id=#{selected_employee_id or ''}" class="hr-attendance-nav-btn">
                                         Next <i class="fa fa-chevron-right"/>
                                     </a>
                                 </div>
@@ -5334,8 +5304,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <select name="employee_id" class="form-select">
                                             <option value="" t-att-selected="not selected_employee_id and 'selected' or None">All Employees</option>
                                             <t t-foreach="employees" t-as="emp">
-                                                <option t-att-value="emp.id"
-                                                        t-att-selected="selected_employee_id == emp.id and 'selected' or None">
+                                                <option t-att-value="emp.id" t-att-selected="selected_employee_id == emp.id and 'selected' or None">
                                                     <t t-esc="(emp.employee_code or '-') + ' - ' + (emp.name or '-')"/>
                                                 </option>
                                             </t>
@@ -5344,12 +5313,9 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                     <div class="col-md-3">
                                         <label class="form-label fw-bold">Fiscal Year</label>
-                                        <select name="fy"
-                                                class="form-select"
-                                                onchange="this.form.month.value=''; this.form.submit();">
+                                        <select name="fy" class="form-select" onchange="this.form.month.value=''; this.form.submit();">
                                             <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                                                <option t-att-value="fy_opt['value']"
-                                                        t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                                                <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                                                     <t t-esc="fy_opt['label']"/>
                                                 </option>
                                             </t>
@@ -5361,8 +5327,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                         <select name="month" class="form-select">
                                             <option value="">Select Month</option>
                                             <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                                                <option t-att-value="month_opt['value']"
-                                                        t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                                                <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                                                     <t t-esc="month_opt['label']"/>
                                                 </option>
                                             </t>
@@ -5380,8 +5345,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                             <!-- Actions -->
                             <div class="row g-3 mt-2">
                                 <div class="col-md-3 ms-auto">
-                                    <a class="hr-request-btn w-100 justify-content-center"
-                                       t-attf-href="/my/hr/admin/payslips/export?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}&amp;employee_id=#{selected_employee_id or ''}">
+                                    <a class="hr-request-btn w-100 justify-content-center" t-attf-href="/my/hr/admin/payslips/export?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}&amp;employee_id=#{selected_employee_id or ''}">
                                         <i class="fa fa-download"/> Download Excel
                                     </a>
                                 </div>
@@ -5475,11 +5439,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     <td t-esc="row['employee_code']"/>
                                                     <td t-esc="row['employee_name']"/>
                                                     <td class="hr-payroll-action-col">
-                                                        <button class="hr-row-edit-toggle"
-                                                                type="button"
-                                                                data-bs-toggle="offcanvas"
-                                                                t-att-data-bs-target="'#payrollEditDrawer_%s' % row['record_id']"
-                                                                t-att-aria-controls="'payrollEditDrawer_%s' % row['record_id']">
+                                                        <button class="hr-row-edit-toggle" type="button" data-bs-toggle="offcanvas" t-att-data-bs-target="'#payrollEditDrawer_%s' % row['record_id']" t-att-aria-controls="'payrollEditDrawer_%s' % row['record_id']">
                                                             <i class="fa fa-pencil"/> Edit
                                                         </button>
                                                     </td>
@@ -5552,14 +5512,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     <!-- Offcanvas Edit Drawers -->
                     <t t-if="admin_payroll_data['rows']">
                         <t t-foreach="admin_payroll_data['rows']" t-as="row">
-                            <div class="offcanvas offcanvas-end hr-edit-drawer"
-                                 tabindex="-1"
-                                 t-att-id="'payrollEditDrawer_%s' % row['record_id']">
+                            <div class="offcanvas offcanvas-end hr-edit-drawer" tabindex="-1" t-att-id="'payrollEditDrawer_%s' % row['record_id']">
                                 <div class="offcanvas-header">
                                     <h5 class="offcanvas-title">
                                         Edit Payroll - <t t-esc="row['employee_name']"/> (<t t-esc="row['employee_code']"/>)
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"/>
                                 </div>
 
                                 <div class="offcanvas-body">
@@ -5572,10 +5530,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                         <div class="mb-3">
                                             <label class="form-label fw-bold">Employee</label>
-                                            <input type="text"
-                                                   class="form-control"
-                                                   t-att-value="row['employee_name'] + ' (' + row['employee_code'] + ')'"
-                                                   readonly="readonly"/>
+                                            <input type="text" class="form-control" t-att-value="row['employee_name'] + ' (' + row['employee_code'] + ')'" readonly="readonly"/>
                                         </div>
 
                                         <div class="mb-3">
@@ -5745,8 +5700,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 <div class="card-body">
                                     <div class="hr-subsection-title">Tax Rates</div>
                                     <div class="d-grid gap-2">
-                                        <a t-attf-href="/my/hr/admin/payslips/tax-rates?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}"
-                                           class="btn btn-outline-primary">
+                                        <a t-attf-href="/my/hr/admin/payslips/tax-rates?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}" class="btn btn-outline-primary">
                                             Open Tax Rates
                                         </a>
                                     </div>
@@ -5792,8 +5746,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <label class="form-label fw-bold">Fiscal Year</label>
                 <select name="fy" class="form-select">
                     <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                        <option t-att-value="fy_opt['value']"
-                                t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                        <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                             <t t-esc="fy_opt['label']"/>
                         </option>
                     </t>
@@ -5804,8 +5757,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <label class="form-label fw-bold">Select FY Month</label>
                 <select name="month" class="form-select">
                     <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                        <option t-att-value="month_opt['value']"
-                                t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                        <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                             <t t-esc="month_opt['label']"/>
                         </option>
                     </t>
@@ -5879,8 +5831,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <label class="form-label fw-bold">Fiscal Year</label>
                 <select name="fy" class="form-select">
                     <t t-foreach="fiscal_year_options" t-as="fy_opt">
-                        <option t-att-value="fy_opt['value']"
-                                t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
+                        <option t-att-value="fy_opt['value']" t-att-selected="selected_fiscal_year_value == fy_opt['value'] and 'selected' or None">
                             <t t-esc="fy_opt['label']"/>
                         </option>
                     </t>
@@ -5891,8 +5842,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <label class="form-label fw-bold">Select FY Month</label>
                 <select name="month" class="form-select">
                     <t t-foreach="fiscal_year_month_options" t-as="month_opt">
-                        <option t-att-value="month_opt['value']"
-                                t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
+                        <option t-att-value="month_opt['value']" t-att-selected="selected_month_value == month_opt['value'] and 'selected' or None">
                             <t t-esc="month_opt['label']"/>
                         </option>
                     </t>
@@ -6019,6 +5969,148 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                         <p class="hr-page-subtitle mb-4">
                             We are updating the system to improve your experience. Please try again after some time.
                         </p>                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+
+    <template id="hr_attendance_column_conflict_page" name="Attendance Column Conflict Confirmation">
+
+        <t t-call="portal.portal_layout">
+            <div class="container py-4" style="max-width: 950px;">
+
+                <div class="card border-0 shadow-sm" style="border-radius: 18px; overflow: hidden;">
+
+                    <div class="card-header bg-warning-subtle p-4">
+                        <h3 class="mb-1 fw-bold">
+                            Existing Attendance Found
+                        </h3>
+
+                        <div class="text-muted">
+                            <span t-esc="attendance_date_display"/>
+                            ?
+                            applying
+                            <strong t-esc="attendance_status_label"/>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <div class="alert alert-warning">
+                            <strong t-esc="conflict_count"/>
+                            employee(s) already have saved attendance
+                            for this date.
+
+                            <div class="mt-2">
+                                Total eligible employees:
+                                <strong t-esc="eligible_employee_count"/>
+                                |
+                                Empty employees:
+                                <strong t-esc="empty_count"/>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-4" style="max-height: 350px; overflow: auto;">
+
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light" style="position: sticky; top: 0;">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th style="width: 130px;">
+                                            Current Code
+                                        </th>
+                                        <th>Current Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <t t-foreach="conflict_lines" t-as="conflict">
+                                        <tr>
+                                            <td>
+                                                <strong t-esc="conflict.get('employee_name')"/>
+                                            </td>
+
+                                            <td>
+                                                <span class="badge bg-dark" t-esc="conflict.get('attendance_code')"/>
+                                            </td>
+
+                                            <td t-esc="conflict.get('attendance_label')"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <div class="fw-bold mb-2">
+                                Choose what should happen:
+                            </div>
+
+                            <div>
+                                <strong>Yes ? Overwrite Everyone:</strong>
+                                replace the listed attendance and fill
+                                all empty employees.
+                            </div>
+
+                            <div class="mt-2">
+                                <strong>No ? Fill Empty Only:</strong>
+                                keep every listed attendance record and
+                                only fill employees who are empty.
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <form action="/my/hr/admin/attendances/update-column" method="post">
+
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <input type="hidden" name="attendance_date" t-att-value="attendance_date_value"/>
+
+                                <input type="hidden" name="attendance_code" t-att-value="attendance_code"/>
+
+                                <input type="hidden" name="employee_id" t-att-value="selected_employee_id"/>
+
+                                <input type="hidden" name="fy" t-att-value="selected_fy_value"/>
+
+                                <input type="hidden" name="month" t-att-value="selected_month_value"/>
+
+                                <input type="hidden" name="conflict_action" value="overwrite"/>
+
+                                <button type="submit" class="btn btn-danger fw-bold">
+                                    Yes ? Overwrite Everyone
+                                </button>
+                            </form>
+
+                            <form action="/my/hr/admin/attendances/update-column" method="post">
+
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <input type="hidden" name="attendance_date" t-att-value="attendance_date_value"/>
+
+                                <input type="hidden" name="attendance_code" t-att-value="attendance_code"/>
+
+                                <input type="hidden" name="employee_id" t-att-value="selected_employee_id"/>
+
+                                <input type="hidden" name="fy" t-att-value="selected_fy_value"/>
+
+                                <input type="hidden" name="month" t-att-value="selected_month_value"/>
+
+                                <input type="hidden" name="conflict_action" value="empty_only"/>
+
+                                <button type="submit" class="btn btn-primary fw-bold">
+                                    No ? Fill Empty Only
+                                </button>
+                            </form>
+
+                            <a t-att-href="return_url" class="btn btn-light border fw-bold">
+                                Cancel
+                            </a>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>

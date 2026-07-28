@@ -765,6 +765,13 @@ class HrEmployeePortal(http.Controller):
     def _get_valid_work_modes(self):
         return ['office', 'wfh', 'field', 'leave']
 
+    def _get_valid_work_modes_for_date(self, report_date):
+        """Weekend employee reports allow only office or WFH."""
+        if report_date and report_date.weekday() >= 5:
+            return ['office', 'wfh']
+
+        return self._get_valid_work_modes()
+
     def _build_redirect_url(self, base_path, params=None):
         params = params or {}
         clean_params = {}
@@ -1407,10 +1414,34 @@ class HrEmployeePortal(http.Controller):
         }
 
         register_map, overtime_days = self._get_attendance_register_map(employee, month_start)
+        today = fields.Date.context_today(request.env.user)
 
         for day_number in range(1, total_days + 1):
             target_date = month_start.replace(day=day_number)
-            code = register_map.get(target_date, '-')
+            is_weekend = target_date.weekday() >= 5
+
+            after_last_working_date = bool(
+                employee.last_working_date
+                and target_date > employee.last_working_date
+            )
+
+            # Nothing is counted after the employee's final working day.
+            if after_last_working_date:
+                code = '-'
+            else:
+                code = register_map.get(target_date)
+
+            # Past unworked weekend days become Holiday only while
+            # the employee was still employed.
+            if (
+                not after_last_working_date
+                and not code
+                and is_weekend
+                and target_date < today
+            ):
+                code = 'H'
+
+            code = code or '-'
             title_parts = [target_date.strftime('%d %b %Y')]
 
             if code == 'P':
@@ -1440,7 +1471,7 @@ class HrEmployeePortal(http.Controller):
                 'weekday_short': target_date.strftime('%a'),
                 'code': code,
                 'title': ' | '.join(title_parts),
-                'is_weekend': target_date.weekday() >= 5,
+                'is_weekend': is_weekend,
             })
 
         return {
@@ -1448,6 +1479,8 @@ class HrEmployeePortal(http.Controller):
             'fiscal_year_code': self._get_fiscal_year_code(month_start),
             'month_label': month_start.strftime('%b %Y'),
             'employee_name': employee.name or '-',
+            'is_inactive': not employee.active,
+            'last_working_date': employee.last_working_date,
             'days': days,
             'summary': summary,
         }
@@ -2357,6 +2390,7 @@ class HrEmployeePortal(http.Controller):
             'yesterday_report': yesterday_report,
             'can_submit_yesterday_late': can_submit_yesterday_late,
             'temp_late_accesses': temp_late_accesses,
+            'is_weekend_today': today.weekday() >= 5,
             'success': success,
             'report_status': report_status,
             'report_message': report_message,
@@ -2417,7 +2451,7 @@ class HrEmployeePortal(http.Controller):
             report_date = requested_report_date
             late_submission_source = 'admin_temp_access'
 
-        valid_work_modes = self._get_valid_work_modes()
+        valid_work_modes = self._get_valid_work_modes_for_date(report_date)
         if work_mode not in valid_work_modes:
             redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
                 'report_status': 'error',
@@ -3113,50 +3147,127 @@ class HrEmployeePortal(http.Controller):
 
         employee_id_raw = (post.get('employee_id') or '').strip()
         active_value = (post.get('active') or '').strip()
+        last_working_date_raw = (
+            post.get('last_working_date') or ''
+        ).strip()
 
         try:
             employee_id = int(employee_id_raw)
         except (TypeError, ValueError):
-            return request.redirect(self._build_redirect_url('/my/hr/admin', {
-                'employee_status': 'error',
-                'employee_message': 'Invalid employee selected.',
-            }))
+            return request.redirect(
+                self._build_redirect_url('/my/hr/admin', {
+                    'employee_status': 'error',
+                    'employee_message': 'Invalid employee selected.',
+                })
+            )
 
-        employee = request.env['hr.employee'].sudo().with_context(active_test=False).browse(employee_id).exists()
+        employee = (
+            request.env['hr.employee']
+            .sudo()
+            .with_context(active_test=False)
+            .browse(employee_id)
+            .exists()
+        )
+
         if not employee:
-            return request.redirect(self._build_redirect_url('/my/hr/admin', {
-                'employee_status': 'error',
-                'employee_message': 'Employee not found.',
-            }))
+            return request.redirect(
+                self._build_redirect_url('/my/hr/admin', {
+                    'employee_status': 'error',
+                    'employee_message': 'Employee not found.',
+                })
+            )
 
-        if employee.user_id and employee.user_id.id == request.env.user.id and active_value == '0':
-            return request.redirect(self._build_redirect_url('/my/hr/admin', {
-                'employee_status': 'error',
-                'employee_message': 'You cannot deactivate your own linked employee record from the portal.',
-            }))
+        if (
+            employee.user_id
+            and employee.user_id.id == request.env.user.id
+            and active_value == '0'
+        ):
+            return request.redirect(
+                self._build_redirect_url('/my/hr/admin', {
+                    'employee_status': 'error',
+                    'employee_message': (
+                        'You cannot deactivate your own linked employee '
+                        'record from the portal.'
+                    ),
+                })
+            )
 
         if active_value not in ['0', '1']:
-            return request.redirect(self._build_redirect_url('/my/hr/admin', {
-                'employee_status': 'error',
-                'employee_message': 'Invalid status selected.',
-            }))
+            return request.redirect(
+                self._build_redirect_url('/my/hr/admin', {
+                    'employee_status': 'error',
+                    'employee_message': 'Invalid status selected.',
+                })
+            )
 
-        employee.write({
-            'active': True if active_value == '1' else False,
-        })
+        if active_value == '0':
+            if not last_working_date_raw:
+                return request.redirect(
+                    self._build_redirect_url('/my/hr/admin', {
+                        'employee_status': 'error',
+                        'employee_message': (
+                            'Last Working Date is required when marking '
+                            'an employee inactive.'
+                        ),
+                    })
+                )
 
-        return request.redirect(self._build_redirect_url('/my/hr/admin', {
-            'employee_status': 'success',
-            'employee_message': 'Employee status updated successfully.',
-        }))
+            try:
+                last_working_date = fields.Date.to_date(
+                    last_working_date_raw
+                )
+            except (TypeError, ValueError):
+                last_working_date = False
+
+            if not last_working_date:
+                return request.redirect(
+                    self._build_redirect_url('/my/hr/admin', {
+                        'employee_status': 'error',
+                        'employee_message': (
+                            'Please enter a valid Last Working Date.'
+                        ),
+                    })
+                )
+
+            employee.write({
+                'active': False,
+                'last_working_date': last_working_date,
+            })
+
+            message = (
+                'Employee marked inactive. Last Working Date: %s.'
+                % last_working_date.strftime('%d %b %Y')
+            )
+
+        else:
+            employee.write({
+                'active': True,
+                'last_working_date': False,
+            })
+
+            message = 'Employee activated successfully.'
+
+        return request.redirect(
+            self._build_redirect_url('/my/hr/admin', {
+                'employee_status': 'success',
+                'employee_message': message,
+            })
+        )
 
     @http.route('/my/hr/admin/attendances', type='http', auth='user', website=True)
     def my_hr_admin_attendances(self, **kwargs):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
-        hr_employee_env = request.env['hr.employee'].sudo().with_context(active_test=False).with_context(active_test=False)
-        employees = hr_employee_env.search([], order='name asc')
+        hr_employee_env = (
+            request.env['hr.employee']
+            .sudo()
+            .with_context(active_test=False)
+        )
+
+        attendance_register_env = (
+            request.env['hr.attendance.register.line'].sudo()
+        )
 
         selected_employee = False
         selected_employee_id = ''
@@ -3168,19 +3279,68 @@ class HrEmployeePortal(http.Controller):
             fy_value=fy_value,
             month_value=month_value,
         )
+
         selected_month = payroll_period['selected_month']
         month_navigation = self._get_month_navigation(selected_month)
         fiscal_context = self._get_fiscal_year_context(selected_month)
 
+        selected_month_end = selected_month.replace(
+            day=calendar.monthrange(
+                selected_month.year,
+                selected_month.month,
+            )[1]
+        )
+
+        month_register_lines = attendance_register_env.search([
+            ('attendance_date', '>=', selected_month),
+            ('attendance_date', '<=', selected_month_end),
+        ])
+
+        # Only attendance on or before the final working date counts.
+        month_employee_id_set = {
+            line.employee_id.id
+            for line in month_register_lines
+            if line.employee_id
+            and (
+                not line.employee_id.last_working_date
+                or line.attendance_date
+                <= line.employee_id.last_working_date
+            )
+        }
+
+        # Active employees always appear.
+        # Inactive employees only appear when they have attendance
+        # in the currently selected month.
+        employees = hr_employee_env.search([
+            '|',
+            ('active', '=', True),
+            ('id', 'in', list(month_employee_id_set)),
+        ], order='name asc')
+
         if employee_id_raw:
             try:
                 selected_employee_id = int(employee_id_raw)
-                selected_employee = hr_employee_env.browse(selected_employee_id).exists()
+
+                selected_employee = (
+                    hr_employee_env
+                    .browse(selected_employee_id)
+                    .exists()
+                )
+
             except (TypeError, ValueError):
                 selected_employee = False
                 selected_employee_id = ''
-        elif selected_employee:
-            selected_employee_id = selected_employee.id
+
+            # Prevent inactive employees with no records in this month
+            # from remaining visible through an old filter URL.
+            if (
+                selected_employee
+                and not selected_employee.active
+                and selected_employee.id not in month_employee_id_set
+            ):
+                selected_employee = False
+                selected_employee_id = ''
+
         else:
             selected_employee_id = ''
 
@@ -3329,6 +3489,457 @@ class HrEmployeePortal(http.Controller):
             'attendance_message': 'Attendance updated successfully.',
         })
         return request.redirect(self._build_redirect_url('/my/hr/admin/attendances', base_params))
+
+    @http.route(
+        '/my/hr/admin/attendances/update-column',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_admin_attendances_update_column(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        attendance_date_raw = (
+            post.get('attendance_date') or ''
+        ).strip()
+
+        attendance_code = (
+            post.get('attendance_code') or ''
+        ).strip().upper()
+
+        employee_id_raw = (
+            post.get('employee_id') or ''
+        ).strip()
+
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+
+        conflict_action = (
+            post.get('conflict_action') or ''
+        ).strip()
+
+        base_params = {
+            'employee_id': employee_id_raw,
+            'fy': fy_value,
+            'month': month_value,
+        }
+
+        valid_codes = {
+            'P': 'Present',
+            'H': 'Holiday',
+            'R': 'WFH',
+        }
+
+        current_code_labels = {
+            'P': 'Present',
+            'R': 'WFH',
+            'H': 'Holiday',
+            'S': 'Sick Leave',
+            'C': 'Casual Leave',
+            'U': 'Unpaid Leave',
+            'D': 'Late Submission',
+            'OT': 'Overtime',
+        }
+
+        if attendance_code not in valid_codes:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'Please select Present, Holiday, or WFH.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        if conflict_action not in [
+            '',
+            'overwrite',
+            'empty_only',
+        ]:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'Invalid column update choice.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        attendance_date = self._parse_portal_date(
+            attendance_date_raw
+        )
+
+        if not attendance_date:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'Invalid attendance date.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        attendance_period = (
+            self._get_selected_payroll_period(
+                fy_value=fy_value,
+                month_value=month_value,
+            )
+        )
+
+        selected_month = attendance_period[
+            'selected_month'
+        ]
+
+        if (
+            attendance_date.year != selected_month.year
+            or attendance_date.month != selected_month.month
+        ):
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'The selected date is outside '
+                    'the displayed month.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        employee_env = (
+            request.env['hr.employee']
+            .sudo()
+            .with_context(active_test=False)
+        )
+
+        register_env = request.env[
+            'hr.attendance.register.line'
+        ].sudo()
+
+        # -------------------------------------------------
+        # Determine employees currently visible for month
+        # -------------------------------------------------
+
+        if employee_id_raw:
+            try:
+                employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                employee_id = False
+
+            employees = (
+                employee_env
+                .browse(employee_id)
+                .exists()
+                if employee_id
+                else employee_env.browse()
+            )
+
+        else:
+            selected_month_end = selected_month.replace(
+                day=calendar.monthrange(
+                    selected_month.year,
+                    selected_month.month,
+                )[1]
+            )
+
+            month_lines = register_env.search([
+                (
+                    'attendance_date',
+                    '>=',
+                    selected_month,
+                ),
+                (
+                    'attendance_date',
+                    '<=',
+                    selected_month_end,
+                ),
+            ])
+
+            inactive_month_employee_ids = {
+                line.employee_id.id
+                for line in month_lines
+                if line.employee_id
+                and (
+                    not line.employee_id.last_working_date
+                    or line.attendance_date
+                    <= line.employee_id.last_working_date
+                )
+            }
+
+            employees = employee_env.search([
+                '|',
+                ('active', '=', True),
+                (
+                    'id',
+                    'in',
+                    list(inactive_month_employee_ids),
+                ),
+            ], order='name asc')
+
+        # Do not update an employee before joining or after leaving.
+        employees = employees.filtered(
+            lambda employee: (
+                not employee.joining_date
+                or attendance_date >= employee.joining_date
+            )
+            and (
+                not employee.last_working_date
+                or attendance_date
+                <= employee.last_working_date
+            )
+        )
+
+        if not employees:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'No eligible employees were found '
+                    'for this date.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        # -------------------------------------------------
+        # Find employees who already have saved attendance
+        # -------------------------------------------------
+
+        existing_lines = register_env.search([
+            ('employee_id', 'in', employees.ids),
+            ('attendance_date', '=', attendance_date),
+        ])
+
+        existing_by_employee = {
+            line.employee_id.id: line
+            for line in existing_lines
+        }
+
+        # First submission with conflicts:
+        # show a dedicated confirmation page.
+        if existing_lines and not conflict_action:
+            conflict_lines = []
+
+            sorted_existing_lines = sorted(
+                existing_lines,
+                key=lambda line: (
+                    line.employee_id.name or ''
+                ).lower(),
+            )
+
+            for line in sorted_existing_lines:
+                conflict_lines.append({
+                    'employee_name': (
+                        line.employee_id.name or '-'
+                    ),
+                    'attendance_code': (
+                        line.attendance_code or '-'
+                    ),
+                    'attendance_label': (
+                        current_code_labels.get(
+                            line.attendance_code,
+                            line.attendance_code or '-',
+                        )
+                    ),
+                })
+
+            return_url = self._build_redirect_url(
+                '/my/hr/admin/attendances',
+                base_params,
+            )
+
+            return request.render(
+                'hr_employee_portal.'
+                'hr_attendance_column_conflict_page',
+                {
+                    'attendance_date_value': (
+                        attendance_date.strftime('%Y-%m-%d')
+                    ),
+                    'attendance_date_display': (
+                        attendance_date.strftime(
+                            '%d %B %Y'
+                        )
+                    ),
+                    'attendance_code': attendance_code,
+                    'attendance_status_label': (
+                        valid_codes[attendance_code]
+                    ),
+                    'selected_employee_id': (
+                        employee_id_raw
+                    ),
+                    'selected_fy_value': fy_value,
+                    'selected_month_value': month_value,
+                    'eligible_employee_count': (
+                        len(employees)
+                    ),
+                    'conflict_lines': conflict_lines,
+                    'conflict_count': (
+                        len(conflict_lines)
+                    ),
+                    'empty_count': (
+                        len(employees)
+                        - len(existing_by_employee)
+                    ),
+                    'return_url': return_url,
+                },
+            )
+
+        # -------------------------------------------------
+        # Choose who will receive the selected status
+        # -------------------------------------------------
+
+        if conflict_action == 'empty_only':
+            employees_to_update = employees.filtered(
+                lambda employee: (
+                    employee.id
+                    not in existing_by_employee
+                )
+            )
+
+            notes = (
+                'Empty attendance date cell filled '
+                'manually by HR admin. Existing '
+                'attendance records were preserved.'
+            )
+
+        else:
+            # No conflicts, or admin selected overwrite.
+            employees_to_update = employees
+
+            notes = (
+                'Entire attendance date column updated '
+                'manually by HR admin.'
+            )
+
+            if conflict_action == 'overwrite':
+                notes = (
+                    'Entire attendance date column '
+                    'overwritten manually by HR admin '
+                    'after conflict confirmation.'
+                )
+
+        fiscal_year_label = (
+            self._get_fiscal_year_label(
+                attendance_date
+            )
+        )
+
+        month_label = attendance_date.strftime(
+            '%B %Y'
+        )
+
+        try:
+            for employee in employees_to_update:
+                register_env.create_or_update_attendance_line(
+                    employee=employee,
+                    attendance_date=attendance_date,
+                    attendance_code=attendance_code,
+                    fiscal_year_label=fiscal_year_label,
+                    month_label=month_label,
+                    source='manual',
+                    notes=notes,
+                )
+
+        except ValidationError as error:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': str(error),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        except Exception:
+            base_params.update({
+                'attendance_status': 'error',
+                'attendance_message': (
+                    'Attendance column could not '
+                    'be updated.'
+                ),
+            })
+
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        if conflict_action == 'empty_only':
+            attendance_message = (
+                '%s applied to %s empty employee(s). '
+                '%s existing attendance record(s) '
+                'were preserved.'
+                % (
+                    valid_codes[attendance_code],
+                    len(employees_to_update),
+                    len(existing_by_employee),
+                )
+            )
+
+        elif conflict_action == 'overwrite':
+            attendance_message = (
+                '%s applied to %s employee(s). '
+                '%s existing attendance record(s) '
+                'were overwritten.'
+                % (
+                    valid_codes[attendance_code],
+                    len(employees_to_update),
+                    len(existing_by_employee),
+                )
+            )
+
+        else:
+            attendance_message = (
+                '%s applied to %s employee(s) for %s.'
+                % (
+                    valid_codes[attendance_code],
+                    len(employees_to_update),
+                    attendance_date.strftime(
+                        '%d %B %Y'
+                    ),
+                )
+            )
+
+        base_params.update({
+            'attendance_status': 'success',
+            'attendance_message': attendance_message,
+        })
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/admin/attendances',
+                base_params,
+            )
+        )
 
     @http.route('/my/hr/admin/attendances/export', type='http', auth='user', website=True)
     def my_hr_admin_attendances_export(self, **kwargs):

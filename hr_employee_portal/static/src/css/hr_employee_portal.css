@@ -2094,3 +2094,351 @@
 .hr-attendance-matrix tbody tr:hover td:first-child {
     background: #f8fbfd !important;
 }
+
+/* Weekend attendance P and R colors v1 */
+.hr-attendance-matrix .hr-day-weekend.hr-code-P {
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    font-weight: 800 !important;
+}
+
+.hr-attendance-matrix .hr-day-weekend.hr-code-R {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    font-weight: 800 !important;
+}
+
+/* Strong weekend P and R colors v2 */
+.hr-attendance-matrix .hr-day-weekend.hr-code-P {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    border: 2px solid #1d4ed8 !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+.hr-attendance-matrix .hr-day-weekend.hr-code-R {
+    background: #16a34a !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    border: 2px solid #15803d !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Weekend P and R red colors v3 */
+.hr-attendance-matrix .hr-day-weekend.hr-code-P,
+.hr-attendance-matrix .hr-day-weekend.hr-code-R {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    border: 2px solid #991b1b !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+
+/* Attendance date column editor v1 */
+.hr-date-column-edit-btn {
+    display: block !important;
+    margin: 0 auto 5px auto !important;
+    padding: 2px 6px !important;
+    min-width: 38px !important;
+    border: 1px solid #0d6efd !important;
+    border-radius: 5px !important;
+    background: #ffffff !important;
+    color: #0d6efd !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+}
+
+.hr-date-column-edit-btn:hover {
+    background: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+.hr-column-edit-modal {
+    border: 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+}
+
+.hr-column-edit-modal .modal-header {
+    background: #084f88 !important;
+    color: #ffffff !important;
+}
+
+.hr-column-edit-modal .modal-header .btn-close {
+    filter: invert(1);
+}
+
+
+/* Inline attendance column editor v3 */
+.hr-attendance-day-head {
+    min-width: 76px !important;
+}
+
+.hr-date-column-form {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    margin: 0 auto 5px auto !important;
+}
+
+.hr-date-column-select {
+    width: 54px !important;
+    height: 24px !important;
+    padding: 1px 3px !important;
+    border: 1px solid #2563eb !important;
+    border-radius: 5px !important;
+    background: #ffffff !important;
+    color: #1d4ed8 !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+}
+
+.hr-date-column-apply {
+    width: 22px !important;
+    height: 24px !important;
+    padding: 0 !important;
+    border: 1px solid #15803d !important;
+    border-radius: 5px !important;
+    background: #16a34a !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+}
+
+.hr-date-column-apply:hover {
+    background: #15803d !important;
+}
+
+
+/* Clear attendance column Apply button */
+.hr-date-column-apply {
+    width: 42px !important;
+    font-size: 9px !important;
+}
+
+
+/* Inactive attendance employee highlight v2 */
+.hr-attendance-matrix tr[data-inactive="1"] > td:first-child {
+    background: #fff3cd !important;
+    border-left: 4px solid #f59e0b !important;
+    box-shadow: inset 0 0 0 1px #fbbf24 !important;
+    font-weight: 900 !important;
+}
+
+/* Sticky attendance top header v1 */
+
+/* Keep the dates and Edit/Apply controls visible while scrolling down. */
+.hr-attendance-matrix thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    background: #eef7fc !important;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.14) !important;
+}
+
+/* Top-left Employee header must remain sticky in both directions. */
+.hr-attendance-matrix thead th:first-child {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 60 !important;
+    background: #edf4f8 !important;
+}
+
+/* Employee names remain underneath the top-left header. */
+.hr-attendance-matrix tbody td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 25 !important;
+    background: #ffffff !important;
+}
+
+/* Preserve inactive employee highlighting on the sticky name cell. */
+.hr-attendance-matrix tr[data-inactive="1"] > td:first-child {
+    background: #fff3cd !important;
+}
+
+/* End sticky attendance top header v1 */
+
+
+
+
+
+/* Attendance inner vertical scroll v3 */
+
+/* This is the actual wrapper used by the attendance template. */
+.hr-attendance-matrix-wrap {
+    position: relative !important;
+    display: block !important;
+
+    height: 62vh !important;
+    min-height: 420px !important;
+    max-height: 620px !important;
+
+    overflow-x: auto !important;
+    overflow-y: scroll !important;
+
+    border: 1px solid #dce7ef !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
+}
+
+/* Keep the full date and Edit/Apply header fixed while scrolling down. */
+.hr-attendance-matrix-wrap .hr-attendance-matrix thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    background: #eef7fc !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18) !important;
+}
+
+/* Top-left Employee header stays fixed vertically and horizontally. */
+.hr-attendance-matrix-wrap .hr-attendance-matrix thead th:first-child {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 90 !important;
+    background: #edf4f8 !important;
+}
+
+/* Employee names remain fixed while scrolling left and right. */
+.hr-attendance-matrix-wrap .hr-attendance-matrix tbody td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    background: #ffffff !important;
+}
+
+/* Preserve inactive employee highlighting. */
+.hr-attendance-matrix-wrap
+.hr-attendance-matrix
+tr[data-inactive="1"] > td:first-child {
+    background: #fff3cd !important;
+}
+
+/* Make the inner vertical scrollbar easy to see. */
+.hr-attendance-matrix-wrap::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.hr-attendance-matrix-wrap::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border: 3px solid #f8fafc;
+    border-radius: 10px;
+}
+
+.hr-attendance-matrix-wrap::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+/* End attendance inner vertical scroll v3 */
+
+
+/* Compact stacked attendance column editor v4 */
+
+.hr-attendance-matrix .hr-attendance-day-head {
+    min-width: 64px !important;
+    width: 64px !important;
+    padding: 7px 3px !important;
+}
+
+.hr-date-column-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    width: 58px !important;
+    margin: 0 auto 4px auto !important;
+}
+
+.hr-date-column-select {
+    width: 58px !important;
+    height: 26px !important;
+    padding: 1px 3px !important;
+    font-size: 10px !important;
+    text-align: center !important;
+}
+
+.hr-date-column-apply {
+    width: 48px !important;
+    height: 23px !important;
+    margin: 0 auto !important;
+    padding: 0 3px !important;
+    font-size: 9px !important;
+    line-height: 21px !important;
+}
+
+/* End compact stacked attendance column editor v4 */
+
+
+/* Attendance resolved layout v11 */
+
+/* One selected employee: compact header and one row. */
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single {
+    display: block !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 190px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    scrollbar-gutter: auto !important;
+    overscroll-behavior: auto !important;
+}
+
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+}
+
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix thead,
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix tbody,
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix tbody tr,
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix tbody td {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+/* Slightly narrower employee column when one employee is selected. */
+.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix thead th:first-child,
+.hr-attendance-matrix-wrap-single
+.hr-attendance-matrix tbody td:first-child {
+    min-width: 190px !important;
+    width: 190px !important;
+}
+
+/* All Employees keeps vertical scrolling and sticky headers. */
+.hr-attendance-matrix-wrap.hr-attendance-matrix-wrap-all {
+    height: 62vh !important;
+    min-height: 420px !important;
+    max-height: 620px !important;
+
+    overflow-x: auto !important;
+    overflow-y: scroll !important;
+
+    scrollbar-gutter: stable !important;
+}
+
+/* End attendance resolved layout v11 */

@@ -11,6 +11,7 @@
         'hr_daily_work_report',
     ],
     'data': [
+        'data/management_auto_attendance_cron.xml',
         'security/ir.model.access.csv',
         'views/attendance_register_views.xml',
     ],

@@ -40,6 +40,14 @@ class HrEmployee(models.Model):
 
     joining_date = fields.Date(string="Joining Date")
 
+    last_working_date = fields.Date(
+        string="Last Working Date",
+        copy=False,
+        index=True,
+        help="The employee's final working day before becoming inactive.",
+    )
+
+
     father_name = fields.Char(string="Father Name")
     contract_start_date = fields.Date(string="Contract Start Date")
     contract_end_date = fields.Date(string="Contract End Date")
