@@ -2442,3 +2442,44 @@ tr[data-inactive="1"] > td:first-child {
 }
 
 /* End attendance resolved layout v11 */
+
+/* Employee dashboard banner photo v1 */
+
+.hr-banner-employee-photo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.hr-banner-employee-photo {
+    width: 104px;
+    height: 104px;
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    background: #e8f4fc;
+    border: 4px solid #e8f4fc;
+    box-shadow: 0 6px 16px rgba(13, 111, 184, 0.22);
+}
+
+.hr-banner-employee-photo-fallback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #0d6fb8;
+    font-size: 42px;
+}
+
+@media (max-width: 991.98px) {
+    .hr-banner-summary-box {
+        display: block !important;
+        width: 100%;
+        max-width: 360px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* End employee dashboard banner photo v1 */

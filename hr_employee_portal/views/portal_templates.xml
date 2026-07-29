@@ -1481,6 +1481,19 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                                 <div class="col-lg-4 text-lg-end" t-if="employee">
                                     <div class="hr-banner-summary-box d-inline-block text-start">
+                                        <div class="hr-banner-employee-photo-wrap">
+                                            <t t-if="employee.image_256">
+                                                <img class="hr-banner-employee-photo"
+                                                     t-att-src="image_data_uri(employee.image_256)"
+                                                     t-att-alt="employee.name or 'Employee photo'"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hr-banner-employee-photo hr-banner-employee-photo-fallback"
+                                                     aria-label="Employee photo">
+                                                    <i class="fa fa-user" aria-hidden="true"/>
+                                                </div>
+                                            </t>
+                                        </div>
                                         <div class="hr-summary-line">
                                             <strong>Status:</strong>
                                             <span t-if="employee.employment_status == 'active'">Active</span>
