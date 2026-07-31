@@ -18,6 +18,18 @@ import hashlib
 
 
 class HrEmployeePortal(http.Controller):
+    TEAM_TASK_REPORT_VIEWER_CODE = 'BLMP28'
+
+    TEAM_TASK_REPORT_EMPLOYEE_CODES = (
+        'BLMP28',
+        'BLMP34',
+        'BLMP63',
+        'BPL023',
+        'BPL027',
+        'BPL030',
+        'BPL031',
+    )
+
 
     SICK_POLICY_DAYS = 10.0
     CASUAL_POLICY_DAYS = 20.0
@@ -4663,6 +4675,449 @@ class HrEmployeePortal(http.Controller):
         return self._export_workbook_response(
             workbook,
             file_name,
+        )
+
+    # ---------------------------------------------------------
+    # EMPLOYEE TEAM LEAD: Restricted Team Task Reports
+    # ---------------------------------------------------------
+
+    def _get_team_task_report_viewer(self):
+        employee = self._get_employee()
+
+        if not employee:
+            return (
+                request.env['hr.employee']
+                .sudo()
+                .browse([])
+            )
+
+        employee_code = (
+            employee.employee_code or ''
+        ).strip()
+
+        if (
+            employee_code
+            != self.TEAM_TASK_REPORT_VIEWER_CODE
+        ):
+            return (
+                request.env['hr.employee']
+                .sudo()
+                .browse([])
+            )
+
+        return employee
+
+    def _get_team_task_report_employees(self):
+        return (
+            request.env['hr.employee']
+            .sudo()
+            .with_context(active_test=False)
+            .search(
+                [
+                    (
+                        'employee_code',
+                        'in',
+                        list(
+                            self.TEAM_TASK_REPORT_EMPLOYEE_CODES
+                        ),
+                    ),
+                ],
+                order='name asc',
+            )
+        )
+
+    def _get_team_task_report_filter_values(
+        self,
+        kwargs,
+        allowed_employee_ids,
+    ):
+        employee_id_raw = (
+            kwargs.get('employee_id') or ''
+        ).strip()
+
+        selected_employee_id = False
+
+        if employee_id_raw:
+            try:
+                candidate_employee_id = int(
+                    employee_id_raw
+                )
+            except (TypeError, ValueError):
+                candidate_employee_id = False
+
+            if (
+                candidate_employee_id
+                in allowed_employee_ids
+            ):
+                selected_employee_id = (
+                    candidate_employee_id
+                )
+
+        date_from = self._parse_portal_date(
+            kwargs.get('date_from')
+        )
+
+        date_to = self._parse_portal_date(
+            kwargs.get('date_to')
+        )
+
+        return (
+            selected_employee_id,
+            date_from,
+            date_to,
+        )
+
+    def _get_team_task_report_domain(
+        self,
+        allowed_employee_ids,
+        selected_employee_id=False,
+        date_from=False,
+        date_to=False,
+    ):
+        domain = [
+            (
+                'employee_id',
+                'in',
+                allowed_employee_ids,
+            ),
+        ]
+
+        domain += self._get_task_report_search_domain(
+            employee_id=selected_employee_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
+        return domain
+
+    @http.route(
+        '/my/hr/team-task-reports',
+        type='http',
+        auth='user',
+        website=True,
+    )
+    def my_hr_team_task_reports(self, **kwargs):
+        hr_maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect(
+                '/my/hr/admin/task-reports'
+            )
+
+        viewer = self._get_team_task_report_viewer()
+
+        if not viewer:
+            return request.redirect('/my/hr')
+
+        allowed_employees = (
+            self._get_team_task_report_employees()
+        )
+
+        allowed_employee_ids = (
+            allowed_employees.ids
+        )
+
+        (
+            selected_employee_id,
+            date_from,
+            date_to,
+        ) = self._get_team_task_report_filter_values(
+            kwargs,
+            allowed_employee_ids,
+        )
+
+        domain = self._get_team_task_report_domain(
+            allowed_employee_ids,
+            selected_employee_id=selected_employee_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
+        report_env = request.env[
+            'hr.daily.work.report'
+        ].sudo()
+
+        try:
+            page = int(
+                kwargs.get('page') or 1
+            )
+        except (TypeError, ValueError):
+            page = 1
+
+        page = max(page, 1)
+        per_page = 20
+        offset = (page - 1) * per_page
+
+        task_report_total = (
+            report_env.search_count(domain)
+        )
+
+        task_reports = report_env.search(
+            domain,
+            order=(
+                'report_date desc, '
+                'submitted_at desc, '
+                'id desc'
+            ),
+            limit=per_page,
+            offset=offset,
+        )
+
+        page_count = max(
+            (
+                task_report_total
+                + per_page
+                - 1
+            )
+            // per_page,
+            1,
+        )
+
+        task_report_start = (
+            offset + 1
+            if task_report_total
+            else 0
+        )
+
+        task_report_end = min(
+            offset + per_page,
+            task_report_total,
+        )
+
+        base_params = {
+            'employee_id': (
+                selected_employee_id or ''
+            ),
+            'date_from': (
+                date_from.strftime('%Y-%m-%d')
+                if date_from
+                else ''
+            ),
+            'date_to': (
+                date_to.strftime('%Y-%m-%d')
+                if date_to
+                else ''
+            ),
+        }
+
+        previous_page_url = False
+        next_page_url = False
+
+        if page > 1:
+            previous_params = dict(
+                base_params
+            )
+            previous_params['page'] = (
+                page - 1
+            )
+
+            previous_page_url = (
+                self._build_redirect_url(
+                    '/my/hr/team-task-reports',
+                    previous_params,
+                )
+            )
+
+        if page < page_count:
+            next_params = dict(base_params)
+            next_params['page'] = page + 1
+
+            next_page_url = (
+                self._build_redirect_url(
+                    '/my/hr/team-task-reports',
+                    next_params,
+                )
+            )
+
+        values = self._prepare_portal_values(
+            viewer,
+            {
+                'employees': allowed_employees,
+                'selected_employee_id': (
+                    selected_employee_id
+                ),
+                'date_from': (
+                    date_from.strftime('%Y-%m-%d')
+                    if date_from
+                    else ''
+                ),
+                'date_to': (
+                    date_to.strftime('%Y-%m-%d')
+                    if date_to
+                    else ''
+                ),
+                'task_reports': task_reports,
+                'task_report_total': (
+                    task_report_total
+                ),
+                'task_report_page': page,
+                'task_report_page_count': (
+                    page_count
+                ),
+                'task_report_per_page': (
+                    per_page
+                ),
+                'task_report_offset': offset,
+                'task_report_start': (
+                    task_report_start
+                ),
+                'task_report_end': (
+                    task_report_end
+                ),
+                'previous_page_url': (
+                    previous_page_url
+                ),
+                'next_page_url': (
+                    next_page_url
+                ),
+                'report_status': '',
+                'report_message': '',
+            },
+        )
+
+        return request.render(
+            (
+                'hr_employee_portal.'
+                'hr_team_task_reports_page'
+            ),
+            values,
+        )
+
+    @http.route(
+        '/my/hr/team-task-reports/export',
+        type='http',
+        auth='user',
+        website=True,
+    )
+    def my_hr_team_task_reports_export(
+        self,
+        **kwargs,
+    ):
+        hr_maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+
+        if hr_maintenance_response is not False:
+            return hr_maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect(
+                '/my/hr/admin/task-reports/export'
+            )
+
+        viewer = self._get_team_task_report_viewer()
+
+        if not viewer:
+            return request.redirect('/my/hr')
+
+        allowed_employees = (
+            self._get_team_task_report_employees()
+        )
+
+        allowed_employee_ids = (
+            allowed_employees.ids
+        )
+
+        (
+            selected_employee_id,
+            date_from,
+            date_to,
+        ) = self._get_team_task_report_filter_values(
+            kwargs,
+            allowed_employee_ids,
+        )
+
+        domain = self._get_team_task_report_domain(
+            allowed_employee_ids,
+            selected_employee_id=selected_employee_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+
+        reports = (
+            request.env[
+                'hr.daily.work.report'
+            ]
+            .sudo()
+            .search(
+                domain,
+                order=(
+                    'report_date desc, '
+                    'submitted_at desc, '
+                    'id desc'
+                ),
+            )
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Team Task Reports'
+
+        sheet.append([
+            '#',
+            'Employee',
+            'Employee Code',
+            'Report Date',
+            'Submitted At',
+            'Work Mode',
+            'Status',
+            'Task Report',
+            'Remarks',
+        ])
+
+        for index, report in enumerate(
+            reports,
+            start=1,
+        ):
+            if report.work_mode == 'office':
+                work_mode = 'Work from Office'
+            elif report.work_mode == 'wfh':
+                work_mode = 'Work from Home'
+            elif report.work_mode == 'field':
+                work_mode = 'Field Work'
+            elif report.work_mode == 'leave':
+                work_mode = 'Leave'
+            else:
+                work_mode = (
+                    report.work_mode or ''
+                )
+
+            sheet.append([
+                index,
+                report.employee_id.name or '',
+                (
+                    report.employee_id
+                    .employee_code
+                    or ''
+                ),
+                (
+                    report.report_date
+                    .strftime('%Y-%m-%d')
+                    if report.report_date
+                    else ''
+                ),
+                (
+                    self._format_pakistan_datetime(
+                        report.submitted_at,
+                        '%Y-%m-%d %H:%M:%S',
+                    )
+                    if report.submitted_at
+                    else ''
+                ),
+                work_mode,
+                report.state or '',
+                report.task_report or '',
+                report.remarks or '',
+            ])
+
+        return self._export_workbook_response(
+            workbook,
+            'team_task_reports.xlsx',
         )
 
     @http.route('/my/hr/admin/task-reports', type='http', auth='user', website=True)

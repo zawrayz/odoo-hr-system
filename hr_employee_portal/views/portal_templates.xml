@@ -1398,7 +1398,12 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     <i class="fa fa-edit"/>
                     <span>Daily Work Report</span>
                 </a>
-                <a href="/my/hr/performance" t-attf-class="hr-sidebar-link #{'active' if current_page == 'performance' else ''}">
+                <t t-if="employee and (employee.employee_code or '').strip() == 'BLMP28'">
+    <a href="/my/hr/team-task-reports" t-attf-class="hr-sidebar-link #{'active' if current_page == 'team_task_reports' else ''}">
+        <i class="fa fa-users"/>
+        <span>Team Task Reports</span>
+    </a>
+</t><a href="/my/hr/performance" t-attf-class="hr-sidebar-link #{'active' if current_page == 'performance' else ''}">
                     <i class="fa fa-line-chart"/>
                     <span>My Performance</span>
                </a>
@@ -4706,6 +4711,351 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-call="hr_employee_portal.hr_employee_chatbot_widget"/>
 
             <script type="text/javascript">
+
+            (function () {
+                function parseExpiry(value) {
+                    if (!value) return null;
+                    var date = new Date(value);
+                    if (isNaN(date.getTime())) return null;
+                    return date;
+                }
+
+                function findCountdownForForm(form) {
+                    var parent = form.parentElement;
+                    while (parent) {
+                        var countdown = parent.querySelector('.hr-late-access-countdown');
+                        if (countdown) return countdown;
+                        parent = parent.parentElement;
+                    }
+                    return null;
+                }
+
+                function updateEmployeeLateAccessForms() {
+                    document.querySelectorAll('.hr-late-access-form').forEach(function (form) {
+                        var expiry = parseExpiry(form.getAttribute('data-expires-utc'));
+                        var countdown = findCountdownForForm(form);
+                        var submitButton = form.querySelector('button[type="submit"]');
+
+                        if (!expiry) {
+                            if (countdown) countdown.textContent = 'Expiry time unavailable. Please refresh.';
+                            return;
+                        }
+
+                        var diff = expiry.getTime() - Date.now();
+
+                        if (diff &lt;= 0) {
+                            if (countdown) countdown.textContent = 'Expired. Please refresh the page or contact admin.';
+                            if (submitButton) {
+                                submitButton.disabled = true;
+                                submitButton.classList.add('disabled');
+                                submitButton.innerHTML = '&lt;i class="fa fa-lock me-2"&gt;&lt;/i&gt; Access Expired';
+                            }
+                            return;
+                        }
+
+                        var totalSeconds = Math.floor(diff / 1000);
+                        var hours = Math.floor(totalSeconds / 3600);
+                        var minutes = Math.floor((totalSeconds % 3600) / 60);
+                        var seconds = totalSeconds % 60;
+
+                        var label = '';
+                        if (hours &gt; 0) label += hours + 'h ';
+                        label += minutes + 'm ' + seconds + 's';
+
+                        if (countdown) countdown.textContent = label;
+                    });
+                }
+
+                function updateAdminLateAccessRows() {
+                    document.querySelectorAll('.hr-late-access-admin-row').forEach(function (row) {
+                        var expiry = parseExpiry(row.getAttribute('data-expires-utc'));
+                        if (!expiry) return;
+
+                        if (expiry.getTime() &lt;= Date.now()) {
+                            var status = row.querySelector('.hr-late-access-status');
+                            var revokeForm = row.querySelector('.hr-late-access-revoke-form');
+
+                            if (status) {
+                                status.textContent = 'expired';
+                                status.classList.remove('bg-success');
+                                status.classList.add('bg-secondary');
+                            }
+
+                            if (revokeForm) {
+                                revokeForm.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
+                function updateAllLateAccessUI() {
+                    updateEmployeeLateAccessForms();
+                    updateAdminLateAccessRows();
+                }
+
+                updateAllLateAccessUI();
+                setInterval(updateAllLateAccessUI, 1000);
+
+                document.addEventListener('submit', function (event) {
+                    var form = event.target;
+                    if (!form.classList || !form.classList.contains('hr-late-access-form')) return;
+
+                    var expiry = parseExpiry(form.getAttribute('data-expires-utc'));
+                    if (expiry &amp;&amp; expiry.getTime() &lt;= Date.now()) {
+                        event.preventDefault();
+                        alert('Temporary access has expired. Please refresh the page or contact admin.');
+                    }
+                });
+            })();
+
+            </script>
+
+</t>
+</template>
+<template id="hr_team_task_reports_page" name="HR Team Task Reports">
+    <t t-call="portal.portal_layout">
+        <div class="container oe_structure mt-4 mb-5">
+            <div class="hr-layout-row"><div class="hr-sidebar-wrap"><t t-call="hr_employee_portal.hr_employee_sidebar"/></div><div class="hr-content-wrap"><div class="mb-3">
+                        <a href="/my/hr" class="hr-back-link">
+                            <i class="fa fa-arrow-left"/> Back to Employee Dashboard</a>
+                    </div>
+
+                    <div class="card hr-page-header-card mb-4">
+                        <div class="card-body">
+                            <h2 class="hr-page-title">Team Task Reports</h2>
+                            <p class="hr-page-subtitle">Review employee daily work reports. This page is read-only.</p>
+                        </div>
+                    </div>
+
+                    <t t-if="report_message">
+                        <div t-attf-class="alert #{'alert-success' if report_status == 'success' else 'alert-danger'} mb-4" role="alert">
+                            </div>
+                    </t>
+
+
+                    <div class="card hr-content-card mb-4">
+                        <div class="card-body">
+                            <form action="/my/hr/team-task-reports" method="get">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Employee</label>
+                                        <select name="employee_id" class="form-select">
+                                            <option value="">All Employees</option><t t-foreach="employees" t-as="team_employee"><option t-att-value="team_employee.id" t-att-selected="selected_employee_id == team_employee.id and 'selected' or None"><t t-esc="team_employee.name"/><t t-if="team_employee.employee_code"> (<t t-esc="team_employee.employee_code"/>)</t></option></t></select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">From Date</label>
+                                        <input type="date" name="date_from" class="form-control" t-att-value="date_from or ''"/>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold">To Date</label>
+                                        <input type="date" name="date_to" class="form-control" t-att-value="date_to or ''"/>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <button type="submit" class="hr-request-btn border-0 w-100 justify-content-center">
+                                            <i class="fa fa-filter"/> Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-3 ms-auto">
+                                    <a class="hr-request-btn w-100 justify-content-center" t-attf-href="/my/hr/team-task-reports/export?employee_id=#{selected_employee_id or ''}&amp;amp;date_from=#{date_from or ''}&amp;amp;date_to=#{date_to or ''}">
+                                        <i class="fa fa-download"/> Download Excel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                        <div class="card hr-content-card">
+                        <div class="card-body">
+                            <div class="hr-subsection-title">Employees</div>
+
+<div class="hr-task-report-zoom-toolbar" id="hrTaskReportZoomToolbar">
+    <button type="button" class="btn btn-outline-primary btn-sm" id="hrTaskZoomOut">− Zoom Out</button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" id="hrTaskZoomReset">Reset</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" id="hrTaskZoomIn">+ Zoom In</button>
+    <button type="button" class="btn btn-primary btn-sm" id="hrTaskZoomFit">Fit View</button>
+    <span class="hr-task-report-zoom-label" id="hrTaskZoomLabel">85%</span>
+</div>
+<script type="text/javascript">
+
+(function () {
+    function initTaskReportZoom() {
+        var toolbar = document.getElementById('hrTaskReportZoomToolbar');
+        if (!toolbar || toolbar.dataset.ready === '1') {
+            return;
+        }
+
+        var container = toolbar.parentElement;
+        if (!container) {
+            return;
+        }
+
+        var table = container.querySelector('table');
+        if (!table) {
+            return;
+        }
+
+        toolbar.dataset.ready = '1';
+        table.classList.add('hr-task-reports-table-zoom-table');
+
+        var parent = table.parentElement;
+        var safety = 0;
+        while (parent &amp;&amp; safety &lt; 4) {
+            parent.classList.add('hr-task-reports-table-wrap');
+            parent = parent.parentElement;
+            safety += 1;
+        }
+
+        var label = document.getElementById('hrTaskZoomLabel');
+        var btnOut = document.getElementById('hrTaskZoomOut');
+        var btnReset = document.getElementById('hrTaskZoomReset');
+        var btnIn = document.getElementById('hrTaskZoomIn');
+        var btnFit = document.getElementById('hrTaskZoomFit');
+
+        function getSavedZoom() {
+            var saved = parseFloat(localStorage.getItem('hrTaskReportsZoom') || '0.85');
+            if (isNaN(saved)) {
+                saved = 0.85;
+            }
+            return saved;
+        }
+
+        function setZoom(value) {
+            value = Math.max(0.60, Math.min(1.20, value));
+            value = Math.round(value * 100) / 100;
+
+            table.style.zoom = value;
+            table.style.webkitTransformOrigin = 'top left';
+
+            if (label) {
+                label.textContent = Math.round(value * 100) + '%';
+            }
+
+            localStorage.setItem('hrTaskReportsZoom', String(value));
+        }
+
+        if (btnOut) {
+            btnOut.addEventListener('click', function () {
+                setZoom(getSavedZoom() - 0.05);
+            });
+        }
+
+        if (btnReset) {
+            btnReset.addEventListener('click', function () {
+                setZoom(0.85);
+            });
+        }
+
+        if (btnIn) {
+            btnIn.addEventListener('click', function () {
+                setZoom(getSavedZoom() + 0.05);
+            });
+        }
+
+        if (btnFit) {
+            btnFit.addEventListener('click', function () {
+                setZoom(0.75);
+            });
+        }
+
+        setZoom(getSavedZoom());
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTaskReportZoom);
+    } else {
+        initTaskReportZoom();
+    }
+})();
+
+</script>
+
+
+                            <div class="table-responsive hr-admin-table-scroll hr-task-report-table-wrap">
+                                <table class="table table-bordered table-striped align-middle hr-task-report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Code</th>
+                                            <th>Report Date</th>
+                                            <th>Submitted At</th>
+                                            <th>Work Mode</th>
+                                            <th>Status</th>
+                                            <th>Task Report</th>
+                                            <th>Remarks</th>
+                                            </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="task_reports">
+                                            <t t-foreach="task_reports" t-as="report">
+                                                <tr>
+                                                    <td t-esc="report.employee_id.name or '-'"/>
+                                                    <td t-esc="report.employee_id.employee_code or '-'"/>
+                                                    <td t-esc="report.report_date or '-'"/>
+                                                    <td t-esc="format_pk_datetime(report.submitted_at)"/>
+                                                    <td>
+                                                        <span t-if="report.work_mode == 'office'">Work from Office</span>
+                                                        <span t-elif="report.work_mode == 'wfh'">Work from Home</span>
+                                                        <span t-elif="report.work_mode == 'field'">Field Work</span>
+                                                        <span t-elif="report.work_mode == 'leave'">Leave</span>
+                                                        <span t-else="">-</span>
+                                                    </td>
+                                                    <td t-esc="report.state or '-'"/>
+                                                    <td style="min-width: 240px; max-width: 340px; vertical-align: top;">
+                                                        <div class="hr-task-report-text-compact" style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;" t-esc="report.task_report or '-'"/>
+                                                    </td>
+                                                    <td style="min-width: 180px; max-width: 260px; vertical-align: top;">
+                                                        <div class="hr-task-remarks-text-compact" style="display:block; max-height:58px; overflow-y:auto; overflow-x:hidden; white-space:pre-wrap; overflow-wrap:break-word; word-break:break-word; line-height:1.25; padding-right:6px;" t-esc="report.remarks or '-'"/>
+                                                    </td>
+                                                    </tr>
+                                            </t>
+                                        </t>
+                                        <t t-if="not task_reports">
+                                            <tr>
+                                                <td colspan="8" class="text-center">No task reports found for the selected filters.</td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+    <div class="text-muted">
+        Showing
+        <strong t-esc="task_report_start"/>
+        -
+        <strong t-esc="task_report_end"/>
+        of
+        <strong t-esc="task_report_total"/>
+        reports
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <a t-if="previous_page_url" t-att-href="previous_page_url" class="btn btn-light fw-bold">
+            <i class="fa fa-chevron-left"/> Previous
+        </a>
+
+        <span class="fw-bold">
+            Page </span>
+
+        <a t-if="next_page_url" t-att-href="next_page_url" class="btn btn-light fw-bold">
+            Next <i class="fa fa-chevron-right"/>
+        </a>
+    </div>
+</div>
+                        </div>
+                    </div>
+
+                    <t t-if="task_reports">
+                        </t>
+                </div></div></div>
+
+        <script type="text/javascript">
 
             (function () {
                 function parseExpiry(value) {
