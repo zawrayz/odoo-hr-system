@@ -11,6 +11,8 @@ from urllib.parse import urlencode
 from werkzeug.urls import url_encode
 from io import BytesIO
 from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 import hmac
 import hashlib
 
@@ -1107,7 +1109,19 @@ class HrEmployeePortal(http.Controller):
         for sheet in workbook.worksheets:
             for column_cells in sheet.columns:
                 max_length = 12
-                column_letter = column_cells[0].column_letter
+                column_letter = get_column_letter(
+                    column_cells[0].column
+                )
+
+                # Styled workbooks already define their widths.
+                # Preserve those widths instead of recalculating them.
+                if (
+                    column_letter in sheet.column_dimensions
+                    and sheet.column_dimensions[
+                        column_letter
+                    ].width
+                ):
+                    continue
 
                 for cell in column_cells:
                     value = str(cell.value or '')
@@ -4126,14 +4140,512 @@ class HrEmployeePortal(http.Controller):
                 summary.get('OT', 0),
             ])
 
-        # Keep headings and employee information visible.
-        sheet.freeze_panes = 'E2'
-        sheet.auto_filter.ref = sheet.dimensions
+        # =====================================================
+        # Professional BLIMP attendance workbook styling
+        # =====================================================
 
-        sheet.column_dimensions['A'].width = 18
-        sheet.column_dimensions['B'].width = 28
-        sheet.column_dimensions['C'].width = 15
-        sheet.column_dimensions['D'].width = 18
+        blimp_blue = "0D6FB8"
+        blimp_dark_blue = "084F88"
+        light_blue = "F5FBFF"
+        border_color = "DCE6ED"
+        white = "FFFFFF"
+        dark_text = "222222"
+
+        status_styles = {
+            "P": {
+                "fill": "FFFFFF",
+                "font": "000000",
+            },
+            "R": {
+                "fill": "FFE599",
+                "font": "B66600",
+            },
+            "H": {
+                "fill": "F4CCCC",
+                "font": "000000",
+            },
+            "S": {
+                "fill": "B4A7D6",
+                "font": "674EA7",
+            },
+            "C": {
+                "fill": "B6D7A8",
+                "font": "274E13",
+            },
+            "U": {
+                "fill": "E06666",
+                "font": "000000",
+            },
+            "D": {
+                "fill": "000000",
+                "font": "FFFFFF",
+            },
+            "OT": {
+                "fill": "0B5394",
+                "font": "FFFFFF",
+            },
+            "-": {
+                "fill": "DADCDD",
+                "font": "646464",
+            },
+        }
+
+        thin_side = Side(
+            style="thin",
+            color=border_color,
+        )
+
+        cell_border = Border(
+            left=thin_side,
+            right=thin_side,
+            top=thin_side,
+            bottom=thin_side,
+        )
+
+        center_alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+        )
+
+        left_alignment = Alignment(
+            horizontal="left",
+            vertical="center",
+        )
+
+        last_column = sheet.max_column
+        last_column_letter = get_column_letter(
+            last_column
+        )
+
+        day_count = len(
+            first_matrix_row["days"]
+        )
+
+        day_start_column = 5
+        day_end_column = (
+            day_start_column
+            + day_count
+            - 1
+        )
+
+        summary_start_column = (
+            day_end_column + 1
+        )
+
+        # Insert space above the original Excel table.
+        sheet.insert_rows(
+            1,
+            amount=3,
+        )
+
+        title_row = 1
+        subtitle_row = 2
+        legend_row = 3
+        header_row = 4
+        first_data_row = 5
+        last_data_row = sheet.max_row
+
+        export_scope = (
+            employees[0].name
+            if employee_id_raw
+            else "All Employees"
+        )
+
+        # -----------------------------------------------------
+        # Main title
+        # -----------------------------------------------------
+
+        sheet.merge_cells(
+            start_row=title_row,
+            start_column=1,
+            end_row=title_row,
+            end_column=last_column,
+        )
+
+        title_cell = sheet.cell(
+            row=title_row,
+            column=1,
+        )
+
+        title_cell.value = (
+            "BLIMP MONTHLY ATTENDANCE REGISTER"
+        )
+
+        title_cell.fill = PatternFill(
+            fill_type="solid",
+            fgColor=blimp_blue,
+        )
+
+        title_cell.font = Font(
+            color=white,
+            bold=True,
+            size=18,
+        )
+
+        title_cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+        )
+
+        sheet.row_dimensions[
+            title_row
+        ].height = 34
+
+        # -----------------------------------------------------
+        # Subtitle
+        # -----------------------------------------------------
+
+        sheet.merge_cells(
+            start_row=subtitle_row,
+            start_column=1,
+            end_row=subtitle_row,
+            end_column=last_column,
+        )
+
+        subtitle_cell = sheet.cell(
+            row=subtitle_row,
+            column=1,
+        )
+
+        subtitle_cell.value = (
+            f"{first_matrix_row['month_label']}  |  "
+            f"Fiscal Year: {first_matrix_row['fiscal_year']}  |  "
+            f"Scope: {export_scope}"
+        )
+
+        subtitle_cell.fill = PatternFill(
+            fill_type="solid",
+            fgColor=blimp_dark_blue,
+        )
+
+        subtitle_cell.font = Font(
+            color=white,
+            bold=True,
+            size=11,
+        )
+
+        subtitle_cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+        )
+
+        sheet.row_dimensions[
+            subtitle_row
+        ].height = 24
+
+        # -----------------------------------------------------
+        # Attendance legend
+        # -----------------------------------------------------
+
+        legend_label = sheet.cell(
+            row=legend_row,
+            column=1,
+        )
+
+        legend_label.value = "Legend"
+        legend_label.fill = PatternFill(
+            fill_type="solid",
+            fgColor=light_blue,
+        )
+        legend_label.font = Font(
+            color=blimp_blue,
+            bold=True,
+        )
+        legend_label.alignment = center_alignment
+        legend_label.border = cell_border
+
+        legend_codes = [
+            "P",
+            "R",
+            "H",
+            "S",
+            "C",
+            "U",
+            "D",
+            "OT",
+        ]
+
+        for legend_column, code in enumerate(
+            legend_codes,
+            start=2,
+        ):
+            legend_cell = sheet.cell(
+                row=legend_row,
+                column=legend_column,
+            )
+
+            legend_cell.value = code
+
+            legend_cell.fill = PatternFill(
+                fill_type="solid",
+                fgColor=status_styles[code]["fill"],
+            )
+
+            legend_cell.font = Font(
+                color=status_styles[code]["font"],
+                bold=True,
+            )
+
+            legend_cell.alignment = center_alignment
+            legend_cell.border = cell_border
+
+        for blank_column in range(
+            len(legend_codes) + 2,
+            last_column + 1,
+        ):
+            blank_cell = sheet.cell(
+                row=legend_row,
+                column=blank_column,
+            )
+
+            blank_cell.fill = PatternFill(
+                fill_type="solid",
+                fgColor="FFFFFF",
+            )
+
+            blank_cell.border = cell_border
+
+        sheet.row_dimensions[
+            legend_row
+        ].height = 23
+
+        # -----------------------------------------------------
+        # Header styling
+        # -----------------------------------------------------
+
+        for column_number in range(
+            1,
+            last_column + 1,
+        ):
+            header_cell = sheet.cell(
+                row=header_row,
+                column=column_number,
+            )
+
+            header_cell.border = cell_border
+            header_cell.alignment = center_alignment
+
+            header_code = str(
+                header_cell.value or ""
+            ).strip().upper()
+
+            # Summary P/R/H/etc. headings use their matching
+            # Odoo status colors.
+            if (
+                column_number >= summary_start_column
+                and header_code in status_styles
+            ):
+                header_cell.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor=status_styles[
+                        header_code
+                    ]["fill"],
+                )
+
+                header_cell.font = Font(
+                    color=status_styles[
+                        header_code
+                    ]["font"],
+                    bold=True,
+                    size=10,
+                )
+
+            else:
+                header_cell.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor=blimp_blue,
+                )
+
+                header_cell.font = Font(
+                    color=white,
+                    bold=True,
+                    size=10,
+                )
+
+        sheet.row_dimensions[
+            header_row
+        ].height = 30
+
+        # -----------------------------------------------------
+        # Employee rows and attendance-code cells
+        # -----------------------------------------------------
+
+        for row_number in range(
+            first_data_row,
+            last_data_row + 1,
+        ):
+            employee_fill = (
+                "F8FBFD"
+                if row_number % 2 == 0
+                else "FFFFFF"
+            )
+
+            # Employee code, name, FY and month.
+            for column_number in range(
+                1,
+                5,
+            ):
+                data_cell = sheet.cell(
+                    row=row_number,
+                    column=column_number,
+                )
+
+                data_cell.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor=employee_fill,
+                )
+
+                data_cell.font = Font(
+                    color=dark_text,
+                    bold=(
+                        column_number in {1, 2}
+                    ),
+                )
+
+                data_cell.border = cell_border
+
+                data_cell.alignment = (
+                    left_alignment
+                    if column_number == 2
+                    else center_alignment
+                )
+
+            # Daily attendance cells.
+            for column_number in range(
+                day_start_column,
+                day_end_column + 1,
+            ):
+                attendance_cell = sheet.cell(
+                    row=row_number,
+                    column=column_number,
+                )
+
+                attendance_code = str(
+                    attendance_cell.value or "-"
+                ).strip().upper()
+
+                style = status_styles.get(
+                    attendance_code,
+                    status_styles["-"],
+                )
+
+                attendance_cell.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor=style["fill"],
+                )
+
+                attendance_cell.font = Font(
+                    color=style["font"],
+                    bold=True,
+                )
+
+                attendance_cell.alignment = (
+                    center_alignment
+                )
+
+                attendance_cell.border = cell_border
+
+            # P/R/H/S/C/U/D/OT summary numbers.
+            for column_number in range(
+                summary_start_column,
+                last_column + 1,
+            ):
+                summary_cell = sheet.cell(
+                    row=row_number,
+                    column=column_number,
+                )
+
+                summary_code = str(
+                    sheet.cell(
+                        row=header_row,
+                        column=column_number,
+                    ).value or ""
+                ).strip().upper()
+
+                style = status_styles.get(
+                    summary_code,
+                    {
+                        "fill": "FAFAFA",
+                        "font": dark_text,
+                    },
+                )
+
+                summary_cell.fill = PatternFill(
+                    fill_type="solid",
+                    fgColor=style["fill"],
+                )
+
+                summary_cell.font = Font(
+                    color=style["font"],
+                    bold=True,
+                )
+
+                summary_cell.alignment = (
+                    center_alignment
+                )
+
+                summary_cell.border = cell_border
+
+            sheet.row_dimensions[
+                row_number
+            ].height = 24
+
+        # -----------------------------------------------------
+        # Widths, filters and frozen panes
+        # -----------------------------------------------------
+
+        sheet.column_dimensions["A"].width = 18
+        sheet.column_dimensions["B"].width = 27
+        sheet.column_dimensions["C"].width = 14
+        sheet.column_dimensions["D"].width = 17
+
+        for column_number in range(
+            day_start_column,
+            day_end_column + 1,
+        ):
+            sheet.column_dimensions[
+                get_column_letter(column_number)
+            ].width = 6
+
+        for column_number in range(
+            summary_start_column,
+            last_column + 1,
+        ):
+            sheet.column_dimensions[
+                get_column_letter(column_number)
+            ].width = 7
+
+        # Freeze the first four columns and all title/header rows.
+        sheet.freeze_panes = "E5"
+
+        sheet.auto_filter.ref = (
+            f"A{header_row}:"
+            f"{last_column_letter}{last_data_row}"
+        )
+
+        sheet.sheet_view.showGridLines = False
+        sheet.sheet_view.zoomScale = 85
+
+        # -----------------------------------------------------
+        # Printing layout
+        # -----------------------------------------------------
+
+        sheet.print_title_rows = "1:4"
+        sheet.print_area = (
+            f"A1:{last_column_letter}{last_data_row}"
+        )
+
+        sheet.page_setup.orientation = "landscape"
+        sheet.page_setup.paperSize = (
+            sheet.PAPERSIZE_A4
+        )
+        sheet.page_setup.fitToWidth = 1
+        sheet.page_setup.fitToHeight = 0
+
+        sheet.page_margins.left = 0.25
+        sheet.page_margins.right = 0.25
+        sheet.page_margins.top = 0.40
+        sheet.page_margins.bottom = 0.40
 
         if employee_id_raw:
             employee = employees[0]
