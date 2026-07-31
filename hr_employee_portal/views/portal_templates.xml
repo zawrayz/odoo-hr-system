@@ -1483,13 +1483,10 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     <div class="hr-banner-summary-box d-inline-block text-start">
                                         <div class="hr-banner-employee-photo-wrap">
                                             <t t-if="employee.image_256">
-                                                <img class="hr-banner-employee-photo"
-                                                     t-att-src="image_data_uri(employee.image_256)"
-                                                     t-att-alt="employee.name or 'Employee photo'"/>
+                                                <img class="hr-banner-employee-photo" t-att-src="image_data_uri(employee.image_256)" t-att-alt="employee.name or 'Employee photo'"/>
                                             </t>
                                             <t t-else="">
-                                                <div class="hr-banner-employee-photo hr-banner-employee-photo-fallback"
-                                                     aria-label="Employee photo">
+                                                <div class="hr-banner-employee-photo hr-banner-employee-photo-fallback" aria-label="Employee photo">
                                                     <i class="fa fa-user" aria-hidden="true"/>
                                                 </div>
                                             </t>
@@ -3544,7 +3541,20 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
     </div>
 </t>
 
-<div class="card hr-content-card mb-4">
+<t t-if="not selected_employee and attendance_matrix_rows">
+    <div class="card hr-content-card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <a t-attf-href="/my/hr/admin/attendances/export?fy=#{selected_fiscal_year_value}&amp;month=#{selected_month_value}" class="hr-request-btn w-100 justify-content-center text-decoration-none">
+                        <i class="fa fa-download"/>
+                        Download All Employees Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</t><div class="card hr-content-card mb-4">
                         <div class="card-body">
                             <div class="hr-subsection-title">Monthly Attendance Register</div>
                             <p class="hr-page-subtitle mb-3">Review the selected employee monthly attendance code matrix and work-report activity.</p>

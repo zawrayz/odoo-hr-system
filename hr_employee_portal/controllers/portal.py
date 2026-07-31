@@ -3941,30 +3941,139 @@ class HrEmployeePortal(http.Controller):
             )
         )
 
-    @http.route('/my/hr/admin/attendances/export', type='http', auth='user', website=True)
+    @http.route(
+        '/my/hr/admin/attendances/export',
+        type='http',
+        auth='user',
+        website=True,
+    )
     def my_hr_admin_attendances_export(self, **kwargs):
         if not self._is_hr_manager():
             return request.redirect('/my/hr')
 
-        employee_id_raw = (kwargs.get('employee_id') or '').strip()
-        fy_value = (kwargs.get('fy') or '').strip()
-        month_value = (kwargs.get('month') or '').strip()
+        employee_id_raw = (
+            kwargs.get('employee_id') or ''
+        ).strip()
 
-        try:
-            employee_id = int(employee_id_raw)
-        except (TypeError, ValueError):
-            return request.redirect('/my/hr/admin/attendances')
+        fy_value = (
+            kwargs.get('fy') or ''
+        ).strip()
 
-        employee = request.env['hr.employee'].sudo().browse(employee_id).exists()
-        if not employee:
-            return request.redirect('/my/hr/admin/attendances')
+        month_value = (
+            kwargs.get('month') or ''
+        ).strip()
 
-        attendance_period = self._get_selected_payroll_period(
-            fy_value=fy_value,
-            month_value=month_value,
+        attendance_period = (
+            self._get_selected_payroll_period(
+                fy_value=fy_value,
+                month_value=month_value,
+            )
         )
-        selected_month = attendance_period['selected_month']
-        attendance_matrix_row = self._build_attendance_matrix(employee, selected_month)
+
+        selected_month = attendance_period[
+            'selected_month'
+        ]
+
+        selected_month_end = selected_month.replace(
+            day=calendar.monthrange(
+                selected_month.year,
+                selected_month.month,
+            )[1]
+        )
+
+        employee_env = (
+            request.env['hr.employee']
+            .sudo()
+            .with_context(active_test=False)
+        )
+
+        register_env = request.env[
+            'hr.attendance.register.line'
+        ].sudo()
+
+        # A selected employee exports one row.
+        if employee_id_raw:
+            try:
+                employee_id = int(employee_id_raw)
+            except (TypeError, ValueError):
+                return request.redirect(
+                    self._build_redirect_url(
+                        '/my/hr/admin/attendances',
+                        {
+                            'fy': fy_value,
+                            'month': month_value,
+                        },
+                    )
+                )
+
+            employees = (
+                employee_env
+                .browse(employee_id)
+                .exists()
+            )
+
+        # A blank employee ID exports the same employees
+        # currently visible in All Employees mode.
+        else:
+            month_register_lines = register_env.search([
+                (
+                    'attendance_date',
+                    '>=',
+                    selected_month,
+                ),
+                (
+                    'attendance_date',
+                    '<=',
+                    selected_month_end,
+                ),
+            ])
+
+            month_employee_id_set = {
+                line.employee_id.id
+                for line in month_register_lines
+                if line.employee_id
+                and (
+                    not line.employee_id.last_working_date
+                    or line.attendance_date
+                    <= line.employee_id.last_working_date
+                )
+            }
+
+            employees = employee_env.search([
+                '|',
+                ('active', '=', True),
+                (
+                    'id',
+                    'in',
+                    list(month_employee_id_set),
+                ),
+            ], order='name asc')
+
+        if not employees:
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    {
+                        'employee_id': employee_id_raw,
+                        'fy': fy_value,
+                        'month': month_value,
+                    },
+                )
+            )
+
+        attendance_rows = []
+
+        for employee in employees:
+            matrix_row = self._build_attendance_matrix(
+                employee,
+                selected_month,
+            )
+
+            attendance_rows.append(
+                (employee, matrix_row)
+            )
+
+        first_matrix_row = attendance_rows[0][1]
 
         workbook = Workbook()
         sheet = workbook.active
@@ -3972,7 +4081,7 @@ class HrEmployeePortal(http.Controller):
 
         day_headers = [
             'Day %s' % day_data['day_number']
-            for day_data in attendance_matrix_row['days']
+            for day_data in first_matrix_row['days']
         ]
 
         headers = [
@@ -3993,35 +4102,57 @@ class HrEmployeePortal(http.Controller):
 
         sheet.append(headers)
 
-        day_values = [
-            day_data.get('code') or '-'
-            for day_data in attendance_matrix_row['days']
-        ]
+        for employee, matrix_row in attendance_rows:
+            day_values = [
+                day_data.get('code') or '-'
+                for day_data in matrix_row['days']
+            ]
 
-        summary = attendance_matrix_row['summary']
+            summary = matrix_row['summary']
 
-        sheet.append([
-            employee.employee_code or '',
-            employee.name or '',
-            attendance_matrix_row['fiscal_year'],
-            attendance_matrix_row['month_label'],
-        ] + day_values + [
-            summary.get('P', 0),
-            summary.get('R', 0),
-            summary.get('H', 0),
-            summary.get('S', 0),
-            summary.get('C', 0),
-            summary.get('U', 0),
-            summary.get('D', 0),
-            summary.get('OT', 0),
-        ])
+            sheet.append([
+                employee.employee_code or '',
+                employee.name or '',
+                matrix_row['fiscal_year'],
+                matrix_row['month_label'],
+            ] + day_values + [
+                summary.get('P', 0),
+                summary.get('R', 0),
+                summary.get('H', 0),
+                summary.get('S', 0),
+                summary.get('C', 0),
+                summary.get('U', 0),
+                summary.get('D', 0),
+                summary.get('OT', 0),
+            ])
 
-        file_name = 'attendance_%s_%s.xlsx' % (
-            employee.employee_code or employee.id,
-            selected_month.strftime('%Y_%m'),
+        # Keep headings and employee information visible.
+        sheet.freeze_panes = 'E2'
+        sheet.auto_filter.ref = sheet.dimensions
+
+        sheet.column_dimensions['A'].width = 18
+        sheet.column_dimensions['B'].width = 28
+        sheet.column_dimensions['C'].width = 15
+        sheet.column_dimensions['D'].width = 18
+
+        if employee_id_raw:
+            employee = employees[0]
+
+            file_name = 'attendance_%s_%s.xlsx' % (
+                employee.employee_code or employee.id,
+                selected_month.strftime('%Y_%m'),
+            )
+        else:
+            file_name = (
+                'attendance_all_employees_%s.xlsx'
+                % selected_month.strftime('%Y_%m')
+            )
+
+        return self._export_workbook_response(
+            workbook,
+            file_name,
         )
 
-        return self._export_workbook_response(workbook, file_name)
     @http.route('/my/hr/admin/task-reports', type='http', auth='user', website=True)
     def my_hr_admin_task_reports(self, **kwargs):
         if not self._is_hr_manager():
