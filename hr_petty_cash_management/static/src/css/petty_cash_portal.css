@@ -510,6 +510,45 @@
     color: #9ba7b1;
     cursor: not-allowed;
 }
+
+.pc-table.pc-table-no-actions {
+    min-width: 980px;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(1),
+.pc-table.pc-table-no-actions td:nth-child(1) {
+    width: 10%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(2),
+.pc-table.pc-table-no-actions td:nth-child(2) {
+    width: 12%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(3),
+.pc-table.pc-table-no-actions td:nth-child(3) {
+    width: 23%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(4),
+.pc-table.pc-table-no-actions td:nth-child(4) {
+    width: 12%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(5),
+.pc-table.pc-table-no-actions td:nth-child(5) {
+    width: 14%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(6),
+.pc-table.pc-table-no-actions td:nth-child(6) {
+    width: 17%;
+}
+
+.pc-table.pc-table-no-actions th:nth-child(7),
+.pc-table.pc-table-no-actions td:nth-child(7) {
+    width: 12%;
+}
 @media (max-width: 1250px) {
     .pc-toolbar {
         grid-template-columns: minmax(280px, 330px) 1fr;

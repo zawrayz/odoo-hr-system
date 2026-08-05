@@ -11,8 +11,68 @@ class HrPettyCashPortal(http.Controller):
     FISCAL_YEAR_WINDOW = 5
     PAGE_SIZE = 15
 
+    FULL_ACCESS_EMPLOYEE_CODES = {
+        'BPL001',
+    }
+
+    ENTRY_ACCESS_EMPLOYEE_CODES = {
+        'BLMP43',
+    }
+
     def _is_hr_manager(self):
-        return request.env.user.has_group('hr.group_hr_manager')
+        return request.env.user.has_group(
+            'hr.group_hr_manager'
+        )
+
+    def _get_current_employee(self):
+        return request.env[
+            'hr.employee'
+        ].sudo().search(
+            [
+                (
+                    'user_id',
+                    '=',
+                    request.env.user.id,
+                ),
+            ],
+            limit=1,
+        )
+
+    def _get_finance_access(self):
+        if self._is_hr_manager():
+            return 'full'
+
+        employee = self._get_current_employee()
+
+        if not employee:
+            return 'none'
+
+        employee_code = (
+            employee.employee_code or ''
+        ).strip().upper()
+
+        if employee_code in self.FULL_ACCESS_EMPLOYEE_CODES:
+            return 'full'
+
+        if employee_code in self.ENTRY_ACCESS_EMPLOYEE_CODES:
+            return 'entry'
+
+        return 'none'
+
+    def _can_view_petty_cash(self):
+        return self._get_finance_access() in {
+            'full',
+            'entry',
+        }
+
+    def _can_add_petty_cash(self):
+        return self._get_finance_access() in {
+            'full',
+            'entry',
+        }
+
+    def _can_edit_petty_cash(self):
+        return self._get_finance_access() == 'full'
 
     def _parse_amount(self, value):
         cleaned_value = (
@@ -29,7 +89,10 @@ class HrPettyCashPortal(http.Controller):
         return round(float(cleaned_value), 2)
 
     def _finance_redirect(self, params=None):
-        url = '/my/hr/admin/finance'
+        if self._is_hr_manager():
+            url = '/my/hr/admin/finance'
+        else:
+            url = '/my/hr/finance'
 
         if params:
             url = '%s?%s' % (url, urlencode(params))
@@ -61,7 +124,13 @@ class HrPettyCashPortal(http.Controller):
         }
 
         transaction_dates = petty_cash_entry_model.search(
-            []
+            [
+                (
+                    'company_id',
+                    '=',
+                    request.env.company.id,
+                ),
+            ]
         ).mapped('transaction_date')
 
         for transaction_date in transaction_dates:
@@ -111,6 +180,8 @@ class HrPettyCashPortal(http.Controller):
 
     @http.route(
         [
+            '/my/hr/finance',
+            '/my/hr/finance/page/<int:page>',
             '/my/hr/admin/finance',
             '/my/hr/admin/finance/page/<int:page>',
             '/my/hr/admin/finance/petty-cash',
@@ -127,8 +198,18 @@ class HrPettyCashPortal(http.Controller):
         month=None,
         **kwargs
     ):
-        if not self._is_hr_manager():
+        finance_access = self._get_finance_access()
+
+        if finance_access == 'none':
             return request.redirect('/my/hr')
+
+        is_hr_manager = self._is_hr_manager()
+
+        finance_page_url = (
+            '/my/hr/admin/finance'
+            if is_hr_manager
+            else '/my/hr/finance'
+        )
 
         petty_cash_entry_model = request.env[
             'hr.petty.cash.entry'
@@ -190,6 +271,11 @@ class HrPettyCashPortal(http.Controller):
 
         domain = [
             (
+                'company_id',
+                '=',
+                request.env.company.id,
+            ),
+            (
                 'transaction_date',
                 '>=',
                 fiscal_year_start,
@@ -227,7 +313,7 @@ class HrPettyCashPortal(http.Controller):
             pager_url_args['month'] = selected_month
 
         pager = portal_pager(
-            url='/my/hr/admin/finance',
+            url=finance_page_url,
             total=entry_count,
             page=page,
             step=self.PAGE_SIZE,
@@ -267,7 +353,14 @@ class HrPettyCashPortal(http.Controller):
         )
 
         values = {
-            'is_hr_manager': True,
+            'is_hr_manager': is_hr_manager,
+            'finance_access': finance_access,
+            'can_edit_entries':
+                finance_access == 'full',
+
+            'finance_page_url':
+                finance_page_url,
+
             'entries': entries,
 
             'pager': pager,
@@ -315,7 +408,10 @@ class HrPettyCashPortal(http.Controller):
         )
 
     @http.route(
-        '/my/hr/admin/finance/petty-cash/add',
+        [
+            '/my/hr/finance/petty-cash/add',
+            '/my/hr/admin/finance/petty-cash/add',
+        ],
         type='http',
         auth='user',
         methods=['POST'],
@@ -323,7 +419,7 @@ class HrPettyCashPortal(http.Controller):
         csrf=True,
     )
     def admin_petty_cash_add(self, **post):
-        if not self._is_hr_manager():
+        if not self._can_add_petty_cash():
             return request.redirect('/my/hr')
 
         transaction_date_value = (
@@ -455,8 +551,12 @@ class HrPettyCashPortal(http.Controller):
             'entry_added': '1',
         })
     @http.route(
-        '/my/hr/admin/finance/petty-cash/'
-        '<int:entry_id>/edit',
+        [
+            '/my/hr/finance/petty-cash/'
+            '<int:entry_id>/edit',
+            '/my/hr/admin/finance/petty-cash/'
+            '<int:entry_id>/edit',
+        ],
         type='http',
         auth='user',
         methods=['POST'],
@@ -468,8 +568,18 @@ class HrPettyCashPortal(http.Controller):
         entry_id,
         **post
     ):
-        if not self._is_hr_manager():
+        finance_access = self._get_finance_access()
+
+        if finance_access == 'none':
             return request.redirect('/my/hr')
+
+        if finance_access != 'full':
+            return self._finance_redirect({
+                'entry_error': (
+                    'You have view and add access only. '
+                    'Editing petty cash entries is not allowed.'
+                ),
+            })
 
         selected_fiscal_year = (
             post.get('selected_fiscal_year') or ''

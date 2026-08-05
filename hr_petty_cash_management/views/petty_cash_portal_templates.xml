@@ -10,13 +10,58 @@
             expr="//a[@href='/my/hr/admin/documents']"
             position="after"
         >
-            <a
-                href="/my/hr/admin/finance"
-                t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+            <t
+                t-set="pc_sidebar_employee"
+                t-value="request.env['hr.employee'].sudo().search([('user_id', '=', request.env.user.id)], limit=1)"
+            />
+
+            <t
+                t-set="pc_sidebar_employee_code"
+                t-value="(pc_sidebar_employee.employee_code or '').strip().upper() if pc_sidebar_employee else ''"
+            />
+
+            <t
+                t-set="pc_sidebar_is_manager"
+                t-value="request.env.user.has_group('hr.group_hr_manager')"
+            />
+
+            <t
+                t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP43']"
             >
-                <i class="fa fa-money"/>
-                <span>Finance</span>
-            </a>
+                <a
+                    t-att-href="'/my/hr/admin/finance' if pc_sidebar_is_manager else '/my/hr/finance'"
+                    t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+                >
+                    <i class="fa fa-money"/>
+                    <span>Finance</span>
+                </a>
+            </t>
+        </xpath>
+        <xpath
+            expr="//a[@href='/my/hr/documents']"
+            position="after"
+        >
+            <t
+                t-set="pc_employee_sidebar_record"
+                t-value="request.env['hr.employee'].sudo().search([('user_id', '=', request.env.user.id)], limit=1)"
+            />
+
+            <t
+                t-set="pc_employee_sidebar_code"
+                t-value="(pc_employee_sidebar_record.employee_code or '').strip().upper() if pc_employee_sidebar_record else ''"
+            />
+
+            <t
+                t-if="pc_employee_sidebar_code in ['BPL001', 'BLMP43']"
+            >
+                <a
+                    href="/my/hr/finance"
+                    t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+                >
+                    <i class="fa fa-money"/>
+                    <span>Finance</span>
+                </a>
+            </t>
         </xpath>
     </template>
 
@@ -38,9 +83,19 @@
                     <div class="hr-content-wrap">
 
                         <div class="mb-3">
-                            <a href="/my/hr/admin" class="hr-back-link">
+                            <a
+                                t-att-href="'/my/hr/admin' if is_hr_manager else '/my/hr'"
+                                class="hr-back-link"
+                            >
                                 <i class="fa fa-arrow-left"/>
-                                Back to Admin Dashboard
+
+                                <t t-if="is_hr_manager">
+                                    Back to Admin Dashboard
+                                </t>
+
+                                <t t-else="">
+                                    Back to Employee Dashboard
+                                </t>
                             </a>
                         </div>
 
@@ -65,7 +120,7 @@
                                 </div>
 
                                 <form
-                                    action="/my/hr/admin/finance"
+                                    t-att-action="finance_page_url"
                                     method="get"
                                     class="pc-filter-form"
                                 >
@@ -153,7 +208,7 @@
                             </t>
 
                             <div class="pc-table-wrap">
-                                <table class="pc-table">
+                                <table t-attf-class="pc-table #{'pc-table-no-actions' if not can_edit_entries else ''}">
 
                                     <thead>
                                         <tr>
@@ -164,7 +219,7 @@
                                             <th>Expense / Paid</th>
                                             <th>Remarks</th>
                                             <th>Invoice Sharing Status</th>
-                                            <th>Action</th>
+                                            <th t-if="can_edit_entries">Action</th>
                                         </tr>
                                     </thead>
 
@@ -218,7 +273,7 @@
                                                     <t t-else="">No</t>
                                                 </td>
 
-                                                <td class="pc-action-cell">
+                                                <td t-if="can_edit_entries" class="pc-action-cell">
                                                     <t t-if="not entry.invoice_shared">
                                                         <button
                                                             type="button"
@@ -247,7 +302,7 @@
                                         <t t-else="">
                                             <tr>
                                                 <td
-                                                    colspan="8"
+                                                    t-att-colspan="8 if can_edit_entries else 7"
                                                     class="pc-empty-cell"
                                                 >
                                                     No petty cash entries exist for
@@ -310,7 +365,7 @@
                     <div class="modal-content pc-modal-content">
 
                         <form
-                            action="/my/hr/admin/finance/petty-cash/add"
+                            t-att-action="'%s/petty-cash/add' % finance_page_url"
                             method="post"
                         >
                             <input
@@ -471,6 +526,7 @@
             </div>
 
             <t
+                t-if="can_edit_entries"
                 t-foreach="entries.filtered(lambda item: not item.invoice_shared)"
                 t-as="edit_entry"
             >
@@ -485,7 +541,7 @@
                         <div class="modal-content pc-modal-content">
 
                             <form
-                                t-att-action="'/my/hr/admin/finance/petty-cash/%s/edit' % edit_entry.id"
+                                t-att-action="'%s/petty-cash/%s/edit' % (finance_page_url, edit_entry.id)"
                                 method="post"
                             >
                                 <input
