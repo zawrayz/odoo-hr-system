@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- Add Finance to the existing HR admin sidebar. -->
     <template
         id="hr_employee_sidebar_finance_link"
         inherit_id="hr_employee_portal.hr_employee_sidebar"
@@ -21,7 +20,6 @@
         </xpath>
     </template>
 
-    <!-- Empty Petty Cash admin page. -->
     <template
         id="hr_admin_petty_cash_page"
         name="HR Admin Petty Cash Log"
@@ -49,18 +47,13 @@
                         <div class="pc-log-card">
 
                             <div class="pc-title-row">
-                                <div class="pc-brand">
-                                    BLIMP
-                                </div>
-
-                                <div class="pc-title">
-                                    Petty Cash Log
-                                </div>
+                                <div class="pc-brand">BLIMP</div>
+                                <div class="pc-title">Petty Cash Log</div>
                             </div>
 
-                            <div class="pc-control-row">
+                            <div class="pc-toolbar">
 
-                                <div class="pc-balance-group">
+                                <div class="pc-balance-card">
                                     <div class="pc-balance-label">
                                         Balance
                                     </div>
@@ -74,34 +67,83 @@
                                 <form
                                     action="/my/hr/admin/finance"
                                     method="get"
-                                    class="pc-month-filter"
+                                    class="pc-filter-form"
                                 >
-                                    <i class="fa fa-filter"/>
+                                    <div class="pc-filter-field">
+                                        <label for="pc_fiscal_year">
+                                            Fiscal Year
+                                        </label>
 
-                                    <select
-                                        name="month"
-                                        class="pc-month-select"
-                                        onchange="this.form.submit()"
-                                    >
-                                        <option
-                                            value=""
-                                            t-att-selected="not selected_month"
+                                        <select
+                                            id="pc_fiscal_year"
+                                            name="fy"
+                                            onchange="this.form.submit()"
                                         >
-                                            All
-                                        </option>
+                                            <option
+                                                t-foreach="fiscal_year_options"
+                                                t-as="fy_option"
+                                                t-att-value="fy_option['value']"
+                                                t-att-selected="selected_fiscal_year == fy_option['value'] and 'selected' or None"
+                                            >
+                                                <t t-esc="fy_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
 
-                                        <option
-                                            t-foreach="month_options"
-                                            t-as="month_option"
-                                            t-att-value="month_option['value']"
-                                            t-att-selected="selected_month == month_option['value']"
+                                    <div class="pc-filter-field">
+                                        <label for="pc_month">
+                                            Month
+                                        </label>
+
+                                        <select
+                                            id="pc_month"
+                                            name="month"
+                                            onchange="this.form.submit()"
                                         >
-                                            <t t-esc="month_option['label']"/>
-                                        </option>
-                                    </select>
+                                            <option
+                                                value=""
+                                                t-att-selected="not selected_month and 'selected' or None"
+                                            >
+                                                All Months
+                                            </option>
+
+                                            <option
+                                                t-foreach="month_options"
+                                                t-as="month_option"
+                                                t-att-value="month_option['value']"
+                                                t-att-selected="selected_month == month_option['value'] and 'selected' or None"
+                                            >
+                                                <t t-esc="month_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
                                 </form>
 
+                                <button
+                                    type="button"
+                                    class="pc-add-entry-button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#pettyCashEntryModal"
+                                >
+                                    <i class="fa fa-plus-circle"/>
+                                    Add Entry
+                                </button>
+
                             </div>
+
+                            <t t-if="entry_added">
+                                <div class="pc-entry-message pc-entry-success">
+                                    <i class="fa fa-check-circle"/>
+                                    Petty cash entry added successfully.
+                                </div>
+                            </t>
+
+                            <t t-if="entry_error">
+                                <div class="pc-entry-message pc-entry-error">
+                                    <i class="fa fa-exclamation-circle"/>
+                                    <t t-esc="entry_error"/>
+                                </div>
+                            </t>
 
                             <div class="pc-table-wrap">
                                 <table class="pc-table">
@@ -119,6 +161,7 @@
                                     </thead>
 
                                     <tbody>
+
                                         <t t-if="entries">
                                             <tr
                                                 t-foreach="entries"
@@ -128,9 +171,9 @@
                                                     <t t-esc="entry.month_label or '-'"/>
                                                 </td>
 
-                                                <td>
+                                                <td class="pc-date-cell">
                                                     <t
-                                                        t-esc="entry.transaction_date.strftime('%d-%b').lstrip('0') if entry.transaction_date else '-'"
+                                                        t-esc="entry.transaction_date.strftime('%d-%b-%Y').lstrip('0') if entry.transaction_date else '-'"
                                                     />
                                                 </td>
 
@@ -164,9 +207,7 @@
                                                     <t t-if="entry.invoice_shared">
                                                         Yes
                                                     </t>
-                                                    <t t-else="">
-                                                        No
-                                                    </t>
+                                                    <t t-else="">No</t>
                                                 </td>
                                             </tr>
                                         </t>
@@ -177,10 +218,16 @@
                                                     colspan="7"
                                                     class="pc-empty-cell"
                                                 >
-                                                    No petty cash entries have been added.
+                                                    No petty cash entries exist for
+                                                    <t t-esc="selected_fiscal_year_label"/>
+
+                                                    <t t-if="selected_month">
+                                                        and the selected month
+                                                    </t>.
                                                 </td>
                                             </tr>
                                         </t>
+
                                     </tbody>
 
                                 </table>
@@ -191,6 +238,178 @@
                     </div>
                 </div>
             </div>
+
+            <div
+                class="modal fade"
+                id="pettyCashEntryModal"
+                tabindex="-1"
+                aria-labelledby="pettyCashEntryModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content pc-modal-content">
+
+                        <form
+                            action="/my/hr/admin/finance/petty-cash/add"
+                            method="post"
+                        >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                t-att-value="request.csrf_token()"
+                            />
+
+                            <input
+                                type="hidden"
+                                name="selected_fiscal_year"
+                                t-att-value="selected_fiscal_year"
+                            />
+
+                            <input
+                                type="hidden"
+                                name="selected_month"
+                                t-att-value="selected_month"
+                            />
+
+                            <div class="modal-header pc-modal-header">
+                                <div>
+                                    <h5
+                                        class="modal-title"
+                                        id="pettyCashEntryModalLabel"
+                                    >
+                                        Add Petty Cash Entry
+                                    </h5>
+
+                                    <div class="pc-modal-subtitle">
+                                        Enter an opening balance under Received.
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                ></button>
+                            </div>
+
+                            <div class="modal-body pc-modal-body">
+
+                                <div class="pc-entry-grid">
+
+                                    <div class="pc-entry-field">
+                                        <label for="pc_transaction_date">
+                                            Date
+                                        </label>
+
+                                        <input
+                                            id="pc_transaction_date"
+                                            type="date"
+                                            name="transaction_date"
+                                            t-att-value="today_value"
+                                            required="required"
+                                        />
+                                    </div>
+
+                                    <div class="pc-entry-field">
+                                        <label for="pc_invoice_shared">
+                                            Invoice Sharing Status
+                                        </label>
+
+                                        <select
+                                            id="pc_invoice_shared"
+                                            name="invoice_shared"
+                                        >
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="pc-entry-field pc-full-width">
+                                        <label for="pc_description">
+                                            Description
+                                        </label>
+
+                                        <input
+                                            id="pc_description"
+                                            type="text"
+                                            name="description"
+                                            placeholder="Example: Opening Balance"
+                                            required="required"
+                                        />
+                                    </div>
+
+                                    <div class="pc-entry-field">
+                                        <label for="pc_received">
+                                            Received
+                                        </label>
+
+                                        <input
+                                            id="pc_received"
+                                            type="number"
+                                            name="received"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+
+                                    <div class="pc-entry-field">
+                                        <label for="pc_expense_paid">
+                                            Expense / Paid
+                                        </label>
+
+                                        <input
+                                            id="pc_expense_paid"
+                                            type="number"
+                                            name="expense_paid"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+
+                                    <div class="pc-entry-field pc-full-width">
+                                        <label for="pc_remarks">
+                                            Remarks
+                                        </label>
+
+                                        <textarea
+                                            id="pc_remarks"
+                                            name="remarks"
+                                            rows="3"
+                                            placeholder="Optional remarks"
+                                        ></textarea>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer pc-modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-light"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    class="pc-modal-submit"
+                                >
+                                    <i class="fa fa-plus-circle"/>
+                                    Add Entry
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
         </t>
     </template>
 
