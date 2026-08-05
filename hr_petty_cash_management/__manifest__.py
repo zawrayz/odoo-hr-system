@@ -7,8 +7,16 @@
     'license': 'LGPL-3',
     'depends': [
         'hr',
+        'hr_employee_portal',
     ],
-    'data': [],
+    'data': [
+        'views/petty_cash_portal_templates.xml',
+    ],
+    'assets': {
+        'web.assets_frontend': [
+            'hr_petty_cash_management/static/src/css/petty_cash_portal.css',
+        ],
+    },
     'installable': True,
     'application': False,
 }

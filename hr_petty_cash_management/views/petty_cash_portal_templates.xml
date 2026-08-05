@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Add Finance to the existing HR admin sidebar. -->
+    <template
+        id="hr_employee_sidebar_finance_link"
+        inherit_id="hr_employee_portal.hr_employee_sidebar"
+        name="HR Finance Sidebar Link"
+    >
+        <xpath
+            expr="//a[@href='/my/hr/admin/documents']"
+            position="after"
+        >
+            <a
+                href="/my/hr/admin/finance"
+                t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+            >
+                <i class="fa fa-money"/>
+                <span>Finance</span>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Empty Petty Cash admin page. -->
+    <template
+        id="hr_admin_petty_cash_page"
+        name="HR Admin Petty Cash Log"
+    >
+        <t t-call="portal.portal_layout">
+            <t t-set="no_breadcrumbs" t-value="1"/>
+            <t t-set="current_page" t-value="'admin_finance'"/>
+
+            <div class="container-fluid oe_structure mt-4 mb-5 px-lg-4">
+                <div class="hr-layout-row">
+
+                    <div class="hr-sidebar-wrap">
+                        <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                    </div>
+
+                    <div class="hr-content-wrap">
+
+                        <div class="mb-3">
+                            <a href="/my/hr/admin" class="hr-back-link">
+                                <i class="fa fa-arrow-left"/>
+                                Back to Admin Dashboard
+                            </a>
+                        </div>
+
+                        <div class="pc-log-card">
+
+                            <div class="pc-title-row">
+                                <div class="pc-brand">
+                                    BLIMP
+                                </div>
+
+                                <div class="pc-title">
+                                    Petty Cash Log
+                                </div>
+                            </div>
+
+                            <div class="pc-control-row">
+
+                                <div class="pc-balance-group">
+                                    <div class="pc-balance-label">
+                                        Balance
+                                    </div>
+
+                                    <div class="pc-balance-value">
+                                        Rs
+                                        <t t-esc="'{:,.2f}'.format(balance)"/>
+                                    </div>
+                                </div>
+
+                                <form
+                                    action="/my/hr/admin/finance"
+                                    method="get"
+                                    class="pc-month-filter"
+                                >
+                                    <i class="fa fa-filter"/>
+
+                                    <select
+                                        name="month"
+                                        class="pc-month-select"
+                                        onchange="this.form.submit()"
+                                    >
+                                        <option
+                                            value=""
+                                            t-att-selected="not selected_month"
+                                        >
+                                            All
+                                        </option>
+
+                                        <option
+                                            t-foreach="month_options"
+                                            t-as="month_option"
+                                            t-att-value="month_option['value']"
+                                            t-att-selected="selected_month == month_option['value']"
+                                        >
+                                            <t t-esc="month_option['label']"/>
+                                        </option>
+                                    </select>
+                                </form>
+
+                            </div>
+
+                            <div class="pc-table-wrap">
+                                <table class="pc-table">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Received</th>
+                                            <th>Expense / Paid</th>
+                                            <th>Remarks</th>
+                                            <th>Invoice Sharing Status</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <t t-if="entries">
+                                            <tr
+                                                t-foreach="entries"
+                                                t-as="entry"
+                                            >
+                                                <td class="pc-month-cell">
+                                                    <t t-esc="entry.month_label or '-'"/>
+                                                </td>
+
+                                                <td>
+                                                    <t
+                                                        t-esc="entry.transaction_date.strftime('%d-%b').lstrip('0') if entry.transaction_date else '-'"
+                                                    />
+                                                </td>
+
+                                                <td class="pc-description-cell">
+                                                    <t t-esc="entry.description or '-'"/>
+                                                </td>
+
+                                                <td class="pc-money-cell">
+                                                    <t t-if="entry.received">
+                                                        Rs
+                                                        <t t-esc="'{:,.2f}'.format(entry.received)"/>
+                                                    </t>
+                                                    <t t-else="">-</t>
+                                                </td>
+
+                                                <td class="pc-money-cell">
+                                                    <t t-if="entry.expense_paid">
+                                                        Rs
+                                                        <t t-esc="'{:,.2f}'.format(entry.expense_paid)"/>
+                                                    </t>
+                                                    <t t-else="">-</t>
+                                                </td>
+
+                                                <td class="pc-description-cell">
+                                                    <t t-esc="entry.remarks or '-'"/>
+                                                </td>
+
+                                                <td
+                                                    t-attf-class="pc-status-cell #{'is-shared' if entry.invoice_shared else 'not-shared'}"
+                                                >
+                                                    <t t-if="entry.invoice_shared">
+                                                        Yes
+                                                    </t>
+                                                    <t t-else="">
+                                                        No
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <t t-else="">
+                                            <tr>
+                                                <td
+                                                    colspan="7"
+                                                    class="pc-empty-cell"
+                                                >
+                                                    No petty cash entries have been added.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

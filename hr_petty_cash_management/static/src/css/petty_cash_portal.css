@@ -1,0 +1,225 @@
+.pc-log-card {
+    overflow: hidden;
+    width: 100%;
+    border: 1px solid #111111;
+    border-radius: 12px;
+    background: #000000;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+.pc-title-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 24%) 1fr;
+    min-height: 84px;
+    background: #234f82;
+}
+
+.pc-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #092f5d;
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.pc-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.pc-control-row {
+    display: flex;
+    align-items: center;
+    gap: 68px;
+    min-height: 66px;
+    padding: 0 24px;
+    background: #000000;
+}
+
+.pc-balance-group {
+    display: flex;
+    min-width: 365px;
+    border: 1px solid #e0ad00;
+}
+
+.pc-balance-label,
+.pc-balance-value {
+    flex: 1;
+    padding: 15px 20px;
+    background: #ffdb68;
+    color: #000000;
+    font-size: 21px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.pc-balance-label {
+    border-right: 1px solid #b88c00;
+}
+
+.pc-month-filter {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 330px;
+    padding: 10px 20px;
+    border: 1px solid #7eb0dc;
+    border-radius: 999px;
+    background: #24598f;
+    color: #ffffff;
+}
+
+.pc-month-filter i {
+    font-size: 20px;
+}
+
+.pc-month-select {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pc-month-select option {
+    background: #ffffff;
+    color: #222222;
+}
+
+.pc-table-wrap {
+    overflow-x: auto;
+    background: #000000;
+}
+
+.pc-table {
+    width: 100%;
+    min-width: 1150px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.pc-table th {
+    padding: 13px 10px;
+    border: 1px solid #8aa2b8;
+    background: #234f82;
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.pc-table td {
+    padding: 11px 9px;
+    border: 1px solid #111111;
+    background: #c9dced;
+    color: #000000;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.pc-table th:nth-child(1),
+.pc-table td:nth-child(1) {
+    width: 12%;
+}
+
+.pc-table th:nth-child(2),
+.pc-table td:nth-child(2) {
+    width: 12%;
+}
+
+.pc-table th:nth-child(3),
+.pc-table td:nth-child(3) {
+    width: 23%;
+}
+
+.pc-table th:nth-child(4),
+.pc-table td:nth-child(4) {
+    width: 12%;
+}
+
+.pc-table th:nth-child(5),
+.pc-table td:nth-child(5) {
+    width: 14%;
+}
+
+.pc-table th:nth-child(6),
+.pc-table td:nth-child(6) {
+    width: 17%;
+}
+
+.pc-table th:nth-child(7),
+.pc-table td:nth-child(7) {
+    width: 14%;
+}
+
+.pc-month-cell {
+    background: #ffffff !important;
+    text-align: center;
+}
+
+.pc-money-cell,
+.pc-status-cell {
+    text-align: center;
+}
+
+.pc-description-cell {
+    text-align: left;
+}
+
+.pc-status-cell.is-shared {
+    background: #8de8b4;
+}
+
+.pc-status-cell.not-shared {
+    background: #f1c3c3;
+}
+
+.pc-empty-cell {
+    height: 120px;
+    background: #d6e4f0 !important;
+    color: #5f6b75 !important;
+    font-size: 17px !important;
+    font-weight: 600;
+    text-align: center;
+}
+
+@media (max-width: 992px) {
+    .pc-title-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-brand {
+        min-height: 72px;
+    }
+
+    .pc-title {
+        min-height: 72px;
+        font-size: 28px;
+    }
+
+    .pc-control-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+        padding: 18px;
+    }
+
+    .pc-balance-group,
+    .pc-month-filter {
+        width: 100%;
+        min-width: 0;
+    }
+}
