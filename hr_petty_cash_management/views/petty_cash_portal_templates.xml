@@ -265,6 +265,34 @@
                                 </table>
                             </div>
 
+                            <div
+                                t-if="entry_count"
+                                class="pc-pagination-bar"
+                            >
+                                <div class="pc-pagination-summary">
+                                    Showing
+                                    <strong>
+                                        <t t-esc="page_first_entry"/>
+                                    </strong>
+                                    –
+                                    <strong>
+                                        <t t-esc="page_last_entry"/>
+                                    </strong>
+                                    of
+                                    <strong>
+                                        <t t-esc="entry_count"/>
+                                    </strong>
+                                    entries
+                                </div>
+
+                                <div
+                                    t-if="pager.get('page_count', 1) > 1"
+                                    class="pc-pagination-controls"
+                                >
+                                    <t t-call="portal.pager"/>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>

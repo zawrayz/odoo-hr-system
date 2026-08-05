@@ -435,6 +435,81 @@
     font-size: 13px;
     font-weight: 700;
 }
+
+.pc-pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 66px;
+    padding: 13px 18px;
+    border-top: 1px solid #c5d2dd;
+    background: #f7fafc;
+}
+
+.pc-pagination-summary {
+    color: #4a5b69;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pc-pagination-summary strong {
+    color: #173b60;
+    font-weight: 800;
+}
+
+.pc-pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.pc-pagination-controls .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.pc-pagination-controls .page-item {
+    margin: 0;
+}
+
+.pc-pagination-controls .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 7px 11px;
+    border: 1px solid #b6c8d8;
+    border-radius: 8px !important;
+    background: #ffffff;
+    color: #285f98;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pc-pagination-controls .page-link:hover {
+    border-color: #285f98;
+    background: #e8f1f8;
+    color: #173b60;
+}
+
+.pc-pagination-controls .page-item.active .page-link {
+    border-color: #285f98;
+    background: #285f98;
+    color: #ffffff;
+}
+
+.pc-pagination-controls .page-item.disabled .page-link {
+    border-color: #d8e0e7;
+    background: #eef2f5;
+    color: #9ba7b1;
+    cursor: not-allowed;
+}
 @media (max-width: 1250px) {
     .pc-toolbar {
         grid-template-columns: minmax(280px, 330px) 1fr;
@@ -482,5 +557,21 @@
     .pc-balance-label,
     .pc-balance-value {
         font-size: 16px;
+    }
+}
+@media (max-width: 650px) {
+    .pc-pagination-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pc-pagination-summary {
+        text-align: center;
+        white-space: normal;
+    }
+
+    .pc-pagination-controls {
+        justify-content: center;
+        overflow-x: auto;
     }
 }

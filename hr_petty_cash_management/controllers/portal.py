@@ -2,12 +2,14 @@ from datetime import date, datetime
 from urllib.parse import urlencode
 
 from odoo import fields, http
+from odoo.addons.portal.controllers.portal import pager as portal_pager
 from odoo.http import request
 
 
 class HrPettyCashPortal(http.Controller):
 
     FISCAL_YEAR_WINDOW = 5
+    PAGE_SIZE = 15
 
     def _is_hr_manager(self):
         return request.env.user.has_group('hr.group_hr_manager')
@@ -110,7 +112,9 @@ class HrPettyCashPortal(http.Controller):
     @http.route(
         [
             '/my/hr/admin/finance',
+            '/my/hr/admin/finance/page/<int:page>',
             '/my/hr/admin/finance/petty-cash',
+            '/my/hr/admin/finance/petty-cash/page/<int:page>',
         ],
         type='http',
         auth='user',
@@ -118,6 +122,7 @@ class HrPettyCashPortal(http.Controller):
     )
     def admin_petty_cash_page(
         self,
+        page=1,
         fy=None,
         month=None,
         **kwargs
@@ -210,24 +215,65 @@ class HrPettyCashPortal(http.Controller):
                 )
             )
 
+        entry_count = petty_cash_entry_model.search_count(
+            domain
+        )
+
+        pager_url_args = {
+            'fy': selected_fiscal_year,
+        }
+
+        if selected_month:
+            pager_url_args['month'] = selected_month
+
+        pager = portal_pager(
+            url='/my/hr/admin/finance',
+            total=entry_count,
+            page=page,
+            step=self.PAGE_SIZE,
+            url_args=pager_url_args,
+        )
+
         entries = petty_cash_entry_model.search(
             domain,
             order='transaction_date asc, id asc',
+            limit=self.PAGE_SIZE,
+            offset=pager['offset'],
+        )
+
+        all_filtered_entries = (
+            petty_cash_entry_model.search(domain)
         )
 
         total_received = sum(
-            entries.mapped('received')
+            all_filtered_entries.mapped('received')
         )
 
         total_expense = sum(
-            entries.mapped('expense_paid')
+            all_filtered_entries.mapped('expense_paid')
         )
 
         balance = total_received - total_expense
 
+        page_first_entry = (
+            pager['offset'] + 1
+            if entry_count
+            else 0
+        )
+
+        page_last_entry = min(
+            pager['offset'] + len(entries),
+            entry_count,
+        )
+
         values = {
             'is_hr_manager': True,
             'entries': entries,
+
+            'pager': pager,
+            'entry_count': entry_count,
+            'page_first_entry': page_first_entry,
+            'page_last_entry': page_last_entry,
 
             'balance': balance,
             'total_received': total_received,
