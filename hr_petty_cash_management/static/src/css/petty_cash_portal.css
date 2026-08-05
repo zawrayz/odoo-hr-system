@@ -172,7 +172,7 @@
 
 .pc-table {
     width: 100%;
-    min-width: 980px;
+    min-width: 1080px;
     border-collapse: collapse;
     table-layout: fixed;
 }
@@ -201,37 +201,42 @@
 
 .pc-table th:nth-child(1),
 .pc-table td:nth-child(1) {
-    width: 10%;
+    width: 9%;
 }
 
 .pc-table th:nth-child(2),
 .pc-table td:nth-child(2) {
-    width: 12%;
+    width: 11%;
 }
 
 .pc-table th:nth-child(3),
 .pc-table td:nth-child(3) {
-    width: 23%;
+    width: 20%;
 }
 
 .pc-table th:nth-child(4),
 .pc-table td:nth-child(4) {
-    width: 12%;
+    width: 11%;
 }
 
 .pc-table th:nth-child(5),
 .pc-table td:nth-child(5) {
-    width: 14%;
+    width: 13%;
 }
 
 .pc-table th:nth-child(6),
 .pc-table td:nth-child(6) {
-    width: 17%;
+    width: 15%;
 }
 
 .pc-table th:nth-child(7),
 .pc-table td:nth-child(7) {
     width: 12%;
+}
+
+.pc-table th:nth-child(8),
+.pc-table td:nth-child(8) {
+    width: 9%;
 }
 
 .pc-month-cell {
@@ -374,6 +379,62 @@
     font-weight: 800;
 }
 
+
+.pc-action-cell {
+    background: #eef4f9 !important;
+    text-align: center;
+}
+
+.pc-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 76px;
+    padding: 7px 11px;
+    border: 1px solid #2369a2;
+    border-radius: 8px;
+    background: #2f79b7;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.pc-edit-button:hover,
+.pc-edit-button:focus {
+    border-color: #174d78;
+    background: #215f91;
+    color: #ffffff;
+}
+
+.pc-locked-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 76px;
+    padding: 7px 9px;
+    border: 1px solid #c7a95c;
+    border-radius: 8px;
+    background: #fff1bd;
+    color: #6f5610;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pc-modal-warning {
+    margin-top: 10px;
+    padding: 9px 11px;
+    border: 1px solid #e4bd58;
+    border-radius: 8px;
+    background: #fff4cf;
+    color: #66500e;
+    font-size: 13px;
+    font-weight: 700;
+}
 @media (max-width: 1250px) {
     .pc-toolbar {
         grid-template-columns: minmax(280px, 330px) 1fr;

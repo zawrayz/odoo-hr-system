@@ -138,6 +138,13 @@
                                 </div>
                             </t>
 
+                            <t t-if="entry_updated">
+                                <div class="pc-entry-message pc-entry-success">
+                                    <i class="fa fa-check-circle"/>
+                                    Petty cash entry updated successfully.
+                                </div>
+                            </t>
+
                             <t t-if="entry_error">
                                 <div class="pc-entry-message pc-entry-error">
                                     <i class="fa fa-exclamation-circle"/>
@@ -157,6 +164,7 @@
                                             <th>Expense / Paid</th>
                                             <th>Remarks</th>
                                             <th>Invoice Sharing Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
 
@@ -209,13 +217,37 @@
                                                     </t>
                                                     <t t-else="">No</t>
                                                 </td>
+
+                                                <td class="pc-action-cell">
+                                                    <t t-if="not entry.invoice_shared">
+                                                        <button
+                                                            type="button"
+                                                            class="pc-edit-button"
+                                                            data-bs-toggle="modal"
+                                                            t-att-data-bs-target="'#pettyCashEditModal%s' % entry.id"
+                                                        >
+                                                            <i class="fa fa-pencil"/>
+                                                            Edit
+                                                        </button>
+                                                    </t>
+
+                                                    <t t-else="">
+                                                        <span
+                                                            class="pc-locked-badge"
+                                                            title="Editing is disabled because the invoice has been shared."
+                                                        >
+                                                            <i class="fa fa-lock"/>
+                                                            Locked
+                                                        </span>
+                                                    </t>
+                                                </td>
                                             </tr>
                                         </t>
 
                                         <t t-else="">
                                             <tr>
                                                 <td
-                                                    colspan="7"
+                                                    colspan="8"
                                                     class="pc-empty-cell"
                                                 >
                                                     No petty cash entries exist for
@@ -409,6 +441,195 @@
                     </div>
                 </div>
             </div>
+
+            <t
+                t-foreach="entries.filtered(lambda item: not item.invoice_shared)"
+                t-as="edit_entry"
+            >
+                <div
+                    class="modal fade"
+                    t-att-id="'pettyCashEditModal%s' % edit_entry.id"
+                    tabindex="-1"
+                    t-att-aria-labelledby="'pettyCashEditModalLabel%s' % edit_entry.id"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content pc-modal-content">
+
+                            <form
+                                t-att-action="'/my/hr/admin/finance/petty-cash/%s/edit' % edit_entry.id"
+                                method="post"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    t-att-value="request.csrf_token()"
+                                />
+
+                                <input
+                                    type="hidden"
+                                    name="selected_fiscal_year"
+                                    t-att-value="selected_fiscal_year"
+                                />
+
+                                <input
+                                    type="hidden"
+                                    name="selected_month"
+                                    t-att-value="selected_month"
+                                />
+
+                                <div class="modal-header pc-modal-header">
+                                    <div>
+                                        <h5
+                                            class="modal-title"
+                                            t-att-id="'pettyCashEditModalLabel%s' % edit_entry.id"
+                                        >
+                                            Edit Petty Cash Entry
+                                        </h5>
+
+                                        <div class="pc-modal-subtitle">
+                                            Changing Invoice Sharing Status to Yes will permanently lock this entry.
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+
+                                <div class="modal-body pc-modal-body">
+                                    <div class="pc-entry-grid">
+
+                                        <div class="pc-entry-field">
+                                            <label
+                                                t-att-for="'pc_edit_date_%s' % edit_entry.id"
+                                            >
+                                                Date
+                                            </label>
+
+                                            <input
+                                                t-att-id="'pc_edit_date_%s' % edit_entry.id"
+                                                type="date"
+                                                name="transaction_date"
+                                                t-att-value="edit_entry.transaction_date.strftime('%Y-%m-%d') if edit_entry.transaction_date else ''"
+                                                required="required"
+                                            />
+                                        </div>
+
+                                        <div class="pc-entry-field">
+                                            <label
+                                                t-att-for="'pc_edit_invoice_%s' % edit_entry.id"
+                                            >
+                                                Invoice Sharing Status
+                                            </label>
+
+                                            <select
+                                                t-att-id="'pc_edit_invoice_%s' % edit_entry.id"
+                                                name="invoice_shared"
+                                            >
+                                                <option value="0" selected="selected">
+                                                    No
+                                                </option>
+                                                <option value="1">
+                                                    Yes — Lock Entry
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="pc-entry-field pc-full-width">
+                                            <label
+                                                t-att-for="'pc_edit_description_%s' % edit_entry.id"
+                                            >
+                                                Description
+                                            </label>
+
+                                            <input
+                                                t-att-id="'pc_edit_description_%s' % edit_entry.id"
+                                                type="text"
+                                                name="description"
+                                                t-att-value="edit_entry.description or ''"
+                                                required="required"
+                                            />
+                                        </div>
+
+                                        <div class="pc-entry-field">
+                                            <label
+                                                t-att-for="'pc_edit_received_%s' % edit_entry.id"
+                                            >
+                                                Received
+                                            </label>
+
+                                            <input
+                                                t-att-id="'pc_edit_received_%s' % edit_entry.id"
+                                                type="number"
+                                                name="received"
+                                                min="0"
+                                                step="0.01"
+                                                t-att-value="'%.2f' % edit_entry.received"
+                                            />
+                                        </div>
+
+                                        <div class="pc-entry-field">
+                                            <label
+                                                t-att-for="'pc_edit_expense_%s' % edit_entry.id"
+                                            >
+                                                Expense / Paid
+                                            </label>
+
+                                            <input
+                                                t-att-id="'pc_edit_expense_%s' % edit_entry.id"
+                                                type="number"
+                                                name="expense_paid"
+                                                min="0"
+                                                step="0.01"
+                                                t-att-value="'%.2f' % edit_entry.expense_paid"
+                                            />
+                                        </div>
+
+                                        <div class="pc-entry-field pc-full-width">
+                                            <label
+                                                t-att-for="'pc_edit_remarks_%s' % edit_entry.id"
+                                            >
+                                                Remarks
+                                            </label>
+
+                                            <textarea
+                                                t-att-id="'pc_edit_remarks_%s' % edit_entry.id"
+                                                name="remarks"
+                                                rows="3"
+                                            ><t t-esc="edit_entry.remarks or ''"/></textarea>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer pc-modal-footer">
+                                    <button
+                                        type="button"
+                                        class="btn btn-light"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="pc-modal-submit"
+                                    >
+                                        <i class="fa fa-save"/>
+                                        Save Changes
+                                    </button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </t>
 
         </t>
     </template>

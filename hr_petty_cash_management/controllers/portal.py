@@ -254,6 +254,9 @@ class HrPettyCashPortal(http.Controller):
             'entry_added':
                 kwargs.get('entry_added') == '1',
 
+            'entry_updated':
+                kwargs.get('entry_updated') == '1',
+
             'entry_error': (
                 kwargs.get('entry_error') or ''
             ).strip(),
@@ -404,4 +407,185 @@ class HrPettyCashPortal(http.Controller):
                 '%Y-%m'
             ),
             'entry_added': '1',
+        })
+    @http.route(
+        '/my/hr/admin/finance/petty-cash/'
+        '<int:entry_id>/edit',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+        csrf=True,
+    )
+    def admin_petty_cash_edit(
+        self,
+        entry_id,
+        **post
+    ):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        selected_fiscal_year = (
+            post.get('selected_fiscal_year') or ''
+        ).strip()
+
+        selected_month = (
+            post.get('selected_month') or ''
+        ).strip()
+
+        redirect_params = {}
+
+        if selected_fiscal_year:
+            redirect_params['fy'] = (
+                selected_fiscal_year
+            )
+
+        if selected_month:
+            redirect_params['month'] = (
+                selected_month
+            )
+
+        entry = request.env[
+            'hr.petty.cash.entry'
+        ].sudo().search(
+            [
+                ('id', '=', entry_id),
+                (
+                    'company_id',
+                    '=',
+                    request.env.company.id,
+                ),
+            ],
+            limit=1,
+        )
+
+        if not entry:
+            redirect_params['entry_error'] = (
+                'The petty cash entry could not be found.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        if entry.invoice_shared:
+            redirect_params['entry_error'] = (
+                'This entry is locked because its '
+                'invoice has already been shared.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        transaction_date_value = (
+            post.get('transaction_date') or ''
+        ).strip()
+
+        description = (
+            post.get('description') or ''
+        ).strip()
+
+        remarks = (
+            post.get('remarks') or ''
+        ).strip()
+
+        if not transaction_date_value:
+            redirect_params['entry_error'] = (
+                'Transaction date is required.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        try:
+            transaction_date = fields.Date.to_date(
+                transaction_date_value
+            )
+        except (TypeError, ValueError):
+            transaction_date = False
+
+        if not transaction_date:
+            redirect_params['entry_error'] = (
+                'Please enter a valid transaction date.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        if not description:
+            redirect_params['entry_error'] = (
+                'Description is required.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        try:
+            received = self._parse_amount(
+                post.get('received')
+            )
+
+            expense_paid = self._parse_amount(
+                post.get('expense_paid')
+            )
+
+        except (TypeError, ValueError):
+            redirect_params['entry_error'] = (
+                'Received and Expense/Paid must '
+                'be valid numbers.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        if received < 0 or expense_paid < 0:
+            redirect_params['entry_error'] = (
+                'Received and Expense/Paid '
+                'cannot be negative.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        if received == 0 and expense_paid == 0:
+            redirect_params['entry_error'] = (
+                'Enter an amount in Received '
+                'or Expense/Paid.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        invoice_shared = (
+            post.get('invoice_shared') == '1'
+        )
+
+        entry.write({
+            'transaction_date': transaction_date,
+            'description': description,
+            'received': received,
+            'expense_paid': expense_paid,
+            'remarks': remarks,
+            'invoice_shared': invoice_shared,
+        })
+
+        entry_fiscal_year = (
+            self._get_fiscal_year_start_year(
+                transaction_date
+            )
+        )
+
+        return self._finance_redirect({
+            'fy': str(entry_fiscal_year),
+            'month': transaction_date.strftime(
+                '%Y-%m'
+            ),
+            'entry_updated': '1',
         })
