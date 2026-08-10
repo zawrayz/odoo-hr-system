@@ -553,6 +553,35 @@
 .pc-table.pc-table-no-actions td:nth-child(7) {
     width: 12%;
 }
+
+.pc-type-cell {
+    text-align: center;
+}
+
+.pc-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 94px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pc-type-in {
+    border: 1px solid #5fc98c;
+    background: #d9f5e5;
+    color: #176b3a;
+}
+
+.pc-type-out {
+    border: 1px solid #e49a9a;
+    background: #fbe0e0;
+    color: #9d2929;
+}
 @media (max-width: 1250px) {
     .pc-toolbar {
         grid-template-columns: minmax(280px, 330px) 1fr;
@@ -616,5 +645,123 @@
     .pc-pagination-controls {
         justify-content: center;
         overflow-x: auto;
+    }
+}
+
+
+/* =========================================================
+   Petty Cash - Polished Balance & Filter Toolbar
+   ========================================================= */
+
+.pc-toolbar {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    grid-template-areas:
+        "balance expense"
+        "filters add";
+    align-items: end;
+    gap: 14px 18px;
+    padding: 18px 22px;
+}
+
+.pc-toolbar > .pc-balance-card:not(.pc-month-expense-card) {
+    grid-area: balance;
+}
+
+.pc-month-expense-card {
+    grid-area: expense;
+    border-color: #72a6cf;
+}
+
+.pc-month-expense-card .pc-balance-label,
+.pc-month-expense-card .pc-balance-value {
+    background: #d8ebfa;
+}
+
+.pc-month-expense-card .pc-balance-label {
+    border-right-color: #72a6cf;
+}
+
+.pc-balance-card {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns:
+        minmax(150px, 0.9fr)
+        minmax(170px, 1.1fr);
+}
+
+.pc-balance-label,
+.pc-balance-value {
+    min-height: 58px;
+    padding: 10px 14px;
+}
+
+.pc-balance-label {
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.pc-balance-value {
+    font-size: 19px;
+    white-space: nowrap;
+}
+
+.pc-filter-form {
+    grid-area: filters;
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(170px, 1fr));
+    gap: 12px;
+    min-width: 0;
+}
+
+.pc-add-entry-button {
+    grid-area: add;
+    grid-column: auto;
+    width: auto;
+    min-width: 170px;
+    min-height: 46px;
+    justify-self: end;
+    align-self: end;
+    white-space: nowrap;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .pc-toolbar {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "balance"
+            "expense"
+            "filters"
+            "add";
+    }
+
+    .pc-add-entry-button {
+        width: 100%;
+        justify-self: stretch;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .pc-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-balance-card {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-balance-label {
+        border-right: 0;
+        border-bottom: 1px solid #c99d17;
+    }
+
+    .pc-month-expense-card .pc-balance-label {
+        border-right: 0;
+        border-bottom: 1px solid #72a6cf;
     }
 }

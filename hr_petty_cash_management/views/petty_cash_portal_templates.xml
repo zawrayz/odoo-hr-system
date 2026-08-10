@@ -110,12 +110,24 @@
 
                                 <div class="pc-balance-card">
                                     <div class="pc-balance-label">
-                                        Balance
+                                        Current Balance
                                     </div>
 
                                     <div class="pc-balance-value">
                                         Rs
                                         <t t-esc="'{:,.2f}'.format(balance)"/>
+                                    </div>
+                                </div>
+
+                                <div class="pc-balance-card pc-month-expense-card">
+                                    <div class="pc-balance-label">
+                                        <t t-esc="selected_month_label"/>
+                                        Expense
+                                    </div>
+
+                                    <div class="pc-balance-value">
+                                        Rs
+                                        <t t-esc="'{:,.2f}'.format(monthly_expense)"/>
                                     </div>
                                 </div>
 
@@ -155,13 +167,6 @@
                                             name="month"
                                             onchange="this.form.submit()"
                                         >
-                                            <option
-                                                value=""
-                                                t-att-selected="not selected_month and 'selected' or None"
-                                            >
-                                                All Months
-                                            </option>
-
                                             <option
                                                 t-foreach="month_options"
                                                 t-as="month_option"
@@ -215,8 +220,8 @@
                                             <th>Month</th>
                                             <th>Date</th>
                                             <th>Description</th>
-                                            <th>Received</th>
-                                            <th>Expense / Paid</th>
+                                            <th>Amount</th>
+                                            <th>Transaction Type</th>
                                             <th>Remarks</th>
                                             <th>Invoice Sharing Status</th>
                                             <th t-if="can_edit_entries">Action</th>
@@ -245,19 +250,29 @@
                                                 </td>
 
                                                 <td class="pc-money-cell">
-                                                    <t t-if="entry.received">
+                                                    <t t-if="entry.net_amount">
                                                         Rs
-                                                        <t t-esc="'{:,.2f}'.format(entry.received)"/>
+                                                        <t t-esc="'{:,.2f}'.format(abs(entry.net_amount))"/>
                                                     </t>
                                                     <t t-else="">-</t>
                                                 </td>
 
-                                                <td class="pc-money-cell">
-                                                    <t t-if="entry.expense_paid">
-                                                        Rs
-                                                        <t t-esc="'{:,.2f}'.format(entry.expense_paid)"/>
-                                                    </t>
-                                                    <t t-else="">-</t>
+                                                <td class="pc-type-cell">
+                                                    <span
+                                                        t-if="entry.net_amount >= 0"
+                                                        class="pc-type-badge pc-type-in"
+                                                    >
+                                                        <i class="fa fa-arrow-down"/>
+                                                        Cash In
+                                                    </span>
+
+                                                    <span
+                                                        t-else=""
+                                                        class="pc-type-badge pc-type-out"
+                                                    >
+                                                        <i class="fa fa-arrow-up"/>
+                                                        Cash Out
+                                                    </span>
                                                 </td>
 
                                                 <td class="pc-description-cell">
@@ -396,7 +411,7 @@
                                     </h5>
 
                                     <div class="pc-modal-subtitle">
-                                        Enter an opening balance under Received.
+                                        Enter an opening balance as Cash In.
                                     </div>
                                 </div>
 
@@ -455,33 +470,38 @@
                                     </div>
 
                                     <div class="pc-entry-field">
-                                        <label for="pc_received">
-                                            Received
+                                        <label for="pc_amount">
+                                            Amount
                                         </label>
 
                                         <input
-                                            id="pc_received"
+                                            id="pc_amount"
                                             type="number"
-                                            name="received"
-                                            min="0"
+                                            name="amount"
+                                            min="0.01"
                                             step="0.01"
                                             placeholder="0.00"
+                                            required="required"
                                         />
                                     </div>
 
                                     <div class="pc-entry-field">
-                                        <label for="pc_expense_paid">
-                                            Expense / Paid
+                                        <label for="pc_transaction_type">
+                                            Transaction Type
                                         </label>
 
-                                        <input
-                                            id="pc_expense_paid"
-                                            type="number"
-                                            name="expense_paid"
-                                            min="0"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                        />
+                                        <select
+                                            id="pc_transaction_type"
+                                            name="transaction_type"
+                                            required="required"
+                                        >
+                                            <option value="check_in">
+                                                Cash In
+                                            </option>
+                                            <option value="check_out">
+                                                Cash Out
+                                            </option>
+                                        </select>
                                     </div>
 
                                     <div class="pc-entry-field pc-full-width">
@@ -641,36 +661,48 @@
 
                                         <div class="pc-entry-field">
                                             <label
-                                                t-att-for="'pc_edit_received_%s' % edit_entry.id"
+                                                t-att-for="'pc_edit_amount_%s' % edit_entry.id"
                                             >
-                                                Received
+                                                Amount
                                             </label>
 
                                             <input
-                                                t-att-id="'pc_edit_received_%s' % edit_entry.id"
+                                                t-att-id="'pc_edit_amount_%s' % edit_entry.id"
                                                 type="number"
-                                                name="received"
-                                                min="0"
+                                                name="amount"
+                                                min="0.01"
                                                 step="0.01"
-                                                t-att-value="'%.2f' % edit_entry.received"
+                                                t-att-value="'%.2f' % abs(edit_entry.net_amount)"
+                                                required="required"
                                             />
                                         </div>
 
                                         <div class="pc-entry-field">
                                             <label
-                                                t-att-for="'pc_edit_expense_%s' % edit_entry.id"
+                                                t-att-for="'pc_edit_type_%s' % edit_entry.id"
                                             >
-                                                Expense / Paid
+                                                Transaction Type
                                             </label>
 
-                                            <input
-                                                t-att-id="'pc_edit_expense_%s' % edit_entry.id"
-                                                type="number"
-                                                name="expense_paid"
-                                                min="0"
-                                                step="0.01"
-                                                t-att-value="'%.2f' % edit_entry.expense_paid"
-                                            />
+                                            <select
+                                                t-att-id="'pc_edit_type_%s' % edit_entry.id"
+                                                name="transaction_type"
+                                                required="required"
+                                            >
+                                                <option
+                                                    value="check_in"
+                                                    t-att-selected="edit_entry.net_amount >= 0 and 'selected' or None"
+                                                >
+                                                    Cash In
+                                                </option>
+
+                                                <option
+                                                    value="check_out"
+                                                    t-att-selected="edit_entry.net_amount &lt; 0 and 'selected' or None"
+                                                >
+                                                    Cash Out
+                                                </option>
+                                            </select>
                                         </div>
 
                                         <div class="pc-entry-field pc-full-width">

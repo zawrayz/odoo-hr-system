@@ -266,7 +266,12 @@ class HrPettyCashPortal(http.Controller):
         selected_month = (month or '').strip()
 
         if selected_month not in valid_months:
-            selected_month = ''
+            if selected_fiscal_year == current_fiscal_year:
+                selected_month = today.strftime('%Y-%m')
+            elif month_options:
+                selected_month = month_options[0]['value']
+            else:
+                selected_month = ''
 
         domain = [
             (
@@ -330,15 +335,36 @@ class HrPettyCashPortal(http.Controller):
             petty_cash_entry_model.search(domain)
         )
 
+        global_entries = petty_cash_entry_model.search([
+            (
+                'company_id',
+                '=',
+                request.env.company.id,
+            ),
+        ])
+
         total_received = sum(
-            all_filtered_entries.mapped('received')
+            global_entries.mapped('received')
         )
 
         total_expense = sum(
-            all_filtered_entries.mapped('expense_paid')
+            global_entries.mapped('expense_paid')
         )
 
         balance = total_received - total_expense
+
+        monthly_expense = sum(
+            all_filtered_entries.mapped('expense_paid')
+        )
+
+        selected_month_label = next(
+            (
+                option['label']
+                for option in month_options
+                if option['value'] == selected_month
+            ),
+            selected_month,
+        )
 
         page_first_entry = (
             pager['offset'] + 1
@@ -370,6 +396,7 @@ class HrPettyCashPortal(http.Controller):
             'balance': balance,
             'total_received': total_received,
             'total_expense': total_expense,
+            'monthly_expense': monthly_expense,
 
             'fiscal_year_options':
                 fiscal_year_options,
@@ -384,6 +411,7 @@ class HrPettyCashPortal(http.Controller):
 
             'month_options': month_options,
             'selected_month': selected_month,
+            'selected_month_label': selected_month_label,
 
             'today_value': today.strftime(
                 '%Y-%m-%d'
@@ -484,41 +512,51 @@ class HrPettyCashPortal(http.Controller):
                 redirect_params
             )
 
-        try:
-            received = self._parse_amount(
-                post.get('received')
+        transaction_type = (
+            post.get('transaction_type') or ''
+        ).strip()
+
+        if transaction_type not in {
+            'check_in',
+            'check_out',
+        }:
+            redirect_params['entry_error'] = (
+                'Please select Cash In or Cash Out.'
             )
 
-            expense_paid = self._parse_amount(
-                post.get('expense_paid')
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        try:
+            amount = self._parse_amount(
+                post.get('amount')
             )
 
         except (TypeError, ValueError):
             redirect_params['entry_error'] = (
-                'Received and Expense/Paid must '
-                'be valid numbers.'
+                'Amount must be a valid number.'
             )
+
             return self._finance_redirect(
                 redirect_params
             )
 
-        if received < 0 or expense_paid < 0:
+        if amount <= 0:
             redirect_params['entry_error'] = (
-                'Received and Expense/Paid '
-                'cannot be negative.'
+                'Amount must be greater than zero.'
             )
+
             return self._finance_redirect(
                 redirect_params
             )
 
-        if received == 0 and expense_paid == 0:
-            redirect_params['entry_error'] = (
-                'Enter an amount in Received '
-                'or Expense/Paid.'
-            )
-            return self._finance_redirect(
-                redirect_params
-            )
+        if transaction_type == 'check_in':
+            received = amount
+            expense_paid = 0.0
+        else:
+            received = 0.0
+            expense_paid = amount
 
         invoice_shared = (
             post.get('invoice_shared') == '1'
@@ -679,44 +717,51 @@ class HrPettyCashPortal(http.Controller):
                 redirect_params
             )
 
-        try:
-            received = self._parse_amount(
-                post.get('received')
+        transaction_type = (
+            post.get('transaction_type') or ''
+        ).strip()
+
+        if transaction_type not in {
+            'check_in',
+            'check_out',
+        }:
+            redirect_params['entry_error'] = (
+                'Please select Cash In or Cash Out.'
             )
 
-            expense_paid = self._parse_amount(
-                post.get('expense_paid')
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        try:
+            amount = self._parse_amount(
+                post.get('amount')
             )
 
         except (TypeError, ValueError):
             redirect_params['entry_error'] = (
-                'Received and Expense/Paid must '
-                'be valid numbers.'
+                'Amount must be a valid number.'
             )
 
             return self._finance_redirect(
                 redirect_params
             )
 
-        if received < 0 or expense_paid < 0:
+        if amount <= 0:
             redirect_params['entry_error'] = (
-                'Received and Expense/Paid '
-                'cannot be negative.'
+                'Amount must be greater than zero.'
             )
 
             return self._finance_redirect(
                 redirect_params
             )
 
-        if received == 0 and expense_paid == 0:
-            redirect_params['entry_error'] = (
-                'Enter an amount in Received '
-                'or Expense/Paid.'
-            )
-
-            return self._finance_redirect(
-                redirect_params
-            )
+        if transaction_type == 'check_in':
+            received = amount
+            expense_paid = 0.0
+        else:
+            received = 0.0
+            expense_paid = amount
 
         invoice_shared = (
             post.get('invoice_shared') == '1'
