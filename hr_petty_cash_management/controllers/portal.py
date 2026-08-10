@@ -13,11 +13,10 @@ class HrPettyCashPortal(http.Controller):
 
     FULL_ACCESS_EMPLOYEE_CODES = {
         'BPL001',
-    }
-
-    ENTRY_ACCESS_EMPLOYEE_CODES = {
         'BLMP43',
     }
+
+    ENTRY_ACCESS_EMPLOYEE_CODES = set()
 
     def _is_hr_manager(self):
         return request.env.user.has_group(
