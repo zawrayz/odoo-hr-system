@@ -35,6 +35,16 @@
                     <i class="fa fa-money"/>
                     <span>Finance</span>
                 </a>
+
+                <div class="hr-sidebar-submenu">
+                    <a
+                        t-att-href="'/my/hr/admin/finance/petty-cash' if pc_sidebar_is_manager else '/my/hr/finance/petty-cash'"
+                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance' else ''}"
+                    >
+                        <i class="fa fa-book"/>
+                        <span>Petty Cash</span>
+                    </a>
+                </div>
             </t>
         </xpath>
         <xpath
@@ -61,6 +71,16 @@
                     <i class="fa fa-money"/>
                     <span>Finance</span>
                 </a>
+
+                <div class="hr-sidebar-submenu">
+                    <a
+                        href="/my/hr/finance/petty-cash"
+                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance' else ''}"
+                    >
+                        <i class="fa fa-book"/>
+                        <span>Petty Cash</span>
+                    </a>
+                </div>
             </t>
         </xpath>
     </template>
