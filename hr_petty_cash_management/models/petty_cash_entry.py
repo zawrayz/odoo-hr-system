@@ -61,6 +61,11 @@ class HrPettyCashEntry(models.Model):
         default=False,
     )
 
+    invoice_url = fields.Char(
+        string='Invoice URL',
+        help='Google Drive link for the invoice document.',
+    )
+
     company_id = fields.Many2one(
         'res.company',
         string='Company',

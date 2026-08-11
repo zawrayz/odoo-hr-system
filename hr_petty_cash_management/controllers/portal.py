@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from odoo import fields, http
 from odoo.addons.portal.controllers.portal import pager as portal_pager
@@ -86,6 +86,29 @@ class HrPettyCashPortal(http.Controller):
             return 0.0
 
         return round(float(cleaned_value), 2)
+
+    def _is_valid_invoice_url(self, value):
+        invoice_url = (value or '').strip()
+
+        if not invoice_url:
+            return False
+
+        try:
+            parsed_url = urlparse(invoice_url)
+        except (TypeError, ValueError):
+            return False
+
+        hostname = (
+            parsed_url.hostname or ''
+        ).lower()
+
+        return (
+            parsed_url.scheme == 'https'
+            and hostname in {
+                'drive.google.com',
+                'docs.google.com',
+            }
+        )
 
     def _finance_redirect(self, params=None):
         if self._is_hr_manager():
@@ -610,6 +633,102 @@ class HrPettyCashPortal(http.Controller):
             ),
             'entry_added': '1',
         })
+    @http.route(
+        [
+            '/my/hr/finance/petty-cash/'
+            '<int:entry_id>/invoice-link',
+            '/my/hr/admin/finance/petty-cash/'
+            '<int:entry_id>/invoice-link',
+        ],
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+        csrf=True,
+    )
+    def petty_cash_invoice_link(
+        self,
+        entry_id,
+        **post
+    ):
+        if not self._can_edit_petty_cash():
+            return self._finance_redirect({
+                'entry_error': (
+                    'You do not have permission to '
+                    'manage invoice links.'
+                ),
+            })
+
+        selected_fiscal_year = (
+            post.get('selected_fiscal_year') or ''
+        ).strip()
+
+        selected_month = (
+            post.get('selected_month') or ''
+        ).strip()
+
+        redirect_params = {}
+
+        if selected_fiscal_year:
+            redirect_params['fy'] = (
+                selected_fiscal_year
+            )
+
+        if selected_month:
+            redirect_params['month'] = (
+                selected_month
+            )
+
+        entry = request.env[
+            'hr.petty.cash.entry'
+        ].sudo().search(
+            [
+                ('id', '=', entry_id),
+                (
+                    'company_id',
+                    '=',
+                    request.env.company.id,
+                ),
+            ],
+            limit=1,
+        )
+
+        if not entry:
+            redirect_params['entry_error'] = (
+                'The petty cash entry could not be found.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        invoice_url = (
+            post.get('invoice_url') or ''
+        ).strip()
+
+        if not self._is_valid_invoice_url(
+            invoice_url
+        ):
+            redirect_params['entry_error'] = (
+                'Please enter a valid Google Drive '
+                'invoice link.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        entry.write({
+            'invoice_url': invoice_url,
+            'invoice_shared': True,
+        })
+
+        redirect_params['entry_updated'] = '1'
+
+        return self._finance_redirect(
+            redirect_params
+        )
+
     @http.route(
         [
             '/my/hr/finance/petty-cash/'

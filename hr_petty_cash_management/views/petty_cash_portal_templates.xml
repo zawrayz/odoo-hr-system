@@ -333,6 +333,7 @@
                                             <th>Transaction Type</th>
                                             <th>Remarks</th>
                                             <th>Invoice Sharing Status</th>
+                                            <th>Invoice</th>
                                             <th t-if="can_edit_entries">Action</th>
                                         </tr>
                                     </thead>
@@ -397,6 +398,53 @@
                                                     <t t-else="">No</t>
                                                 </td>
 
+                                                <td class="pc-invoice-cell">
+
+                                                    <t t-if="entry.invoice_url">
+
+                                                        <a
+                                                            t-att-href="entry.invoice_url"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="pc-invoice-open-button"
+                                                            title="Open invoice in Google Drive"
+                                                        >
+                                                            <i class="fa fa-external-link"/>
+                                                            Open
+                                                        </a>
+
+                                                        <button
+                                                            t-if="can_edit_entries"
+                                                            type="button"
+                                                            class="pc-invoice-edit-link"
+                                                            data-bs-toggle="modal"
+                                                            t-att-data-bs-target="'#pettyCashInvoiceModal%s' % entry.id"
+                                                            title="Replace invoice link"
+                                                        >
+                                                            <i class="fa fa-pencil"/>
+                                                        </button>
+
+                                                    </t>
+
+                                                    <t t-else="">
+
+                                                        <button
+                                                            t-if="can_edit_entries"
+                                                            type="button"
+                                                            class="pc-invoice-add-button"
+                                                            data-bs-toggle="modal"
+                                                            t-att-data-bs-target="'#pettyCashInvoiceModal%s' % entry.id"
+                                                        >
+                                                            <i class="fa fa-link"/>
+                                                            Add Link
+                                                        </button>
+
+                                                        <span t-else="">-</span>
+
+                                                    </t>
+
+                                                </td>
+
                                                 <td t-if="can_edit_entries" class="pc-action-cell">
                                                     <t t-if="not entry.invoice_shared">
                                                         <button
@@ -426,7 +474,7 @@
                                         <t t-else="">
                                             <tr>
                                                 <td
-                                                    t-att-colspan="8 if can_edit_entries else 7"
+                                                    t-att-colspan="9 if can_edit_entries else 8"
                                                     class="pc-empty-cell"
                                                 >
                                                     No petty cash entries exist for
@@ -443,6 +491,133 @@
 
                                 </table>
                             </div>
+
+                            <t
+                                t-foreach="entries"
+                                t-as="invoice_entry"
+                            >
+                                <div
+                                    class="modal fade"
+                                    t-att-id="'pettyCashInvoiceModal%s' % invoice_entry.id"
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                >
+                                    <div class="modal-dialog modal-dialog-centered">
+
+                                        <div class="modal-content pc-modal-content">
+
+                                            <form
+                                                method="post"
+                                                t-att-action="('/my/hr/admin/finance/petty-cash/%s/invoice-link' % invoice_entry.id) if is_hr_manager else ('/my/hr/finance/petty-cash/%s/invoice-link' % invoice_entry.id)"
+                                            >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    t-att-value="request.csrf_token()"
+                                                />
+
+                                                <input
+                                                    type="hidden"
+                                                    name="selected_fiscal_year"
+                                                    t-att-value="selected_fiscal_year"
+                                                />
+
+                                                <input
+                                                    type="hidden"
+                                                    name="selected_month"
+                                                    t-att-value="selected_month"
+                                                />
+
+                                                <div class="modal-header pc-modal-header">
+
+                                                    <div>
+                                                        <h5 class="modal-title">
+                                                            <t t-if="invoice_entry.invoice_url">
+                                                                Update Invoice Link
+                                                            </t>
+
+                                                            <t t-else="">
+                                                                Add Invoice Link
+                                                            </t>
+                                                        </h5>
+
+                                                        <div class="pc-modal-subtitle">
+                                                            Paste the individual Google Drive
+                                                            invoice file link.
+                                                        </div>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn-close btn-close-white"
+                                                        data-bs-dismiss="modal"
+                                                        aria-label="Close"
+                                                    />
+
+                                                </div>
+
+                                                <div class="modal-body pc-modal-body">
+
+                                                    <div class="pc-entry-field">
+
+                                                        <label>
+                                                            Google Drive Invoice URL
+                                                        </label>
+
+                                                        <input
+                                                            type="url"
+                                                            name="invoice_url"
+                                                            required="required"
+                                                            autocomplete="off"
+                                                            placeholder="https://drive.google.com/file/d/..."
+                                                            t-att-value="invoice_entry.invoice_url or ''"
+                                                        />
+
+                                                        <small class="pc-invoice-help">
+                                                            Saving the invoice link will
+                                                            automatically mark Invoice Sharing
+                                                            Status as Yes and lock the financial
+                                                            transaction.
+                                                        </small>
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="modal-footer">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-light"
+                                                        data-bs-dismiss="modal"
+                                                    >
+                                                        Cancel
+                                                    </button>
+
+                                                    <button
+                                                        type="submit"
+                                                        class="pc-modal-submit"
+                                                    >
+                                                        <i class="fa fa-link"/>
+
+                                                        <t t-if="invoice_entry.invoice_url">
+                                                            Update Link
+                                                        </t>
+
+                                                        <t t-else="">
+                                                            Save Link
+                                                        </t>
+                                                    </button>
+
+                                                </div>
+
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
 
                             <div
                                 t-if="entry_count"

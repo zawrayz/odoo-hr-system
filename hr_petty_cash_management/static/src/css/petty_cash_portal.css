@@ -765,3 +765,112 @@
         border-bottom: 1px solid #72a6cf;
     }
 }
+
+
+/* =========================================================
+   Petty Cash Invoice Links
+   ========================================================= */
+
+.pc-table {
+    min-width: 1220px;
+}
+
+.pc-table th:nth-child(1),
+.pc-table td:nth-child(1) {
+    width: 8%;
+}
+
+.pc-table th:nth-child(2),
+.pc-table td:nth-child(2) {
+    width: 10%;
+}
+
+.pc-table th:nth-child(3),
+.pc-table td:nth-child(3) {
+    width: 18%;
+}
+
+.pc-table th:nth-child(4),
+.pc-table td:nth-child(4) {
+    width: 10%;
+}
+
+.pc-table th:nth-child(5),
+.pc-table td:nth-child(5) {
+    width: 12%;
+}
+
+.pc-table th:nth-child(6),
+.pc-table td:nth-child(6) {
+    width: 13%;
+}
+
+.pc-table th:nth-child(7),
+.pc-table td:nth-child(7) {
+    width: 11%;
+}
+
+.pc-table th:nth-child(8),
+.pc-table td:nth-child(8) {
+    width: 10%;
+}
+
+.pc-table th:nth-child(9),
+.pc-table td:nth-child(9) {
+    width: 8%;
+}
+
+.pc-invoice-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pc-invoice-add-button,
+.pc-invoice-open-button,
+.pc-invoice-edit-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pc-invoice-add-button {
+    gap: 5px;
+    padding: 7px 10px;
+    border: 1px solid #4f91c9;
+    background: #e5f2fc;
+    color: #1768a7;
+}
+
+.pc-invoice-open-button {
+    gap: 5px;
+    padding: 7px 9px;
+    border: 1px solid #56bf83;
+    background: #dcf6e7;
+    color: #176b3a;
+}
+
+.pc-invoice-open-button:hover {
+    color: #12552e;
+    background: #c9efd9;
+}
+
+.pc-invoice-edit-link {
+    width: 30px;
+    height: 30px;
+    margin-left: 4px;
+    border: 1px solid #aab7c3;
+    background: #ffffff;
+    color: #285f98;
+}
+
+.pc-invoice-help {
+    margin-top: 4px;
+    color: #647484;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
