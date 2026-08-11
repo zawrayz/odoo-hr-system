@@ -874,3 +874,31 @@
     line-height: 1.45;
 }
 
+
+/* =========================================================
+   Petty Cash Modal Viewport Fix
+   Keep action buttons visible on shorter screens
+   ========================================================= */
+
+.pc-modal-content {
+    max-height: calc(100vh - 32px);
+}
+
+.pc-modal-content > form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100vh - 32px);
+}
+
+.pc-modal-header,
+.pc-modal-footer {
+    flex: 0 0 auto;
+}
+
+.pc-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+

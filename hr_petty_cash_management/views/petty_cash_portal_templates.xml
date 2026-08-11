@@ -695,7 +695,7 @@
                                     </h5>
 
                                     <div class="pc-modal-subtitle">
-                                        Enter an opening balance as Cash In.
+                                        Add a petty cash transaction and optionally attach its Google Drive invoice.
                                     </div>
                                 </div>
 
@@ -737,6 +737,28 @@
                                             <option value="0">No</option>
                                             <option value="1">Yes</option>
                                         </select>
+                                    </div>
+
+                                    <div class="pc-entry-field pc-full-width">
+                                        <label for="pc_invoice_url">
+                                            Invoice Link
+                                        </label>
+
+                                        <input
+                                            id="pc_invoice_url"
+                                            type="url"
+                                            name="invoice_url"
+                                            autocomplete="off"
+                                            placeholder="https://drive.google.com/file/d/..."
+                                        />
+
+                                        <small class="pc-invoice-help">
+                                            Optional. Paste the individual
+                                            Google Drive invoice link.
+                                            Adding a link automatically
+                                            marks the invoice as shared
+                                            and locks the entry.
+                                        </small>
                                     </div>
 
                                     <div class="pc-entry-field pc-full-width">

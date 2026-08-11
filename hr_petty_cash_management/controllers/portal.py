@@ -9,7 +9,7 @@ from odoo.http import request
 class HrPettyCashPortal(http.Controller):
 
     FISCAL_YEAR_WINDOW = 5
-    PAGE_SIZE = 15
+    PAGE_SIZE = 10
 
     FULL_ACCESS_EMPLOYEE_CODES = {
         'BPL001',
@@ -608,6 +608,38 @@ class HrPettyCashPortal(http.Controller):
             post.get('invoice_shared') == '1'
         )
 
+        invoice_url = (
+            post.get('invoice_url') or ''
+        ).strip()
+
+        if invoice_url:
+            if not self._is_valid_invoice_url(
+                invoice_url
+            ):
+                redirect_params['entry_error'] = (
+                    'Please enter a valid Google Drive '
+                    'invoice link.'
+                )
+
+                return self._finance_redirect(
+                    redirect_params
+                )
+
+            # A real invoice link means the invoice
+            # has been shared and the entry must lock.
+            invoice_shared = True
+
+        elif invoice_shared:
+            redirect_params['entry_error'] = (
+                'Please add the Google Drive invoice '
+                'link before setting Invoice Sharing '
+                'Status to Yes.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
         request.env[
             'hr.petty.cash.entry'
         ].sudo().create({
@@ -617,6 +649,7 @@ class HrPettyCashPortal(http.Controller):
             'expense_paid': expense_paid,
             'remarks': remarks,
             'invoice_shared': invoice_shared,
+            'invoice_url': invoice_url or False,
             'company_id': request.env.company.id,
         })
 
