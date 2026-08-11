@@ -902,3 +902,333 @@
     overflow-y: auto;
 }
 
+
+/* =========================================================
+   Petty Cash - Compact 10 Row Ledger
+   ========================================================= */
+
+.pc-table {
+    width: 100%;
+    min-width: 1080px;
+    table-layout: fixed;
+}
+
+/* Compact header */
+.pc-table th {
+    padding: 9px 5px;
+    font-size: 14px;
+    line-height: 1.15;
+}
+
+/* Compact rows */
+.pc-table td {
+    padding: 7px 6px;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+/* Keep each ledger row compact */
+.pc-table tbody tr {
+    height: 48px;
+}
+
+/* Better column distribution */
+.pc-table th:nth-child(1),
+.pc-table td:nth-child(1) {
+    width: 7%;
+}
+
+.pc-table th:nth-child(2),
+.pc-table td:nth-child(2) {
+    width: 10%;
+}
+
+.pc-table th:nth-child(3),
+.pc-table td:nth-child(3) {
+    width: 17%;
+}
+
+.pc-table th:nth-child(4),
+.pc-table td:nth-child(4) {
+    width: 10%;
+}
+
+.pc-table th:nth-child(5),
+.pc-table td:nth-child(5) {
+    width: 12%;
+}
+
+.pc-table th:nth-child(6),
+.pc-table td:nth-child(6) {
+    width: 13%;
+}
+
+.pc-table th:nth-child(7),
+.pc-table td:nth-child(7) {
+    width: 11%;
+}
+
+.pc-table th:nth-child(8),
+.pc-table td:nth-child(8) {
+    width: 11%;
+}
+
+.pc-table th:nth-child(9),
+.pc-table td:nth-child(9) {
+    width: 9%;
+}
+
+/* Keep badges/buttons compact */
+.pc-type-badge {
+    padding: 5px 9px;
+    font-size: 12px;
+}
+
+.pc-edit-button,
+.pc-locked-badge {
+    min-width: 68px;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+.pc-invoice-add-button,
+.pc-invoice-open-button {
+    padding: 6px 7px;
+    font-size: 11px;
+}
+
+/* Description/remarks stay readable without huge rows */
+.pc-description-cell {
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   Petty Cash - Compact Full 10-Row View
+   ========================================================= */
+
+/* Reduce top financial/filter area height */
+.pc-toolbar {
+    padding: 14px 18px 12px;
+    gap: 10px 18px;
+}
+
+.pc-balance-card {
+    min-height: 58px;
+}
+
+.pc-balance-label {
+    padding: 9px 12px;
+    font-size: 14px;
+}
+
+.pc-balance-value {
+    padding: 9px 12px;
+    font-size: 18px;
+}
+
+.pc-filter-field label {
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.pc-filter-field select {
+    min-height: 40px;
+    padding: 7px 10px;
+}
+
+.pc-add-entry-button {
+    min-height: 40px;
+    padding: 8px 16px;
+}
+
+/* Compact table header */
+.pc-table th {
+    padding: 7px 5px !important;
+    font-size: 13px !important;
+    line-height: 1.08 !important;
+}
+
+/* Compact all 10 transaction rows */
+.pc-table td {
+    padding: 5px 6px !important;
+    font-size: 12.5px !important;
+    line-height: 1.1 !important;
+}
+
+.pc-table tbody tr {
+    height: 41px !important;
+}
+
+/* Smaller Cash In / Cash Out pills */
+.pc-type-badge {
+    padding: 4px 8px !important;
+    font-size: 11.5px !important;
+}
+
+/* Smaller invoice/action buttons */
+.pc-invoice-add-button,
+.pc-invoice-open-button {
+    padding: 4px 7px !important;
+    font-size: 11px !important;
+}
+
+.pc-invoice-edit-link {
+    width: 26px !important;
+    height: 26px !important;
+}
+
+.pc-edit-button,
+.pc-locked-badge {
+    min-width: 62px !important;
+    padding: 5px 7px !important;
+    font-size: 11px !important;
+}
+
+/* Compact pagination footer */
+.pc-pagination-bar {
+    min-height: 55px;
+    padding: 8px 14px !important;
+}
+
+.pc-pagination-summary {
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   Petty Cash - Full Desktop Table Fit
+   Show all columns without horizontal scrolling
+   ========================================================= */
+
+@media (min-width: 1000px) {
+
+    .pc-table-wrap {
+        width: 100%;
+        overflow-x: hidden !important;
+    }
+
+    .pc-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+    }
+
+    /* Month */
+    .pc-table th:nth-child(1),
+    .pc-table td:nth-child(1) {
+        width: 7% !important;
+    }
+
+    /* Date */
+    .pc-table th:nth-child(2),
+    .pc-table td:nth-child(2) {
+        width: 10% !important;
+    }
+
+    /* Description */
+    .pc-table th:nth-child(3),
+    .pc-table td:nth-child(3) {
+        width: 17% !important;
+    }
+
+    /* Amount */
+    .pc-table th:nth-child(4),
+    .pc-table td:nth-child(4) {
+        width: 10% !important;
+    }
+
+    /* Transaction Type */
+    .pc-table th:nth-child(5),
+    .pc-table td:nth-child(5) {
+        width: 13% !important;
+    }
+
+    /* Remarks */
+    .pc-table th:nth-child(6),
+    .pc-table td:nth-child(6) {
+        width: 13% !important;
+    }
+
+    /* Invoice Sharing Status */
+    .pc-table th:nth-child(7),
+    .pc-table td:nth-child(7) {
+        width: 12% !important;
+    }
+
+    /* Invoice */
+    .pc-table th:nth-child(8),
+    .pc-table td:nth-child(8) {
+        width: 10% !important;
+    }
+
+    /* Action */
+    .pc-table th:nth-child(9),
+    .pc-table td:nth-child(9) {
+        width: 8% !important;
+    }
+
+    .pc-table th {
+        padding: 6px 3px !important;
+        font-size: 12px !important;
+        line-height: 1.05 !important;
+        white-space: normal !important;
+    }
+
+    .pc-table td {
+        padding: 5px 4px !important;
+        font-size: 11.5px !important;
+        line-height: 1.1 !important;
+    }
+
+    .pc-description-cell {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+
+    .pc-money-cell,
+    .pc-date-cell,
+    .pc-month-cell {
+        white-space: nowrap;
+    }
+
+    .pc-type-badge {
+        padding: 4px 6px !important;
+        font-size: 10.5px !important;
+        gap: 4px !important;
+        white-space: nowrap;
+    }
+
+    .pc-invoice-cell {
+        white-space: nowrap;
+    }
+
+    .pc-invoice-add-button,
+    .pc-invoice-open-button {
+        padding: 4px 5px !important;
+        font-size: 10px !important;
+        gap: 3px !important;
+    }
+
+    .pc-invoice-edit-link {
+        width: 24px !important;
+        height: 24px !important;
+        margin-left: 2px !important;
+        font-size: 10px !important;
+    }
+
+    .pc-edit-button,
+    .pc-locked-badge {
+        min-width: 0 !important;
+        padding: 5px 5px !important;
+        font-size: 10px !important;
+        gap: 3px !important;
+    }
+
+    .pc-table tbody tr {
+        height: 41px !important;
+    }
+}
+
