@@ -30,7 +30,7 @@
             >
                 <a
                     t-att-href="'/my/hr/admin/finance' if pc_sidebar_is_manager else '/my/hr/finance'"
-                    t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+                    t-attf-class="hr-sidebar-link #{'active' if current_page in ['admin_finance', 'admin_finance_petty_cash'] else ''}"
                 >
                     <i class="fa fa-money"/>
                     <span>Finance</span>
@@ -39,7 +39,7 @@
                 <div class="hr-sidebar-submenu">
                     <a
                         t-att-href="'/my/hr/admin/finance/petty-cash' if pc_sidebar_is_manager else '/my/hr/finance/petty-cash'"
-                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance' else ''}"
+                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
                     >
                         <i class="fa fa-book"/>
                         <span>Petty Cash</span>
@@ -66,7 +66,7 @@
             >
                 <a
                     href="/my/hr/finance"
-                    t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_finance' else ''}"
+                    t-attf-class="hr-sidebar-link #{'active' if current_page in ['admin_finance', 'admin_finance_petty_cash'] else ''}"
                 >
                     <i class="fa fa-money"/>
                     <span>Finance</span>
@@ -75,7 +75,7 @@
                 <div class="hr-sidebar-submenu">
                     <a
                         href="/my/hr/finance/petty-cash"
-                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance' else ''}"
+                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
                     >
                         <i class="fa fa-book"/>
                         <span>Petty Cash</span>
@@ -86,12 +86,101 @@
     </template>
 
     <template
+        id="hr_finance_home_page"
+        name="HR Finance Home"
+    >
+        <t t-call="portal.portal_layout">
+            <t t-set="no_breadcrumbs" t-value="1"/>
+            <t t-set="current_page" t-value="'admin_finance'"/>
+
+            <div class="container-fluid oe_structure mt-4 mb-5 px-lg-4">
+                <div class="hr-layout-row">
+
+                    <div class="hr-sidebar-wrap">
+                        <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                    </div>
+
+                    <div class="hr-content-wrap">
+
+                        <div class="mb-3">
+                            <a
+                                t-att-href="'/my/hr/admin' if is_hr_manager else '/my/hr'"
+                                class="hr-back-link"
+                            >
+                                <i class="fa fa-arrow-left"/>
+
+                                <t t-if="is_hr_manager">
+                                    Back to Admin Dashboard
+                                </t>
+
+                                <t t-else="">
+                                    Back to Employee Dashboard
+                                </t>
+                            </a>
+                        </div>
+
+                        <div class="hr-page-header-card mb-4">
+                            <div class="card-body">
+                                <h2 class="hr-page-title mb-2">
+                                    Finance
+                                </h2>
+
+                                <p class="hr-page-subtitle">
+                                    Access BLIMP finance tools and records.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+
+                            <div class="col-md-6 col-xl-4">
+                                <a
+                                    t-att-href="'/my/hr/admin/finance/petty-cash' if is_hr_manager else '/my/hr/finance/petty-cash'"
+                                    class="text-decoration-none"
+                                >
+                                    <div class="hr-feature-card">
+                                        <div class="card-body">
+
+                                            <div class="hr-feature-icon">
+                                                <i class="fa fa-money"/>
+                                            </div>
+
+                                            <div class="hr-feature-title">
+                                                Petty Cash
+                                            </div>
+
+                                            <p class="hr-feature-text mb-3">
+                                                Manage Cash In, Cash Out,
+                                                monthly expenses and the
+                                                current petty cash balance.
+                                            </p>
+
+                                            <span class="btn btn-primary">
+                                                Open Petty Cash
+                                                <i class="fa fa-arrow-right ms-1"/>
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+    <template
         id="hr_admin_petty_cash_page"
         name="HR Admin Petty Cash Log"
     >
         <t t-call="portal.portal_layout">
             <t t-set="no_breadcrumbs" t-value="1"/>
-            <t t-set="current_page" t-value="'admin_finance'"/>
+            <t t-set="current_page" t-value="'admin_finance_petty_cash'"/>
 
             <div class="container-fluid oe_structure mt-4 mb-5 px-lg-4">
                 <div class="hr-layout-row">
@@ -400,7 +489,7 @@
                     <div class="modal-content pc-modal-content">
 
                         <form
-                            t-att-action="'%s/petty-cash/add' % finance_page_url"
+                            t-att-action="'%s/add' % finance_page_url"
                             method="post"
                         >
                             <input
@@ -581,7 +670,7 @@
                         <div class="modal-content pc-modal-content">
 
                             <form
-                                t-att-action="'%s/petty-cash/%s/edit' % (finance_page_url, edit_entry.id)"
+                                t-att-action="'%s/%s/edit' % (finance_page_url, edit_entry.id)"
                                 method="post"
                             >
                                 <input

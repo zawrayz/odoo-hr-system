@@ -180,11 +180,32 @@ class HrPettyCashPortal(http.Controller):
     @http.route(
         [
             '/my/hr/finance',
-            '/my/hr/finance/page/<int:page>',
+            '/my/hr/admin/finance',
+        ],
+        type='http',
+        auth='user',
+        website=True,
+    )
+    def finance_home_page(self, **kwargs):
+        finance_access = self._get_finance_access()
+
+        if finance_access == 'none':
+            return request.redirect('/my/hr')
+
+        is_hr_manager = self._is_hr_manager()
+
+        return request.render(
+            'hr_petty_cash_management.hr_finance_home_page',
+            {
+                'is_hr_manager': is_hr_manager,
+                'finance_access': finance_access,
+            },
+        )
+
+    @http.route(
+        [
             '/my/hr/finance/petty-cash',
             '/my/hr/finance/petty-cash/page/<int:page>',
-            '/my/hr/admin/finance',
-            '/my/hr/admin/finance/page/<int:page>',
             '/my/hr/admin/finance/petty-cash',
             '/my/hr/admin/finance/petty-cash/page/<int:page>',
         ],
