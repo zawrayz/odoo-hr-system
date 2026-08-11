@@ -89,9 +89,9 @@ class HrPettyCashPortal(http.Controller):
 
     def _finance_redirect(self, params=None):
         if self._is_hr_manager():
-            url = '/my/hr/admin/finance'
+            url = '/my/hr/admin/finance/petty-cash'
         else:
-            url = '/my/hr/finance'
+            url = '/my/hr/finance/petty-cash'
 
         if params:
             url = '%s?%s' % (url, urlencode(params))
@@ -181,6 +181,8 @@ class HrPettyCashPortal(http.Controller):
         [
             '/my/hr/finance',
             '/my/hr/finance/page/<int:page>',
+            '/my/hr/finance/petty-cash',
+            '/my/hr/finance/petty-cash/page/<int:page>',
             '/my/hr/admin/finance',
             '/my/hr/admin/finance/page/<int:page>',
             '/my/hr/admin/finance/petty-cash',
@@ -205,9 +207,9 @@ class HrPettyCashPortal(http.Controller):
         is_hr_manager = self._is_hr_manager()
 
         finance_page_url = (
-            '/my/hr/admin/finance'
+            '/my/hr/admin/finance/petty-cash'
             if is_hr_manager
-            else '/my/hr/finance'
+            else '/my/hr/finance/petty-cash'
         )
 
         petty_cash_entry_model = request.env[
