@@ -66,6 +66,18 @@ class HrPettyCashEntry(models.Model):
         help='Google Drive link for the invoice document.',
     )
 
+    cash_holder = fields.Selection(
+        [
+            ('irfan', 'Irfan Office'),
+            ('hammad', 'Hammad'),
+            ('irfan_personal', 'Irfan Personal'),
+        ],
+        string='Petty Cash Holder',
+        required=True,
+        default='irfan',
+        index=True,
+    )
+
     company_id = fields.Many2one(
         'res.company',
         string='Company',

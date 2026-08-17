@@ -26,6 +26,16 @@
             />
 
             <t
+                t-set="pc_sidebar_is_irfan"
+                t-value="(request.env.user.login or '').strip().lower() == 'irfan.saifullah@blimpglobal.com'"
+            />
+
+            <t
+                t-set="pc_sidebar_holder"
+                t-value="(request.params.get('holder') or '').strip().lower()"
+            />
+
+            <t
                 t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP43']"
             >
                 <a
@@ -37,13 +47,35 @@
                 </a>
 
                 <div class="hr-sidebar-submenu">
-                    <a
-                        t-att-href="'/my/hr/admin/finance/petty-cash' if pc_sidebar_is_manager else '/my/hr/finance/petty-cash'"
-                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
-                    >
-                        <i class="fa fa-book"/>
-                        <span>Petty Cash</span>
-                    </a>
+
+                    <t t-if="pc_sidebar_is_irfan">
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=irfan"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder in ['', 'irfan'] else ''}"
+                        >
+                            <i class="fa fa-book"/>
+                            <span>Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=irfan_personal"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder == 'irfan_personal' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Personal Petty Cash</span>
+                        </a>
+                    </t>
+
+                    <t t-else="">
+                        <a
+                            t-att-href="'/my/hr/admin/finance/petty-cash' if pc_sidebar_is_manager else '/my/hr/finance/petty-cash'"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
+                        >
+                            <i class="fa fa-book"/>
+                            <span>Petty Cash</span>
+                        </a>
+                    </t>
+
                 </div>
             </t>
         </xpath>
@@ -174,6 +206,127 @@
     </template>
 
 
+
+
+    <template
+        id="hr_petty_cash_overview_page"
+        name="Petty Cash Overview"
+    >
+        <t t-call="portal.portal_layout">
+            <t t-set="no_breadcrumbs" t-value="1"/>
+            <t t-set="current_page"
+               t-value="'admin_finance_petty_cash'"/>
+
+            <div class="container-fluid oe_structure mt-4 mb-5 px-lg-4">
+                <div class="hr-layout-row">
+
+                    <div class="hr-sidebar-wrap">
+                        <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                    </div>
+
+                    <div class="hr-content-wrap">
+
+                        <div class="mb-3">
+                            <a href="/my/hr/admin/finance"
+                               class="hr-back-link">
+                                <i class="fa fa-arrow-left"/>
+                                Back to Finance
+                            </a>
+                        </div>
+
+                        <div class="hr-page-header-card mb-4">
+                            <div class="card-body">
+
+                                <h2 class="hr-page-title">
+                                    Petty Cash on Hand
+                                </h2>
+
+                                <form
+                                    t-att-action="finance_page_url"
+                                    method="get"
+                                    class="pc-combined-filter"
+                                >
+                                    <select
+                                        name="fy"
+                                        onchange="this.form.submit()"
+                                    >
+                                        <option
+                                            t-foreach="fiscal_year_options"
+                                            t-as="fy_option"
+                                            t-att-value="fy_option['value']"
+                                            t-att-selected="selected_fiscal_year == fy_option['value'] and 'selected' or None"
+                                        >
+                                            <t t-esc="fy_option['label']"/>
+                                        </option>
+                                    </select>
+
+                                    <select
+                                        name="month"
+                                        onchange="this.form.submit()"
+                                    >
+                                        <option
+                                            t-foreach="month_options"
+                                            t-as="month_option"
+                                            t-att-value="month_option['value']"
+                                            t-att-selected="selected_month == month_option['value'] and 'selected' or None"
+                                        >
+                                            <t t-esc="month_option['label']"/>
+                                        </option>
+                                    </select>
+                                </form>
+
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+
+                            <div
+                                t-foreach="cash_summaries"
+                                t-as="ledger"
+                                class="col-md-4"
+                            >
+                                <div class="hr-feature-card">
+                                    <div class="card-body">
+
+                                        <div class="hr-feature-icon">
+                                            <i class="fa fa-money"/>
+                                        </div>
+
+                                        <div class="hr-feature-title">
+                                            Petty Cash on Hand -
+                                            <t t-esc="ledger['label']"/>
+                                        </div>
+
+                                        <div class="mt-3 mb-3">
+                                            <small>Current Balance</small>
+
+                                            <div style="font-size:24px;font-weight:800;">
+                                                Rs
+                                                <t t-esc="'{:,.2f}'.format(ledger['balance'])"/>
+                                            </div>
+                                        </div>
+
+                                        <a
+                                            t-att-href="ledger['detail_url']"
+                                            class="btn btn-primary"
+                                        >
+                                            Open Details
+                                            <i class="fa fa-arrow-right ms-1"/>
+                                        </a>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
     <template
         id="hr_admin_petty_cash_page"
         name="HR Admin Petty Cash Log"
@@ -212,7 +365,10 @@
 
                             <div class="pc-title-row">
                                 <div class="pc-brand">BLIMP</div>
-                                <div class="pc-title">Petty Cash Log</div>
+                                <div class="pc-title">
+                                    Petty Cash on Hand -
+                                    <t t-esc="cash_holder_label"/>
+                                </div>
                             </div>
 
                             <div class="pc-toolbar">
@@ -245,6 +401,11 @@
                                     method="get"
                                     class="pc-filter-form"
                                 >
+                                    <input
+                                        type="hidden"
+                                        name="holder"
+                                        t-att-value="cash_holder"
+                                    />
                                     <div class="pc-filter-field">
                                         <label for="pc_fiscal_year">
                                             Fiscal Year
@@ -519,6 +680,12 @@
 
                                                 <input
                                                     type="hidden"
+                                                    name="cash_holder"
+                                                    t-att-value="cash_holder"
+                                                />
+
+                                                <input
+                                                    type="hidden"
                                                     name="selected_fiscal_year"
                                                     t-att-value="selected_fiscal_year"
                                                 />
@@ -671,6 +838,12 @@
                                 type="hidden"
                                 name="csrf_token"
                                 t-att-value="request.csrf_token()"
+                            />
+
+                            <input
+                                type="hidden"
+                                name="cash_holder"
+                                t-att-value="cash_holder"
                             />
 
                             <input
@@ -874,6 +1047,12 @@
                                     type="hidden"
                                     name="csrf_token"
                                     t-att-value="request.csrf_token()"
+                                />
+
+                                <input
+                                    type="hidden"
+                                    name="cash_holder"
+                                    t-att-value="cash_holder"
                                 />
 
                                 <input

@@ -37,6 +37,118 @@ class HrPettyCashPortal(http.Controller):
             limit=1,
         )
 
+    def _get_current_employee_code(self):
+        employee = self._get_current_employee()
+
+        if not employee:
+            return ''
+
+        return (
+            employee.employee_code or ''
+        ).strip().upper()
+
+    def _is_uzair(self):
+        return (
+            request.env.user.login or ''
+        ).strip().lower() == 'uzair@blimpglobal.com'
+
+    def _is_irfan(self):
+        return (
+            request.env.user.login or ''
+        ).strip().lower() == (
+            'irfan.saifullah@blimpglobal.com'
+        )
+
+    def _get_allowed_cash_holders(self):
+        if self._is_uzair():
+            return {
+                'irfan',
+                'hammad',
+                'irfan_personal',
+            }
+
+        if self._is_irfan():
+            return {
+                'irfan',
+                'irfan_personal',
+            }
+
+        if self._get_current_employee_code() == 'BLMP43':
+            return {'hammad'}
+
+        if self._get_finance_access() != 'none':
+            return {'irfan'}
+
+        return set()
+
+    def _resolve_cash_holder(self, value=None):
+        allowed_holders = self._get_allowed_cash_holders()
+        requested_holder = (value or '').strip().lower()
+
+        if requested_holder in allowed_holders:
+            return requested_holder
+
+        if len(allowed_holders) == 1:
+            return next(iter(allowed_holders))
+
+        if self._is_irfan() and not requested_holder:
+            return 'irfan'
+
+        return False
+
+    def _get_cash_holder_label(self, cash_holder):
+        return {
+            'irfan': 'Irfan (Office)',
+            'hammad': 'Hammad',
+            'irfan_personal': 'Irfan (Personal)',
+        }.get(cash_holder, '')
+
+    def _get_hammad_user_id(self):
+        employee = request.env[
+            'hr.employee'
+        ].sudo().search(
+            [
+                ('employee_code', '=', 'BLMP43'),
+            ],
+            limit=1,
+        )
+
+        return (
+            employee.user_id.id
+            if employee and employee.user_id
+            else False
+        )
+
+    def _get_cash_holder_domain(self, cash_holder):
+        hammad_user_id = self._get_hammad_user_id()
+
+        if cash_holder == 'hammad':
+            if not hammad_user_id:
+                return [('id', '=', 0)]
+
+            return [
+                ('create_uid', '=', hammad_user_id),
+            ]
+
+        if cash_holder == 'irfan_personal':
+            return [
+                ('cash_holder', '=', 'irfan_personal'),
+            ]
+
+        if cash_holder == 'irfan':
+            domain = [
+                ('cash_holder', '!=', 'irfan_personal'),
+            ]
+
+            if hammad_user_id:
+                domain.append(
+                    ('create_uid', '!=', hammad_user_id)
+                )
+
+            return domain
+
+        return [('id', '=', 0)]
+
     def _get_finance_access(self):
         if self._is_hr_manager():
             return 'full'
@@ -120,6 +232,128 @@ class HrPettyCashPortal(http.Controller):
             url = '%s?%s' % (url, urlencode(params))
 
         return request.redirect(url)
+
+    def _build_cash_holder_ledger(
+        self,
+        petty_cash_entry_model,
+        cash_holder,
+        fiscal_year_start,
+        fiscal_year_end,
+        selected_month,
+        page=1,
+    ):
+        try:
+            page = max(int(page or 1), 1)
+        except (TypeError, ValueError):
+            page = 1
+
+        domain = [
+            (
+                'company_id',
+                '=',
+                request.env.company.id,
+            ),
+            *self._get_cash_holder_domain(
+                cash_holder
+            ),
+            (
+                'transaction_date',
+                '>=',
+                fiscal_year_start,
+            ),
+            (
+                'transaction_date',
+                '<=',
+                fiscal_year_end,
+            ),
+        ]
+
+        if selected_month:
+            selected_month_date = datetime.strptime(
+                selected_month,
+                '%Y-%m',
+            ).date()
+
+            domain.append(
+                (
+                    'month_start',
+                    '=',
+                    selected_month_date,
+                )
+            )
+
+        entry_count = petty_cash_entry_model.search_count(
+            domain
+        )
+
+        page_count = max(
+            (
+                entry_count + self.PAGE_SIZE - 1
+            ) // self.PAGE_SIZE,
+            1,
+        )
+
+        page = min(page, page_count)
+
+        offset = (page - 1) * self.PAGE_SIZE
+
+        entries = petty_cash_entry_model.search(
+            domain,
+            order='transaction_date asc, id asc',
+            limit=self.PAGE_SIZE,
+            offset=offset,
+        )
+
+        filtered_entries = (
+            petty_cash_entry_model.search(domain)
+        )
+
+        global_entries = petty_cash_entry_model.search([
+            (
+                'company_id',
+                '=',
+                request.env.company.id,
+            ),
+            *self._get_cash_holder_domain(
+                cash_holder
+            ),
+        ])
+
+        total_received = sum(
+            global_entries.mapped('received')
+        )
+
+        total_expense = sum(
+            global_entries.mapped('expense_paid')
+        )
+
+        return {
+            'cash_holder': cash_holder,
+            'label': self._get_cash_holder_label(
+                cash_holder
+            ),
+            'entries': entries,
+            'entry_count': entry_count,
+            'page': page,
+            'page_count': page_count,
+            'first_entry': (
+                offset + 1
+                if entry_count
+                else 0
+            ),
+            'last_entry': min(
+                offset + len(entries),
+                entry_count,
+            ),
+            'balance': (
+                total_received - total_expense
+            ),
+            'monthly_expense': sum(
+                filtered_entries.mapped(
+                    'expense_paid'
+                )
+            ),
+        }
 
     def _get_fiscal_year_start_year(self, target_date):
         if target_date.month >= 7:
@@ -241,6 +475,9 @@ class HrPettyCashPortal(http.Controller):
         page=1,
         fy=None,
         month=None,
+        holder=None,
+        h_page=1,
+        i_page=1,
         **kwargs
     ):
         finance_access = self._get_finance_access()
@@ -249,6 +486,26 @@ class HrPettyCashPortal(http.Controller):
             return request.redirect('/my/hr')
 
         is_hr_manager = self._is_hr_manager()
+        is_uzair = self._is_uzair()
+
+        requested_holder = (
+            holder or ''
+        ).strip().lower()
+
+        combined_cash_view = (
+            is_uzair
+            and not requested_holder
+        )
+
+        if combined_cash_view:
+            cash_holder = 'irfan'
+        else:
+            cash_holder = self._resolve_cash_holder(
+                requested_holder
+            )
+
+        if not cash_holder:
+            return request.redirect('/my/hr')
 
         finance_page_url = (
             '/my/hr/admin/finance/petty-cash'
@@ -319,11 +576,74 @@ class HrPettyCashPortal(http.Controller):
             else:
                 selected_month = ''
 
+        if combined_cash_view:
+            selected_month_label = next(
+                (
+                    option['label']
+                    for option in month_options
+                    if option['value'] == selected_month
+                ),
+                selected_month,
+            )
+
+            cash_summaries = []
+
+            for holder_code in (
+                'hammad',
+                'irfan',
+                'irfan_personal',
+            ):
+                summary = self._build_cash_holder_ledger(
+                    petty_cash_entry_model,
+                    holder_code,
+                    fiscal_year_start,
+                    fiscal_year_end,
+                    selected_month,
+                    1,
+                )
+
+                summary['detail_url'] = '%s?%s' % (
+                    finance_page_url,
+                    urlencode({
+                        'holder': holder_code,
+                        'fy': selected_fiscal_year,
+                        'month': selected_month,
+                    }),
+                )
+
+                cash_summaries.append(summary)
+
+            return request.render(
+                'hr_petty_cash_management.'
+                'hr_petty_cash_overview_page',
+                {
+                    'is_hr_manager':
+                        is_hr_manager,
+                    'finance_access':
+                        finance_access,
+                    'finance_page_url':
+                        finance_page_url,
+                    'cash_summaries':
+                        cash_summaries,
+                    'fiscal_year_options':
+                        fiscal_year_options,
+                    'selected_fiscal_year':
+                        selected_fiscal_year,
+                    'month_options':
+                        month_options,
+                    'selected_month':
+                        selected_month,
+                },
+            )
+
         domain = [
             (
                 'company_id',
                 '=',
                 request.env.company.id,
+            ),
+            *self._get_cash_holder_domain(
+                cash_holder
             ),
             (
                 'transaction_date',
@@ -357,6 +677,7 @@ class HrPettyCashPortal(http.Controller):
 
         pager_url_args = {
             'fy': selected_fiscal_year,
+            'holder': cash_holder,
         }
 
         if selected_month:
@@ -386,6 +707,9 @@ class HrPettyCashPortal(http.Controller):
                 'company_id',
                 '=',
                 request.env.company.id,
+            ),
+            *self._get_cash_holder_domain(
+                cash_holder
             ),
         ])
 
@@ -425,6 +749,10 @@ class HrPettyCashPortal(http.Controller):
 
         values = {
             'is_hr_manager': is_hr_manager,
+            'is_uzair': is_uzair,
+            'cash_holder': cash_holder,
+            'cash_holder_label':
+                self._get_cash_holder_label(cash_holder),
             'finance_access': finance_access,
             'can_edit_entries':
                 finance_access == 'full',
@@ -495,6 +823,13 @@ class HrPettyCashPortal(http.Controller):
         if not self._can_add_petty_cash():
             return request.redirect('/my/hr')
 
+        cash_holder = self._resolve_cash_holder(
+            post.get('cash_holder')
+        )
+
+        if not cash_holder:
+            return request.redirect('/my/hr')
+
         transaction_date_value = (
             post.get('transaction_date') or ''
         ).strip()
@@ -515,7 +850,7 @@ class HrPettyCashPortal(http.Controller):
             post.get('selected_month') or ''
         ).strip()
 
-        redirect_params = {}
+        redirect_params = {'holder': cash_holder}
 
         if selected_fiscal_year:
             redirect_params['fy'] = (
@@ -650,6 +985,7 @@ class HrPettyCashPortal(http.Controller):
             'remarks': remarks,
             'invoice_shared': invoice_shared,
             'invoice_url': invoice_url or False,
+            'cash_holder': cash_holder,
             'company_id': request.env.company.id,
         })
 
@@ -660,6 +996,7 @@ class HrPettyCashPortal(http.Controller):
         )
 
         return self._finance_redirect({
+            'holder': cash_holder,
             'fy': str(entry_fiscal_year),
             'month': transaction_date.strftime(
                 '%Y-%m'
@@ -692,6 +1029,13 @@ class HrPettyCashPortal(http.Controller):
                 ),
             })
 
+        cash_holder = self._resolve_cash_holder(
+            post.get('cash_holder')
+        )
+
+        if not cash_holder:
+            return request.redirect('/my/hr')
+
         selected_fiscal_year = (
             post.get('selected_fiscal_year') or ''
         ).strip()
@@ -700,7 +1044,7 @@ class HrPettyCashPortal(http.Controller):
             post.get('selected_month') or ''
         ).strip()
 
-        redirect_params = {}
+        redirect_params = {'holder': cash_holder}
 
         if selected_fiscal_year:
             redirect_params['fy'] = (
@@ -721,6 +1065,11 @@ class HrPettyCashPortal(http.Controller):
                     'company_id',
                     '=',
                     request.env.company.id,
+                ),
+                (
+                    'cash_holder',
+                    '=',
+                    cash_holder,
                 ),
             ],
             limit=1,
@@ -793,6 +1142,13 @@ class HrPettyCashPortal(http.Controller):
                 ),
             })
 
+        cash_holder = self._resolve_cash_holder(
+            post.get('cash_holder')
+        )
+
+        if not cash_holder:
+            return request.redirect('/my/hr')
+
         selected_fiscal_year = (
             post.get('selected_fiscal_year') or ''
         ).strip()
@@ -801,7 +1157,7 @@ class HrPettyCashPortal(http.Controller):
             post.get('selected_month') or ''
         ).strip()
 
-        redirect_params = {}
+        redirect_params = {'holder': cash_holder}
 
         if selected_fiscal_year:
             redirect_params['fy'] = (
@@ -822,6 +1178,11 @@ class HrPettyCashPortal(http.Controller):
                     'company_id',
                     '=',
                     request.env.company.id,
+                ),
+                (
+                    'cash_holder',
+                    '=',
+                    cash_holder,
                 ),
             ],
             limit=1,

@@ -1334,7 +1334,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
             <t t-if="is_hr_manager">
                 <a href="/my/hr/admin" t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin' else ''}">
                     <i class="fa fa-th-large"/>
-                    <span>Admin Dashboard</span>
+                    <span t-esc="'Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Admin Dashboard'"/>
                 </a>
 
                 <a href="/my/hr/admin/attendances" t-attf-class="hr-sidebar-link #{'active' if current_page == 'admin_attendances' else ''}">
@@ -3453,7 +3453,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
@@ -3978,7 +3978,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
 
                     <div class="card hr-page-header-card mb-4">
                         <div class="card-body">
-                            <h2 class="hr-page-title">Admin Dashboard</h2>
+                            <h2 class="hr-page-title" t-esc="'Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Admin Dashboard'"/>
                             <p class="hr-page-subtitle">Company overview and team management.</p>
                         </div>
                     </div>
@@ -4131,7 +4131,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                   <div class="hr-content-wrap">
                       <div class="mb-3">
                           <a href="/my/hr/admin" class="hr-back-link">
-                              <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                              <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                           </a>
                       </div>
 
@@ -4218,7 +4218,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
@@ -4404,7 +4404,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
@@ -5171,7 +5171,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
@@ -5408,7 +5408,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
@@ -5637,7 +5637,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                 <div class="hr-content-wrap">
                     <div class="mb-3">
                         <a href="/my/hr/admin" class="hr-back-link">
-                            <i class="fa fa-arrow-left"/> Back to Admin Dashboard
+                            <i class="fa fa-arrow-left"/> <t t-esc="'Back to Uzair Dashboard' if request.env.user.login == 'uzair@blimpglobal.com' else 'Back to Admin Dashboard'"/>
                         </a>
                     </div>
 
