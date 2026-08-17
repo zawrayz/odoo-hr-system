@@ -366,8 +366,11 @@
                             <div class="pc-title-row">
                                 <div class="pc-brand">BLIMP</div>
                                 <div class="pc-title">
-                                    Petty Cash on Hand -
-                                    <t t-esc="cash_holder_label"/>
+                                    Petty Cash on Hand
+                                    <t t-if="cash_holder_label">
+                                        -
+                                        <t t-esc="cash_holder_label"/>
+                                    </t>
                                 </div>
                             </div>
 

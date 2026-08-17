@@ -136,16 +136,9 @@ class HrPettyCashPortal(http.Controller):
             ]
 
         if cash_holder == 'irfan':
-            domain = [
-                ('cash_holder', '!=', 'irfan_personal'),
+            return [
+                ('cash_holder', 'in', ['irfan', False]),
             ]
-
-            if hammad_user_id:
-                domain.append(
-                    ('create_uid', '!=', hammad_user_id)
-                )
-
-            return domain
 
         return [('id', '=', 0)]
 
@@ -751,8 +744,15 @@ class HrPettyCashPortal(http.Controller):
             'is_hr_manager': is_hr_manager,
             'is_uzair': is_uzair,
             'cash_holder': cash_holder,
-            'cash_holder_label':
-                self._get_cash_holder_label(cash_holder),
+            'cash_holder_label': (
+                self._get_cash_holder_label(cash_holder)
+                if (
+                    is_uzair
+                    or self._is_irfan()
+                    or self._get_current_employee_code() == 'BLMP43'
+                )
+                else ''
+            ),
             'finance_access': finance_access,
             'can_edit_entries':
                 finance_access == 'full',
