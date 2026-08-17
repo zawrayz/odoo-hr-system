@@ -824,18 +824,44 @@ class HrEmployeePortal(http.Controller):
 
 
 
-    def _get_previous_working_day(self, target_date):
-        """Return previous working day, skipping Saturday and Sunday."""
+    def _get_previous_working_day(
+        self,
+        target_date,
+        employee=False,
+    ):
+        """Return previous working day, skipping weekends and H holidays."""
         if not target_date:
             return False
 
         previous_day = target_date - timedelta(days=1)
 
-        # weekday(): Monday=0, Tuesday=1, ..., Saturday=5, Sunday=6
-        while previous_day.weekday() in (5, 6):
-            previous_day = previous_day - timedelta(days=1)
+        while True:
+            if previous_day.weekday() in (5, 6):
+                previous_day -= timedelta(days=1)
+                continue
 
-        return previous_day
+            is_holiday = False
+
+            if (
+                employee
+                and 'hr.attendance.register.line'
+                in request.env
+            ):
+                is_holiday = bool(
+                    request.env[
+                        'hr.attendance.register.line'
+                    ].sudo().search_count([
+                        ('employee_id', '=', employee.id),
+                        ('attendance_date', '=', previous_day),
+                        ('attendance_code', '=', 'H'),
+                    ])
+                )
+
+            if is_holiday:
+                previous_day -= timedelta(days=1)
+                continue
+
+            return previous_day
 
 
     def _expire_late_report_accesses(self):
@@ -857,7 +883,7 @@ class HrEmployeePortal(http.Controller):
             return False
 
         today = fields.Date.context_today(request.env.user)
-        yesterday = self._get_previous_working_day(today)
+        yesterday = self._get_previous_working_day(today, employee)
         if report_date >= yesterday:
             return False
 
@@ -875,7 +901,7 @@ class HrEmployeePortal(http.Controller):
             return request.env['hr.late.report.access'].sudo().browse([])
 
         today = fields.Date.context_today(request.env.user)
-        yesterday = self._get_previous_working_day(today)
+        yesterday = self._get_previous_working_day(today, employee)
 
         return request.env['hr.late.report.access'].sudo().search([
             ('employee_id', '=', employee.id),
@@ -2384,7 +2410,7 @@ class HrEmployeePortal(http.Controller):
             return redirect_response
 
         today = fields.Date.context_today(request.env.user)
-        yesterday = self._get_previous_working_day(today)
+        yesterday = self._get_previous_working_day(today, employee)
         existing_report = False
         yesterday_report = False
         can_submit_yesterday_late = False
@@ -2454,7 +2480,7 @@ class HrEmployeePortal(http.Controller):
         task_report = (post.get('task_report') or '').strip()
 
         today = fields.Date.context_today(request.env.user)
-        yesterday = self._get_previous_working_day(today)
+        yesterday = self._get_previous_working_day(today, employee)
         requested_report_date = self._parse_portal_date(post.get('report_date')) or today
 
         temp_late_access = False
@@ -5345,7 +5371,7 @@ class HrEmployeePortal(http.Controller):
             }))
 
         today = fields.Date.context_today(request.env.user)
-        yesterday = self._get_previous_working_day(today)
+        yesterday = self._get_previous_working_day(today, employee)
         if report_date >= yesterday:
             return request.redirect(self._build_redirect_url('/my/hr/admin/late-access', {
                 'report_status': 'error',
