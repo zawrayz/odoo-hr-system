@@ -14,6 +14,7 @@ class HrPettyCashPortal(http.Controller):
     FULL_ACCESS_EMPLOYEE_CODES = {
         'BPL001',
         'BLMP43',
+        'BLMP44',
     }
 
     ENTRY_ACCESS_EMPLOYEE_CODES = set()
@@ -54,9 +55,17 @@ class HrPettyCashPortal(http.Controller):
 
     def _is_irfan(self):
         return (
-            request.env.user.login or ''
-        ).strip().lower() == (
-            'irfan.saifullah@blimpglobal.com'
+            self._get_current_employee_code()
+            == 'BLMP44'
+        )
+
+    def _is_super_admin(self):
+        return (
+            request.env.user.has_group(
+                'base.group_system'
+            )
+            and not self._is_uzair()
+            and not self._is_irfan()
         )
 
     def _get_allowed_cash_holders(self):
@@ -70,6 +79,13 @@ class HrPettyCashPortal(http.Controller):
         if self._is_irfan():
             return {
                 'irfan',
+                'irfan_personal',
+            }
+
+        if self._is_super_admin():
+            return {
+                'irfan',
+                'hammad',
                 'irfan_personal',
             }
 
@@ -91,7 +107,16 @@ class HrPettyCashPortal(http.Controller):
         if len(allowed_holders) == 1:
             return next(iter(allowed_holders))
 
-        if self._is_irfan() and not requested_holder:
+        if (
+            self._is_irfan()
+            and not requested_holder
+        ):
+            return 'irfan'
+
+        if (
+            self._is_super_admin()
+            and not requested_holder
+        ):
             return 'irfan'
 
         return False
@@ -745,13 +770,23 @@ class HrPettyCashPortal(http.Controller):
             'is_uzair': is_uzair,
             'cash_holder': cash_holder,
             'cash_holder_label': (
-                self._get_cash_holder_label(cash_holder)
+                ''
                 if (
-                    is_uzair
-                    or self._is_irfan()
-                    or self._get_current_employee_code() == 'BLMP43'
+                    self._is_super_admin()
+                    and cash_holder == 'irfan'
                 )
-                else ''
+                else (
+                    self._get_cash_holder_label(
+                        cash_holder
+                    )
+                    if (
+                        is_uzair
+                        or self._is_irfan()
+                        or self._is_super_admin()
+                        or self._get_current_employee_code() == 'BLMP43'
+                    )
+                    else ''
+                )
             ),
             'finance_access': finance_access,
             'can_edit_entries':

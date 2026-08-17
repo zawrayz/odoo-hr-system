@@ -36,7 +36,12 @@
             />
 
             <t
-                t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP43']"
+                t-set="pc_sidebar_is_super_admin"
+                t-value="request.env.user.has_group('base.group_system') and not pc_sidebar_is_irfan and (request.env.user.login or '').strip().lower() != 'uzair@blimpglobal.com'"
+            />
+
+            <t
+                t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP43', 'BLMP44']"
             >
                 <a
                     t-att-href="'/my/hr/admin/finance' if pc_sidebar_is_manager else '/my/hr/finance'"
@@ -64,6 +69,34 @@
                             <i class="fa fa-user"/>
                             <span>Personal Petty Cash</span>
                         </a>
+                    </t>
+
+                    <t t-elif="pc_sidebar_is_super_admin">
+
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=irfan"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder in ['', 'irfan'] else ''}"
+                        >
+                            <i class="fa fa-book"/>
+                            <span>Overall Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=hammad"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder == 'hammad' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Hammad Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=irfan_personal"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder == 'irfan_personal' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Personal Petty Cash</span>
+                        </a>
+
                     </t>
 
                     <t t-else="">
@@ -94,7 +127,7 @@
             />
 
             <t
-                t-if="pc_employee_sidebar_code in ['BPL001', 'BLMP43']"
+                t-if="pc_employee_sidebar_code in ['BPL001', 'BLMP43', 'BLMP44']"
             >
                 <a
                     href="/my/hr/finance"
@@ -105,13 +138,37 @@
                 </a>
 
                 <div class="hr-sidebar-submenu">
-                    <a
-                        href="/my/hr/finance/petty-cash"
-                        t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
-                    >
-                        <i class="fa fa-book"/>
-                        <span>Petty Cash</span>
-                    </a>
+
+                    <t t-if="pc_employee_sidebar_code == 'BLMP44'">
+
+                        <a
+                            href="/my/hr/finance/petty-cash?holder=irfan"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and (request.params.get('holder') or '') in ['', 'irfan'] else ''}"
+                        >
+                            <i class="fa fa-book"/>
+                            <span>Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/finance/petty-cash?holder=irfan_personal"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and (request.params.get('holder') or '') == 'irfan_personal' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Personal Petty Cash</span>
+                        </a>
+
+                    </t>
+
+                    <t t-else="">
+                        <a
+                            href="/my/hr/finance/petty-cash"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
+                        >
+                            <i class="fa fa-book"/>
+                            <span>Petty Cash</span>
+                        </a>
+                    </t>
+
                 </div>
             </t>
         </xpath>
