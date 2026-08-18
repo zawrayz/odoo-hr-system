@@ -79,6 +79,7 @@ class HrPettyCashPortal(http.Controller):
         if self._is_irfan():
             return {
                 'irfan',
+                'hammad',
                 'irfan_personal',
             }
 

@@ -59,7 +59,15 @@
                             t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder in ['', 'irfan'] else ''}"
                         >
                             <i class="fa fa-book"/>
-                            <span>Petty Cash</span>
+                            <span>Irfan Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/admin/finance/petty-cash?holder=hammad"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder == 'hammad' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Hammad Petty Cash</span>
                         </a>
 
                         <a
@@ -78,7 +86,7 @@
                             t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and pc_sidebar_holder in ['', 'irfan'] else ''}"
                         >
                             <i class="fa fa-book"/>
-                            <span>Overall Petty Cash</span>
+                            <span>Irfan Petty Cash</span>
                         </a>
 
                         <a
@@ -105,7 +113,7 @@
                             t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' else ''}"
                         >
                             <i class="fa fa-book"/>
-                            <span>Petty Cash</span>
+                            <span>Irfan Petty Cash</span>
                         </a>
                     </t>
 
@@ -147,6 +155,14 @@
                         >
                             <i class="fa fa-book"/>
                             <span>Petty Cash</span>
+                        </a>
+
+                        <a
+                            href="/my/hr/finance/petty-cash?holder=hammad"
+                            t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and (request.params.get('holder') or '') == 'hammad' else ''}"
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Hammad Petty Cash</span>
                         </a>
 
                         <a
