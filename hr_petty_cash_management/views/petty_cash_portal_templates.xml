@@ -154,7 +154,7 @@
                             t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_petty_cash' and (request.params.get('holder') or '') in ['', 'irfan'] else ''}"
                         >
                             <i class="fa fa-book"/>
-                            <span>Petty Cash</span>
+                            <span>Office Petty Cash</span>
                         </a>
 
                         <a
