@@ -1448,6 +1448,58 @@ class HrEmployeePortal(http.Controller):
         return register_map, overtime_days
 
     # ---------------------------------------------------------
+    # Leave-request overlay for the attendance matrix
+    # ---------------------------------------------------------
+    def _get_leave_request_overlay(self, employee, month_start):
+        """Return a {date: code} overlay for submitted/approved Sick and Casual
+        leave portal requests.
+
+        Codes returned:
+          'LR' — request submitted, pending admin decision
+          'S'  — sick_leave request approved
+          'C'  — casual_leave request approved
+
+        Only dates within [month_start, month_end] are included.
+        If a date has both a submitted and an approved request,
+        the approved one wins (higher priority).
+        Hard attendance-register records always override this overlay;
+        the caller is responsible for only applying the overlay when
+        no register record exists.
+        """
+        overlay = {}
+
+        if 'hr.employee.portal.request' not in request.env or not employee:
+            return overlay
+
+        total_days = calendar.monthrange(month_start.year, month_start.month)[1]
+        month_end = month_start.replace(day=total_days)
+
+        leave_requests = request.env['hr.employee.portal.request'].sudo().search([
+            ('employee_id', '=', employee.id),
+            ('request_type', 'in', ['sick_leave', 'casual_leave']),
+            ('state', 'in', ['submitted', 'approved']),
+            ('date_from', '<=', month_end),
+            ('date_to', '>=', month_start),
+        ])
+
+        # Build the overlay; process submitted first so that approved can overwrite.
+        for lr in leave_requests.sorted(key=lambda r: 0 if r.state == 'submitted' else 1):
+            approved_code = 'S' if lr.request_type == 'sick_leave' else 'C'
+            display_code = 'LR' if lr.state == 'submitted' else approved_code
+
+            # Clamp the date range to the current month window.
+            day_cursor = max(lr.date_from, month_start)
+            day_end = min(lr.date_to, month_end)
+
+            while day_cursor <= day_end:
+                # Approved entries always overwrite pending ones for the same date.
+                if day_cursor not in overlay or display_code != 'LR':
+                    overlay[day_cursor] = display_code
+                day_cursor += timedelta(days=1)
+
+        return overlay
+
+    # ---------------------------------------------------------
     # Build attendance matrix row for selected month
     # ---------------------------------------------------------
     def _build_attendance_matrix(self, employee, month_start):
@@ -1466,6 +1518,7 @@ class HrEmployeePortal(http.Controller):
         }
 
         register_map, overtime_days = self._get_attendance_register_map(employee, month_start)
+        leave_overlay = self._get_leave_request_overlay(employee, month_start)
         today = fields.Date.context_today(request.env.user)
 
         for day_number in range(1, total_days + 1):
@@ -1482,6 +1535,13 @@ class HrEmployeePortal(http.Controller):
                 code = '-'
             else:
                 code = register_map.get(target_date)
+
+            # Apply the leave-request overlay only when there is no hard
+            # attendance-register code for this date.  Hard data wins.
+            if not code and not after_last_working_date:
+                overlay_code = leave_overlay.get(target_date)
+                if overlay_code:
+                    code = overlay_code
 
             # Past unworked weekend days become Holiday only while
             # the employee was still employed.
@@ -1512,6 +1572,8 @@ class HrEmployeePortal(http.Controller):
                 title_parts.append('Late Submission')
             elif code == 'OT':
                 title_parts.append('Overtime')
+            elif code == 'LR':
+                title_parts.append('Leave Requested (Pending Approval)')
             else:
                 title_parts.append('No Record')
 

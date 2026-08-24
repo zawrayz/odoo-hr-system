@@ -468,6 +468,7 @@
         .hr-code-H { background: #edf6fd; color: #0d6fb8; }
         .hr-code-S { background: #f3efff; color: #6b46c1; }
         .hr-code-C { background: #edf8ea; color: #2f855a; }
+        .hr-code-LR { background: #d1fae5; color: #065f46; border: 2px solid #10b981; }
         .hr-code-U { background: #fdeaea; color: #c53030; }
         .hr-code-D { background: #111111; color: #ffffff; }
         .hr-code-OT { background: #e8f1ff; color: #0d47a1; }
