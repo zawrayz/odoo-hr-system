@@ -1534,14 +1534,12 @@ class HrEmployeePortal(http.Controller):
             if after_last_working_date:
                 code = '-'
             else:
-                code = register_map.get(target_date)
-
-            # Apply the leave-request overlay only when there is no hard
-            # attendance-register code for this date.  Hard data wins.
-            if not code and not after_last_working_date:
+                # Leave requests (LR, S, C) take priority over the hard register code.
                 overlay_code = leave_overlay.get(target_date)
                 if overlay_code:
                     code = overlay_code
+                else:
+                    code = register_map.get(target_date)
 
             # Past unworked weekend days become Holiday only while
             # the employee was still employed.
