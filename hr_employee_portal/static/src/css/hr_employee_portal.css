@@ -510,6 +510,12 @@
     color: #2f855a;
 }
 
+.hr-code-LR {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
 .hr-code-U {
     background: #fdeaea;
     color: #c53030;
