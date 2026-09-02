@@ -2,10 +2,11 @@ import pytz
 import time as pytime
 from datetime import timedelta,  datetime, time, timedelta, date
 import calendar
+from psycopg2 import IntegrityError, OperationalError
 
 from odoo import http, fields
 from odoo.tools import config
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ConcurrencyError, ValidationError
 from odoo.http import request
 from urllib.parse import urlencode
 from werkzeug.urls import url_encode
@@ -1455,9 +1456,9 @@ class HrEmployeePortal(http.Controller):
         leave portal requests.
 
         Codes returned:
-          'LR' — request submitted, pending admin decision
-          'S'  — sick_leave request approved
-          'C'  — casual_leave request approved
+          'LR' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â request submitted, pending admin decision
+          'S'  ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â sick_leave request approved
+          'C'  ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â casual_leave request approved
 
         Only dates within [month_start, month_end] are included.
         If a date has both a submitted and an approved request,
@@ -1476,7 +1477,7 @@ class HrEmployeePortal(http.Controller):
 
         leave_requests = request.env['hr.employee.portal.request'].sudo().search([
             ('employee_id', '=', employee.id),
-            ('request_type', 'in', ['sick_leave', 'casual_leave']),
+            ('request_type', 'in', ['sick_leave', 'casual_leave', 'wfh']),
             ('state', 'in', ['submitted', 'approved']),
             ('date_from', '<=', month_end),
             ('date_to', '>=', month_start),
@@ -1484,7 +1485,14 @@ class HrEmployeePortal(http.Controller):
 
         # Build the overlay; process submitted first so that approved can overwrite.
         for lr in leave_requests.sorted(key=lambda r: 0 if r.state == 'submitted' else 1):
-            approved_code = 'S' if lr.request_type == 'sick_leave' else 'C'
+            if lr.request_type == 'wfh' and lr.state != 'approved':
+                continue
+
+            approved_code = (
+                'S'
+                if lr.request_type == 'sick_leave'
+                else ('C' if lr.request_type == 'casual_leave' else 'R')
+            )
             display_code = 'LR' if lr.state == 'submitted' else approved_code
 
             # Clamp the date range to the current month window.
@@ -2118,6 +2126,8 @@ class HrEmployeePortal(http.Controller):
                 'state': 'submitted',
                 'submitted_at': fields.Datetime.now(),
             })
+        except (IntegrityError, OperationalError, ConcurrencyError):
+            raise
         except Exception:
             return request.redirect(self._build_redirect_url('/my/hr', {
                 'request_status': 'error',
@@ -3503,11 +3513,217 @@ class HrEmployeePortal(http.Controller):
 
             'attendance_status': (kwargs.get('attendance_status') or '').strip(),
             'attendance_message': (kwargs.get('attendance_message') or '').strip(),
+
+            'sheet_connection': (
+                request.env['hr.attendance.sheet.connection']
+                .sudo()
+                .get_for_month(selected_month)
+            ),
+            'sheet_status': (kwargs.get('sheet_status') or '').strip(),
+            'sheet_message': (kwargs.get('sheet_message') or '').strip(),
         })
 
         return request.render(
             'hr_employee_portal.hr_admin_attendances_page',
             values
+        )
+    # ---------------------------------------------------------
+    # Google Attendance Sheet - Connect
+    # ---------------------------------------------------------
+    @http.route(
+        '/my/hr/admin/attendances/sheet/connect',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_admin_attendance_sheet_connect(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id = (post.get('employee_id') or '').strip()
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+        spreadsheet_url = (post.get('spreadsheet_url') or '').strip()
+
+        base_params = {
+            'employee_id': employee_id,
+            'fy': fy_value,
+            'month': month_value,
+        }
+
+        if not spreadsheet_url:
+            base_params.update({
+                'sheet_status': 'error',
+                'sheet_message': 'Please enter a Google Sheet URL.',
+            })
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/admin/attendances',
+                    base_params,
+                )
+            )
+
+        attendance_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = attendance_period['selected_month']
+
+        try:
+            connection = (
+                request.env['hr.attendance.sheet.connection']
+                .sudo()
+                .connect_for_month(
+                    selected_month,
+                    spreadsheet_url,
+                )
+            )
+
+            base_params.update({
+                'sheet_status': 'success',
+                'sheet_message': (
+                    'Google Sheet connected successfully. '
+                    'Press Sync Now to send attendance.'
+                ),
+            })
+
+        except Exception as error:
+            base_params.update({
+                'sheet_status': 'error',
+                'sheet_message': str(error),
+            })
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/admin/attendances',
+                base_params,
+            )
+        )
+
+    # ---------------------------------------------------------
+    # Google Attendance Sheet - Sync Now
+    # ---------------------------------------------------------
+    @http.route(
+        '/my/hr/admin/attendances/sheet/sync',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_admin_attendance_sheet_sync(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id = (post.get('employee_id') or '').strip()
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+
+        base_params = {
+            'employee_id': employee_id,
+            'fy': fy_value,
+            'month': month_value,
+        }
+
+        attendance_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = attendance_period['selected_month']
+
+        connection = (
+            request.env['hr.attendance.sheet.connection']
+            .sudo()
+            .get_for_month(selected_month)
+        )
+
+        if not connection or not connection.active:
+            base_params.update({
+                'sheet_status': 'error',
+                'sheet_message': (
+                    'No Google Sheet is connected for this month.'
+                ),
+            })
+        else:
+            result = connection.sync_now()
+
+            base_params.update({
+                'sheet_status': (
+                    'success'
+                    if result.get('ok')
+                    else 'error'
+                ),
+                'sheet_message': result.get(
+                    'message',
+                    'Google Sheet sync completed.',
+                ),
+            })
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/admin/attendances',
+                base_params,
+            )
+        )
+
+    # ---------------------------------------------------------
+    # Google Attendance Sheet - Disconnect
+    # ---------------------------------------------------------
+    @http.route(
+        '/my/hr/admin/attendances/sheet/disconnect',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_admin_attendance_sheet_disconnect(self, **post):
+        if not self._is_hr_manager():
+            return request.redirect('/my/hr')
+
+        employee_id = (post.get('employee_id') or '').strip()
+        fy_value = (post.get('fy') or '').strip()
+        month_value = (post.get('month') or '').strip()
+
+        base_params = {
+            'employee_id': employee_id,
+            'fy': fy_value,
+            'month': month_value,
+        }
+
+        attendance_period = self._get_selected_payroll_period(
+            fy_value=fy_value,
+            month_value=month_value,
+        )
+        selected_month = attendance_period['selected_month']
+
+        connection = (
+            request.env['hr.attendance.sheet.connection']
+            .sudo()
+            .get_for_month(selected_month)
+        )
+
+        if connection and connection.active:
+            connection.disconnect_sheet()
+
+            base_params.update({
+                'sheet_status': 'success',
+                'sheet_message': (
+                    'Google Sheet disconnected. Automatic syncing is stopped.'
+                ),
+            })
+        else:
+            base_params.update({
+                'sheet_status': 'error',
+                'sheet_message': (
+                    'No active Google Sheet connection was found.'
+                ),
+            })
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/admin/attendances',
+                base_params,
+            )
         )
     @http.route('/my/hr/admin/attendances/update', type='http', auth='user', methods=['POST'], website=True)
     def my_hr_admin_attendances_update(self, **post):
@@ -3583,6 +3799,8 @@ class HrEmployeePortal(http.Controller):
                     notes='Updated manually from admin portal.',
                 )
 
+        except (IntegrityError, OperationalError, ConcurrencyError):
+            raise
         except ValidationError as error:
             base_params.update({
                 'attendance_status': 'error',
@@ -3976,6 +4194,8 @@ class HrEmployeePortal(http.Controller):
                     notes=notes,
                 )
 
+        except (IntegrityError, OperationalError, ConcurrencyError):
+            raise
         except ValidationError as error:
             base_params.update({
                 'attendance_status': 'error',
