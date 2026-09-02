@@ -7,13 +7,6 @@ from urllib.parse import parse_qs, urlparse
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-try:
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-except ImportError:
-    service_account = None
-    build = None
-
 
 class HrAttendanceSheetConnection(models.Model):
     _name = 'hr.attendance.sheet.connection'
@@ -137,13 +130,16 @@ class HrAttendanceSheetConnection(models.Model):
 
     @api.model
     def _get_google_service(self):
-        if not service_account or not build:
+        try:
+            from google.oauth2 import service_account
+            from googleapiclient.discovery import build
+        except ImportError as error:
             raise UserError(
                 _(
                     'Google API Python libraries are not installed. '
                     'Install google-auth and google-api-python-client.'
                 )
-            )
+            ) from error
 
         credentials_path = self._get_credentials_path()
 
