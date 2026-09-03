@@ -78,6 +78,7 @@ class HrDailyWorkReport(models.Model):
     late_submission_source = fields.Selection(
         [
             ('auto_next_day', 'Automatic Next-Day Grace'),
+            ('employee_month_catchup', 'Employee Monthly Catch-up'),
             ('admin_temp_access', 'Admin Temporary Access'),
         ],
         string='Late Submission Source',

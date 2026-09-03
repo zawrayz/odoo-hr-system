@@ -865,6 +865,69 @@ class HrEmployeePortal(http.Controller):
             return previous_day
 
 
+    def _get_month_missing_work_report_dates(
+        self,
+        employee,
+        today=False,
+    ):
+        # Return missing working-day reports earlier in the current month.
+        if (
+            not employee
+            or 'hr.daily.work.report' not in request.env
+        ):
+            return []
+
+        today = today or fields.Date.context_today(request.env.user)
+        month_start = today.replace(day=1)
+        joining_date = getattr(employee, 'joining_date', False)
+        last_working_date = getattr(
+            employee,
+            'last_working_date',
+            False,
+        )
+
+        report_env = request.env['hr.daily.work.report'].sudo()
+        submitted_dates = set(
+            report_env.search([
+                ('employee_id', '=', employee.id),
+                ('report_date', '>=', month_start),
+                ('report_date', '<', today),
+            ]).mapped('report_date')
+        )
+
+        missing_dates = []
+        cursor = today
+
+        while True:
+            previous_day = self._get_previous_working_day(
+                cursor,
+                employee,
+            )
+
+            if (
+                not previous_day
+                or previous_day < month_start
+            ):
+                break
+
+            if joining_date and previous_day < joining_date:
+                break
+
+            if (
+                last_working_date
+                and previous_day > last_working_date
+            ):
+                cursor = previous_day
+                continue
+
+            if previous_day not in submitted_dates:
+                missing_dates.append(previous_day)
+
+            cursor = previous_day
+
+        return sorted(missing_dates)
+
+
     def _expire_late_report_accesses(self):
         if 'hr.late.report.access' not in request.env:
             return
@@ -2485,6 +2548,9 @@ class HrEmployeePortal(http.Controller):
         yesterday_report = False
         can_submit_yesterday_late = False
         temp_late_accesses = self._get_active_late_report_accesses(employee)
+        pending_report_dates = []
+        older_pending_report_dates = []
+        selected_pending_report_date = False
 
         if 'hr.daily.work.report' in request.env:
             report_env = request.env['hr.daily.work.report'].sudo()
@@ -2499,7 +2565,38 @@ class HrEmployeePortal(http.Controller):
                 ('report_date', '=', yesterday),
             ], limit=1)
 
-            can_submit_yesterday_late = not bool(yesterday_report)
+            yesterday_requires_report = (
+                (
+                    not getattr(employee, 'joining_date', False)
+                    or yesterday >= employee.joining_date
+                )
+                and (
+                    not getattr(employee, 'last_working_date', False)
+                    or yesterday <= employee.last_working_date
+                )
+            )
+            can_submit_yesterday_late = bool(
+                yesterday_requires_report
+                and not yesterday_report
+            )
+
+            pending_report_dates = (
+                self._get_month_missing_work_report_dates(
+                    employee,
+                    today,
+                )
+            )
+            older_pending_report_dates = [
+                report_date
+                for report_date in pending_report_dates
+                if report_date != yesterday
+            ]
+
+            requested_pending_date = self._parse_portal_date(
+                kwargs.get('catchup_date')
+            )
+            if requested_pending_date in older_pending_report_dates:
+                selected_pending_report_date = requested_pending_date
 
         report_status = (kwargs.get('report_status') or '').strip()
         report_message = (kwargs.get('report_message') or '').strip()
@@ -2512,6 +2609,12 @@ class HrEmployeePortal(http.Controller):
             'yesterday_report': yesterday_report,
             'can_submit_yesterday_late': can_submit_yesterday_late,
             'temp_late_accesses': temp_late_accesses,
+            'older_pending_report_dates': older_pending_report_dates,
+            'selected_pending_report_date': selected_pending_report_date,
+            'today_report_locked': bool(
+                can_submit_yesterday_late
+                or older_pending_report_dates
+            ),
             'is_weekend_today': today.weekday() >= 5,
             'success': success,
             'report_status': report_status,
@@ -2553,25 +2656,88 @@ class HrEmployeePortal(http.Controller):
         yesterday = self._get_previous_working_day(today, employee)
         requested_report_date = self._parse_portal_date(post.get('report_date')) or today
 
+        report_env = request.env['hr.daily.work.report'].sudo()
+        pending_report_dates = (
+            self._get_month_missing_work_report_dates(
+                employee,
+                today,
+            )
+        )
+        yesterday_report = report_env.search([
+            ('employee_id', '=', employee.id),
+            ('report_date', '=', yesterday),
+        ], limit=1)
+        yesterday_requires_report = (
+            (
+                not getattr(employee, 'joining_date', False)
+                or yesterday >= employee.joining_date
+            )
+            and (
+                not getattr(employee, 'last_working_date', False)
+                or yesterday <= employee.last_working_date
+            )
+        )
+
+        previous_reports_missing = bool(
+            (
+                yesterday_requires_report
+                and not yesterday_report
+            )
+            or [
+                report_date
+                for report_date in pending_report_dates
+                if report_date != yesterday
+            ]
+        )
+
         temp_late_access = False
 
         if requested_report_date == today:
-            report_date = today
-            late_submission_source = False
-        elif requested_report_date == yesterday:
-            report_date = yesterday
-            late_submission_source = 'auto_next_day'
-        else:
-            temp_late_access = self._get_active_late_report_access(employee, requested_report_date)
-            if not temp_late_access:
+            if previous_reports_missing:
                 redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
                     'report_status': 'error',
-                    'report_message': 'Temporary access is not available or has expired for this missed report date.',
+                    'report_message': (
+                        'Today\'s Daily Work Report is locked. '
+                        'Please complete all previous missing reports first.'
+                    ),
                 })
                 return request.redirect(redirect_url)
 
-            report_date = requested_report_date
-            late_submission_source = 'admin_temp_access'
+            report_date = today
+            late_submission_source = False
+        elif requested_report_date == yesterday:
+            if not yesterday_requires_report:
+                redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
+                    'report_status': 'error',
+                    'report_message': (
+                        'This report date is outside your employment period.'
+                    ),
+                })
+                return request.redirect(redirect_url)
+
+            report_date = yesterday
+            late_submission_source = 'auto_next_day'
+        else:
+            temp_late_access = self._get_active_late_report_access(
+                employee,
+                requested_report_date,
+            )
+
+            if temp_late_access:
+                report_date = requested_report_date
+                late_submission_source = 'admin_temp_access'
+            elif requested_report_date in pending_report_dates:
+                report_date = requested_report_date
+                late_submission_source = 'employee_month_catchup'
+            else:
+                redirect_url = self._build_redirect_url('/my/hr/daily-work-report', {
+                    'report_status': 'error',
+                    'report_message': (
+                        'This missed report date is not available '
+                        'for employee catch-up.'
+                    ),
+                })
+                return request.redirect(redirect_url)
 
         valid_work_modes = self._get_valid_work_modes_for_date(report_date)
         if work_mode not in valid_work_modes:
