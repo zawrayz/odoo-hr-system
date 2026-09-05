@@ -2002,8 +2002,8 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                                     <option value="" disabled="disabled" selected="selected">-- Select Work Mode --</option>
                                                     <option value="office">Work from Office</option>
                                                     <option value="wfh">Work from Home</option>
-                                                    <option t-if="not is_weekend_today" value="field">Field Work</option>
-                                                    <option t-if="not is_weekend_today" value="leave">Leave</option>
+                                                    <option value="field">Field Work</option>
+                                                    <option value="leave">Leave</option>
                                                 </select>
                                             </div>
 

@@ -781,10 +781,6 @@ class HrEmployeePortal(http.Controller):
         return ['office', 'wfh', 'field', 'leave']
 
     def _get_valid_work_modes_for_date(self, report_date):
-        """Weekend employee reports allow only office or WFH."""
-        if report_date and report_date.weekday() >= 5:
-            return ['office', 'wfh']
-
         return self._get_valid_work_modes()
 
     def _build_redirect_url(self, base_path, params=None):
