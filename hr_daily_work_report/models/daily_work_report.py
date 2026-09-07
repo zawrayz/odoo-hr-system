@@ -91,13 +91,10 @@ class HrDailyWorkReport(models.Model):
         string='Remarks',
     )
 
-    _sql_constraints = [
-        (
-            'unique_employee_report_date',
-            'unique(employee_id, report_date)',
-            'Only one daily work report is allowed per employee per date.'
-        ),
-    ]
+    _unique_employee_report_date = models.Constraint(
+        'unique(employee_id, report_date)',
+        'Only one daily work report is allowed per employee per date.',
+    )
 
 
     @api.depends('report_date', 'submitted_at')
