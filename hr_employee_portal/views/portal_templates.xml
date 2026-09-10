@@ -1562,6 +1562,7 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 <div class="hr-subsection-title mb-3">Quick HR Request</div>
                                 <form action="/my/hr/request/submit" method="post" class="needs-validation">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="submission_token" t-att-value="request_submission_token"/>
                                         <input type="hidden" name="report_date" t-att-value="today"/>
                                     <div class="row g-3">
                                         <div class="col-md-4">

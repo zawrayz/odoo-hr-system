@@ -68,6 +68,18 @@ class HrEmployeePortalRequest(models.Model):
         required=True,
     )
 
+    submission_token = fields.Char(
+        string='Submission Token',
+        index=True,
+        copy=False,
+        readonly=True,
+    )
+
+    _unique_employee_submission_token = models.Constraint(
+        'unique(employee_id, submission_token)',
+        'This HR request has already been submitted.',
+    )
+
     admin_remarks = fields.Text(string='Admin Remarks')
 
     reviewed_by = fields.Many2one(

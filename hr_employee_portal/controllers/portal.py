@@ -16,6 +16,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 import hmac
 import hashlib
+import uuid
 
 
 class HrEmployeePortal(http.Controller):
@@ -2145,8 +2146,18 @@ class HrEmployeePortal(http.Controller):
         reason = (post.get('reason') or '').strip()
         date_from_raw = (post.get('date_from') or '').strip()
         date_to_raw = (post.get('date_to') or '').strip()
+        submission_token = (post.get('submission_token') or '').strip()
 
         valid_request_types = [item[0] for item in self.REQUEST_TYPE_OPTIONS]
+
+        if (
+            len(submission_token) != 32
+            or any(ch not in '0123456789abcdef' for ch in submission_token)
+        ):
+            return request.redirect(self._build_redirect_url('/my/hr', {
+                'request_status': 'error',
+                'request_message': 'This request form has expired. Please refresh the page and try again.',
+            }))
 
         if request_type not in valid_request_types:
             return request.redirect(self._build_redirect_url('/my/hr', {
@@ -2175,17 +2186,33 @@ class HrEmployeePortal(http.Controller):
                 'request_message': 'To date cannot be earlier than from date.',
             }))
 
+        PortalRequest = request.env['hr.employee.portal.request'].sudo()
+
         try:
-            portal_request = request.env['hr.employee.portal.request'].sudo().create({
-                'employee_id': employee.id,
-                'request_type': request_type,
-                'date_from': date_from,
-                'date_to': date_to,
-                'reason': reason,
-                'state': 'submitted',
-                'submitted_at': fields.Datetime.now(),
-            })
-        except (IntegrityError, OperationalError, ConcurrencyError):
+            with request.env.cr.savepoint():
+                portal_request = PortalRequest.create({
+                    'employee_id': employee.id,
+                    'request_type': request_type,
+                    'date_from': date_from,
+                    'date_to': date_to,
+                    'reason': reason,
+                    'state': 'submitted',
+                    'submitted_at': fields.Datetime.now(),
+                    'submission_token': submission_token,
+                })
+        except IntegrityError:
+            portal_request = PortalRequest.search([
+                ('employee_id', '=', employee.id),
+                ('submission_token', '=', submission_token),
+            ], limit=1)
+
+            if portal_request:
+                return request.redirect(self._build_redirect_url('/my/hr', {
+                    'request_status': 'success',
+                    'request_message': 'Request already submitted successfully.',
+                }))
+            raise
+        except (OperationalError, ConcurrencyError):
             raise
         except Exception:
             return request.redirect(self._build_redirect_url('/my/hr', {
@@ -2244,6 +2271,7 @@ class HrEmployeePortal(http.Controller):
             'document_count': 0,
             'request_status': kwargs.get('request_status', ''),
             'request_message': kwargs.get('request_message', ''),
+            'request_submission_token': uuid.uuid4().hex,
         })
         return request.render('hr_employee_portal.hr_employee_portal_page', values)
 
