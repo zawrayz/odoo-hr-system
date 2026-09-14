@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="payroll_irfan_july_2026" model="hr.payroll.entry">
+        <field name="payroll_month">2026-07-01</field>
+        <field name="sequence">1</field>
+        <field name="employee_code">BLMP44</field>
+        <field name="employee_name">Irfan Saifullah</field>
+        <field name="bank">Bank (other)</field>
+        <field name="designation">Finance</field>
+        <field name="payment_method">Transfer</field>
+        <field name="basic_salary">150000</field>
+        <field name="basic_actual">150000</field>
+        <field name="advertised_salary">150000</field>
+        <field name="taxable_income">150000</field>
+        <field name="total">150000</field>
+        <field name="total_round">150000</field>
+    </record>
+
+    <record id="payroll_irfan_august_2026" model="hr.payroll.entry">
+        <field name="payroll_month">2026-08-01</field>
+        <field name="sequence">1</field>
+        <field name="employee_code">BLMP44</field>
+        <field name="employee_name">Irfan Saifullah</field>
+        <field name="bank">Bank (other)</field>
+        <field name="designation">Finance</field>
+        <field name="payment_method">Transfer</field>
+        <field name="basic_salary">150000</field>
+        <field name="basic_actual">150000</field>
+        <field name="advertised_salary">150000</field>
+        <field name="reimbursements">10000</field>
+        <field name="taxable_income">150000</field>
+        <field name="total">160000</field>
+        <field name="total_round">160000</field>
+    </record>
+
+    <record id="payroll_zoraiz_july_2026" model="hr.payroll.entry">
+        <field name="payroll_month">2026-07-01</field>
+        <field name="sequence">2</field>
+        <field name="employee_code">PSEB-02</field>
+        <field name="employee_name">Zoraiz Zia</field>
+        <field name="designation">Web Developer and AI Engineer</field>
+        <field name="basic_salary">180000</field>
+        <field name="basic_actual">180000</field>
+        <field name="advertised_salary">180000</field>
+        <field name="total">180000</field>
+        <field name="total_round">180000</field>
+    </record>
+
+    <record id="payroll_zoraiz_august_2026" model="hr.payroll.entry">
+        <field name="payroll_month">2026-08-01</field>
+        <field name="sequence">2</field>
+        <field name="employee_code">PSEB-02</field>
+        <field name="employee_name">Zoraiz Zia</field>
+        <field name="designation">Web Developer and AI Engineer</field>
+        <field name="basic_salary">180000</field>
+        <field name="basic_actual">180000</field>
+        <field name="advertised_salary">180000</field>
+        <field name="bonus">10000</field>
+        <field name="bonus_for">Project Bonus</field>
+        <field name="total">190000</field>
+        <field name="total_round">190000</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Add HR > Payroll under the existing Finance sidebar. -->
+    <template
+        id="hr_employee_sidebar_payroll_link"
+        inherit_id="hr_petty_cash_management.hr_employee_sidebar_finance_link"
+        name="HR Payroll Sidebar Link"
+    >
+        <xpath
+            expr="(//a[span[normalize-space()='Finance']])[1]"
+            position="attributes"
+        >
+            <attribute name="t-attf-class">hr-sidebar-link #{'active' if current_page in ['admin_finance', 'admin_finance_petty_cash', 'admin_finance_payroll'] else ''}</attribute>
+        </xpath>
+
+        <xpath
+            expr="(//a[span[normalize-space()='Finance']])[2]"
+            position="attributes"
+        >
+            <attribute name="t-attf-class">hr-sidebar-link #{'active' if current_page in ['admin_finance', 'admin_finance_petty_cash', 'admin_finance_payroll'] else ''}</attribute>
+        </xpath>
+
+        <xpath
+            expr="(//a[span[normalize-space()='Finance']])[1]/following-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' hr-sidebar-submenu ')][1]"
+            position="inside"
+        >
+            <div class="payroll-sidebar-section-label">
+                HR
+            </div>
+            <a
+                t-att-href="'/my/hr/admin/finance/hr/payroll' if pc_sidebar_is_manager else '/my/hr/finance/hr/payroll'"
+                t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_payroll' else ''}"
+            >
+                <i class="fa fa-users"/>
+                <span>Payroll</span>
+            </a>
+        </xpath>
+
+        <xpath
+            expr="(//a[span[normalize-space()='Finance']])[2]/following-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' hr-sidebar-submenu ')][1]"
+            position="inside"
+        >
+            <div class="payroll-sidebar-section-label">
+                HR
+            </div>
+            <a
+                href="/my/hr/finance/hr/payroll"
+                t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_payroll' else ''}"
+            >
+                <i class="fa fa-users"/>
+                <span>Payroll</span>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Add an HR subsection with Payroll to the Finance landing page. -->
+    <template
+        id="hr_finance_home_payroll_card"
+        inherit_id="hr_petty_cash_management.hr_finance_home_page"
+        name="Finance HR Payroll Card"
+    >
+        <xpath
+            expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' row ') and contains(concat(' ', normalize-space(@class), ' '), ' g-4 ')]"
+            position="inside"
+        >
+            <div class="col-12 payroll-finance-section">
+                <div class="payroll-finance-section-title">
+                    <i class="fa fa-users"/>
+                    HR
+                </div>
+                <div class="payroll-finance-section-text">
+                    Human Resources finance tools.
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <a
+                    t-att-href="'/my/hr/admin/finance/hr/payroll' if is_hr_manager else '/my/hr/finance/hr/payroll'"
+                    class="text-decoration-none"
+                >
+                    <div class="hr-feature-card">
+                        <div class="card-body">
+                            <div class="hr-feature-icon">
+                                <i class="fa fa-money"/>
+                            </div>
+
+                            <div class="hr-feature-title">
+                                Payroll
+                            </div>
+
+                            <p class="hr-feature-text mb-3">
+                                Review the monthly payroll worksheet,
+                                earnings, allowances and deductions.
+                            </p>
+
+                            <span class="btn btn-primary">
+                                Open Payroll
+                                <i class="fa fa-arrow-right ms-1"/>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template
+        id="hr_finance_payroll_page"
+        name="HR Finance Payroll"
+    >
+        <t t-call="portal.portal_layout">
+            <t t-set="no_breadcrumbs" t-value="1"/>
+            <t t-set="current_page" t-value="'admin_finance_payroll'"/>
+
+            <div class="container-fluid oe_structure mt-4 mb-5 px-lg-4 payroll-page">
+                <div class="hr-layout-row">
+
+                    <div class="hr-sidebar-wrap">
+                        <t t-call="hr_employee_portal.hr_employee_sidebar"/>
+                    </div>
+
+                    <div class="hr-content-wrap payroll-content-wrap">
+
+                        <div class="mb-3">
+                            <a
+                                t-att-href="'/my/hr/admin/finance' if is_hr_manager else '/my/hr/finance'"
+                                class="hr-back-link"
+                            >
+                                <i class="fa fa-arrow-left"/>
+                                Back to Finance
+                            </a>
+                        </div>
+
+                        <div class="hr-page-header-card mb-3">
+                            <div class="card-body payroll-page-header">
+                                <div>
+                                    <h2 class="hr-page-title mb-2">
+                                        Payroll
+                                    </h2>
+                                    <p class="hr-page-subtitle mb-0">
+                                        HR payroll worksheet preview.
+                                        Dummy data is shown for this first local build.
+                                    </p>
+                                </div>
+                                <span class="payroll-preview-badge">
+                                    Preview
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="payroll-sheet-card">
+                            <div class="payroll-sheet-toolbar">
+                                <div>
+                                    <div class="payroll-sheet-title">
+                                        BLIMP Payroll
+                                    </div>
+                                    <div class="payroll-sheet-subtitle">
+                                        Same column structure as the supplied payroll sheet
+                                    </div>
+                                </div>
+
+                                <div class="payroll-toolbar-actions">
+
+                                    <form
+                                        t-att-action="'/my/hr/admin/finance/hr/payroll' if is_hr_manager else '/my/hr/finance/hr/payroll'"
+                                        method="get"
+                                        class="payroll-month-form"
+                                    >
+                                        <label for="payroll_month">
+                                            Payroll Month
+                                        </label>
+                                        <select
+                                            id="payroll_month"
+                                            name="month"
+                                            class="payroll-month-select"
+                                            onchange="this.form.submit()"
+                                        >
+                                            <option
+                                                t-foreach="payroll_month_options"
+                                                t-as="month_option"
+                                                t-att-value="month_option['value']"
+                                                t-att-selected="payroll_month_value == month_option['value'] and 'selected' or None"
+                                            >
+                                                <t t-esc="month_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </form>
+
+                                    <div
+                                        class="payroll-zoom-controls"
+                                        data-payroll-zoom-controls="1"
+                                    >
+                                    <button
+                                        type="button"
+                                        class="payroll-zoom-btn"
+                                        data-payroll-zoom-action="out"
+                                        title="Zoom out"
+                                    >
+                                        <i class="fa fa-search-minus"/>
+                                    </button>
+
+                                    <span
+                                        class="payroll-zoom-value"
+                                        data-payroll-zoom-value="1"
+                                    >
+                                        55%
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        class="payroll-zoom-btn"
+                                        data-payroll-zoom-action="in"
+                                        title="Zoom in"
+                                    >
+                                        <i class="fa fa-search-plus"/>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="payroll-zoom-reset"
+                                        data-payroll-zoom-action="reset"
+                                    >
+                                        Reset
+                                    </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payroll-table-scroll">
+                                <div
+                                    class="payroll-table-scale"
+                                    data-payroll-table-scale="1"
+                                    data-payroll-default-zoom="0.55"
+                                >
+                                    <table class="payroll-sheet-table">
+                                        <thead>
+                                            <tr>
+                                                <t
+                                                    t-foreach="payroll_columns"
+                                                    t-as="column"
+                                                >
+                                                    <th>
+                                                        <t t-esc="column"/>
+                                                    </th>
+                                                </t>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t
+                                                t-foreach="payroll_rows"
+                                                t-as="payroll_row"
+                                            >
+                                                <tr>
+                                                    <t
+                                                        t-foreach="payroll_row"
+                                                        t-as="cell"
+                                                    >
+                                                        <td t-att-title="cell">
+                                                            <t t-esc="cell"/>
+                                                        </td>
+                                                    </t>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>
