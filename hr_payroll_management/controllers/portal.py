@@ -6,7 +6,6 @@ class HrPayrollPortal(http.Controller):
 
     PAYROLL_ACCESS_EMPLOYEE_CODES = {
         'BPL001',
-        'BLMP43',
         'BLMP44',
     }
 

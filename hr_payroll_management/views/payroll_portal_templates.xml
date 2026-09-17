@@ -25,10 +25,11 @@
             expr="(//a[span[normalize-space()='Finance']])[1]/following-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' hr-sidebar-submenu ')][1]"
             position="inside"
         >
-            <div class="payroll-sidebar-section-label">
+            <div t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP44']" class="payroll-sidebar-section-label">
                 HR
             </div>
             <a
+                t-if="pc_sidebar_is_manager or pc_sidebar_employee_code in ['BPL001', 'BLMP44']"
                 t-att-href="'/my/hr/admin/finance/hr/payroll' if pc_sidebar_is_manager else '/my/hr/finance/hr/payroll'"
                 t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_payroll' else ''}"
             >
@@ -41,10 +42,11 @@
             expr="(//a[span[normalize-space()='Finance']])[2]/following-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' hr-sidebar-submenu ')][1]"
             position="inside"
         >
-            <div class="payroll-sidebar-section-label">
+            <div t-if="pc_employee_sidebar_code in ['BPL001', 'BLMP44']" class="payroll-sidebar-section-label">
                 HR
             </div>
             <a
+                t-if="pc_employee_sidebar_code in ['BPL001', 'BLMP44']"
                 href="/my/hr/finance/hr/payroll"
                 t-attf-class="hr-sidebar-sublink #{'active' if current_page == 'admin_finance_payroll' else ''}"
             >
@@ -64,7 +66,20 @@
             expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' row ') and contains(concat(' ', normalize-space(@class), ' '), ' g-4 ')]"
             position="inside"
         >
-            <div class="col-12 payroll-finance-section">
+            <t
+                t-set="payroll_finance_employee"
+                t-value="request.env['hr.employee'].sudo().search([('user_id', '=', request.env.user.id)], limit=1)"
+            />
+
+            <t
+                t-set="payroll_finance_employee_code"
+                t-value="(payroll_finance_employee.employee_code or '').strip().upper() if payroll_finance_employee else ''"
+            />
+
+            <div
+                t-if="is_hr_manager or payroll_finance_employee_code in ['BPL001', 'BLMP44']"
+                class="col-12 payroll-finance-section"
+            >
                 <div class="payroll-finance-section-title">
                     <i class="fa fa-users"/>
                     HR
@@ -74,7 +89,10 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-xl-4">
+            <div
+                t-if="is_hr_manager or payroll_finance_employee_code in ['BPL001', 'BLMP44']"
+                class="col-md-6 col-xl-4"
+            >
                 <a
                     t-att-href="'/my/hr/admin/finance/hr/payroll' if is_hr_manager else '/my/hr/finance/hr/payroll'"
                     class="text-decoration-none"

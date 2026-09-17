@@ -12,9 +12,6 @@
         <field name="basic_salary">150000</field>
         <field name="basic_actual">150000</field>
         <field name="advertised_salary">150000</field>
-        <field name="taxable_income">150000</field>
-        <field name="total">150000</field>
-        <field name="total_round">150000</field>
     </record>
 
     <record id="payroll_irfan_august_2026" model="hr.payroll.entry">
@@ -29,9 +26,6 @@
         <field name="basic_actual">150000</field>
         <field name="advertised_salary">150000</field>
         <field name="reimbursements">10000</field>
-        <field name="taxable_income">150000</field>
-        <field name="total">160000</field>
-        <field name="total_round">160000</field>
     </record>
 
     <record id="payroll_zoraiz_july_2026" model="hr.payroll.entry">
@@ -43,8 +37,6 @@
         <field name="basic_salary">180000</field>
         <field name="basic_actual">180000</field>
         <field name="advertised_salary">180000</field>
-        <field name="total">180000</field>
-        <field name="total_round">180000</field>
     </record>
 
     <record id="payroll_zoraiz_august_2026" model="hr.payroll.entry">
@@ -58,8 +50,6 @@
         <field name="advertised_salary">180000</field>
         <field name="bonus">10000</field>
         <field name="bonus_for">Project Bonus</field>
-        <field name="total">190000</field>
-        <field name="total_round">190000</field>
     </record>
 
 </odoo>
