@@ -2236,6 +2236,157 @@ class HrEmployeePortal(http.Controller):
             'request_message': 'Request submitted successfully and sent to HR.',
         }))
 
+    # ---------------------------------------------------------
+    # Employee dashboard: today's working status + emergency info
+    # ---------------------------------------------------------
+    def _get_dashboard_employee_status_rows(self):
+        today = fields.Date.context_today(request.env.user)
+
+        employees = request.env['hr.employee'].sudo().search([
+            ('active', '=', True),
+            ('employment_status', 'not in', [
+                'resigned',
+                'terminated',
+            ]),
+        ], order='name asc')
+
+        # Management should not appear in the employee-facing
+        # All Employees table, except Administrator.
+        # Irfan Saifullah remains visible as requested.
+        hidden_management_names = {
+            'Muhammad Uzair',
+            'Shahan Ahmed',
+            'Tufail Ahmad',
+            'Darakhshan Uzair',
+            'Faiza Saleem',
+            'Muhammad Irfan',
+        }
+
+        employees = employees.filtered(
+            lambda emp: emp.name not in hidden_management_names
+        )
+
+        if not employees:
+            return today, []
+
+        employee_ids = employees.ids
+
+        # Attendance register is the primary source for today's status.
+        attendance_by_employee = {}
+
+        if 'hr.attendance.register.line' in request.env:
+            attendance_lines = (
+                request.env['hr.attendance.register.line']
+                .sudo()
+                .search([
+                    ('employee_id', 'in', employee_ids),
+                    ('attendance_date', '=', today),
+                ])
+            )
+
+            attendance_by_employee = {
+                line.employee_id.id: line.attendance_code
+                for line in attendance_lines
+            }
+
+        # Approved Odoo leave records covering today.
+        approved_leave_employee_ids = set()
+
+        if 'hr.leave' in request.env:
+            approved_leaves = request.env['hr.leave'].sudo().search([
+                ('employee_id', 'in', employee_ids),
+                ('state', '=', 'validate'),
+                ('request_date_from', '<=', today),
+                ('request_date_to', '>=', today),
+            ])
+
+            approved_leave_employee_ids = set(
+                approved_leaves.mapped('employee_id').ids
+            )
+
+        # Approved portal WFH / leave requests covering today.
+        portal_request_status = {}
+
+        if 'hr.employee.portal.request' in request.env:
+            portal_requests = (
+                request.env['hr.employee.portal.request']
+                .sudo()
+                .search([
+                    ('employee_id', 'in', employee_ids),
+                    ('state', '=', 'approved'),
+                    ('request_type', 'in', [
+                        'wfh',
+                        'sick_leave',
+                        'casual_leave',
+                    ]),
+                    ('date_from', '<=', today),
+                    ('date_to', '>=', today),
+                ])
+            )
+
+            for portal_request in portal_requests:
+                employee_id = portal_request.employee_id.id
+
+                if portal_request.request_type in [
+                    'sick_leave',
+                    'casual_leave',
+                ]:
+                    portal_request_status[employee_id] = 'leave'
+
+                elif employee_id not in portal_request_status:
+                    portal_request_status[employee_id] = 'wfh'
+
+        rows = []
+
+        for employee in employees:
+            attendance_code = attendance_by_employee.get(
+                employee.id
+            )
+
+            if attendance_code in ['S', 'C', 'U']:
+                working_status = 'Leave'
+
+            elif attendance_code == 'R':
+                working_status = 'WFH'
+
+            elif attendance_code:
+                working_status = 'Available'
+
+            elif employee.id in approved_leave_employee_ids:
+                working_status = 'Leave'
+
+            elif (
+                portal_request_status.get(employee.id)
+                == 'leave'
+            ):
+                working_status = 'Leave'
+
+            elif (
+                portal_request_status.get(employee.id)
+                == 'wfh'
+            ):
+                working_status = 'WFH'
+
+            elif employee.employment_status == 'on_leave':
+                working_status = 'Leave'
+
+            else:
+                working_status = 'Available'
+
+            rows.append({
+                'employee_name': employee.name or '-',
+                'employee_code': employee.employee_code or '-',
+                'working_status': working_status,
+                'emergency_contact_name':
+                    employee.emergency_contact_name or '',
+                'emergency_contact_number':
+                    employee.emergency_contact_number or '',
+                'emergency_contact_relation':
+                    employee.emergency_contact_relation or '',
+            })
+
+        return today, rows
+
     # =========================================================
     # EMPLOYEE: HR Dashboard
     # =========================================================
@@ -2265,10 +2416,16 @@ class HrEmployeePortal(http.Controller):
                 ('employee_id', '=', employee.id)
             ])
 
+        dashboard_status_date, dashboard_employee_rows = (
+            self._get_dashboard_employee_status_rows()
+        )
+
         values = self._prepare_portal_values(employee, {
             'attendance_count': attendance_count,
             'leave_count': leave_count,
             'document_count': 0,
+            'dashboard_status_date': dashboard_status_date,
+            'dashboard_employee_rows': dashboard_employee_rows,
             'request_status': kwargs.get('request_status', ''),
             'request_message': kwargs.get('request_message', ''),
             'request_submission_token': uuid.uuid4().hex,
@@ -2314,9 +2471,110 @@ class HrEmployeePortal(http.Controller):
         if redirect_response:
             return redirect_response
 
+        job_options = request.env['hr.job'].sudo().search(
+            [],
+            order='name asc',
+        )
+
         return request.render(
             'hr_employee_portal.hr_employee_profile_employee_record_page',
-            self._prepare_portal_values(employee)
+            self._prepare_portal_values(employee, {
+                'job_options': job_options,
+                'profile_status': (
+                    kwargs.get('profile_status') or ''
+                ).strip(),
+                'profile_message': (
+                    kwargs.get('profile_message') or ''
+                ).strip(),
+            })
+        )
+
+    @http.route(
+        '/my/hr/profile/employee-record/update',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_profile_employee_record_update(self, **post):
+        maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+        if maintenance_response is not False:
+            return maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        employee = self._get_employee()
+        redirect_response = self._redirect_if_no_employee(employee)
+        if redirect_response:
+            return redirect_response
+
+        def parse_date_value(raw_value, label):
+            raw_value = (raw_value or '').strip()
+
+            if not raw_value:
+                return False
+
+            try:
+                return fields.Date.to_date(raw_value)
+            except (TypeError, ValueError):
+                raise ValidationError(
+                    f'Please enter a valid {label}.'
+                )
+
+        try:
+            contract_start_date = parse_date_value(
+                post.get('contract_start_date'),
+                'contract start date',
+            )
+
+            contract_end_date = parse_date_value(
+                post.get('contract_end_date'),
+                'contract end date',
+            )
+
+            if (
+                contract_start_date
+                and contract_end_date
+                and contract_end_date < contract_start_date
+            ):
+                raise ValidationError(
+                    'Contract end date cannot be before '
+                    'contract start date.'
+                )
+
+            values = {
+                'father_name':
+                    (post.get('father_name') or '').strip()
+                    or False,
+                'contract_start_date': contract_start_date,
+                'contract_end_date': contract_end_date,
+            }
+
+            employee.sudo().write(values)
+
+        except ValidationError as error:
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/profile/employee-record',
+                    {
+                        'profile_status': 'error',
+                        'profile_message': str(error),
+                    },
+                )
+            )
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/profile/employee-record',
+                {
+                    'profile_status': 'success',
+                    'profile_message':
+                        'Employee record updated successfully.',
+                },
+            )
         )
 
     @http.route('/my/hr/profile/bank-account', type='http', auth='user', website=True)
@@ -2338,7 +2596,70 @@ class HrEmployeePortal(http.Controller):
 
         return request.render(
             'hr_employee_portal.hr_employee_profile_bank_account_page',
-            self._prepare_portal_values(employee)
+            self._prepare_portal_values(employee, {
+                'profile_status': (
+                    kwargs.get('profile_status') or ''
+                ).strip(),
+                'profile_message': (
+                    kwargs.get('profile_message') or ''
+                ).strip(),
+            })
+        )
+
+    @http.route(
+        '/my/hr/profile/bank-account/update',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_profile_bank_account_update(self, **post):
+        maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+        if maintenance_response is not False:
+            return maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        employee = self._get_employee()
+        redirect_response = self._redirect_if_no_employee(employee)
+        if redirect_response:
+            return redirect_response
+
+        values = {
+            'bank_account_title':
+                (post.get('bank_account_title') or '').strip()
+                or False,
+            'bank_name_custom':
+                (post.get('bank_name_custom') or '').strip()
+                or False,
+        }
+
+        try:
+            employee.sudo().write(values)
+
+        except ValidationError as error:
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/profile/bank-account',
+                    {
+                        'profile_status': 'error',
+                        'profile_message': str(error),
+                    },
+                )
+            )
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/profile/bank-account',
+                {
+                    'profile_status': 'success',
+                    'profile_message':
+                        'Bank account updated successfully.',
+                },
+            )
         )
 
     @http.route('/my/hr/profile/personal-details', type='http', auth='user', website=True)
@@ -2360,7 +2681,113 @@ class HrEmployeePortal(http.Controller):
 
         return request.render(
             'hr_employee_portal.hr_employee_profile_personal_details_page',
-            self._prepare_portal_values(employee)
+            self._prepare_portal_values(employee, {
+                'profile_status': (
+                    kwargs.get('profile_status') or ''
+                ).strip(),
+                'profile_message': (
+                    kwargs.get('profile_message') or ''
+                ).strip(),
+            })
+        )
+
+    @http.route(
+        '/my/hr/profile/personal-details/update',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_profile_personal_details_update(self, **post):
+        maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+        if maintenance_response is not False:
+            return maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        employee = self._get_employee()
+        redirect_response = self._redirect_if_no_employee(employee)
+        if redirect_response:
+            return redirect_response
+
+        dob_raw = (
+            post.get('date_of_birth_custom') or ''
+        ).strip()
+
+        dob_value = False
+
+        if dob_raw:
+            try:
+                dob_value = fields.Date.to_date(dob_raw)
+            except (TypeError, ValueError):
+                return request.redirect(
+                    self._build_redirect_url(
+                        '/my/hr/profile/personal-details',
+                        {
+                            'profile_status': 'error',
+                            'profile_message':
+                                'Please enter a valid date of birth.',
+                        },
+                    )
+                )
+
+            today = fields.Date.context_today(request.env.user)
+
+            if dob_value > today:
+                return request.redirect(
+                    self._build_redirect_url(
+                        '/my/hr/profile/personal-details',
+                        {
+                            'profile_status': 'error',
+                            'profile_message':
+                                'Date of birth cannot be in the future.',
+                        },
+                    )
+                )
+
+        values = {
+            'mobile_phone':
+                (post.get('mobile_phone') or '').strip() or False,
+            'residence_number':
+                (post.get('residence_number') or '').strip()
+                or False,
+            'personal_email':
+                (post.get('personal_email') or '').strip()
+                or False,
+            'ntn_number':
+                (post.get('ntn_number') or '').strip()
+                or False,
+            'date_of_birth_custom': dob_value,
+            'street_address':
+                (post.get('street_address') or '').strip()
+                or False,
+        }
+
+        try:
+            employee.sudo().write(values)
+        except ValidationError as error:
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/profile/personal-details',
+                    {
+                        'profile_status': 'error',
+                        'profile_message': str(error),
+                    },
+                )
+            )
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/profile/personal-details',
+                {
+                    'profile_status': 'success',
+                    'profile_message':
+                        'Personal information updated successfully.',
+                },
+            )
         )
 
     @http.route('/my/hr/profile/emergency-contact', type='http', auth='user', website=True)
@@ -2382,7 +2809,72 @@ class HrEmployeePortal(http.Controller):
 
         return request.render(
             'hr_employee_portal.hr_employee_profile_emergency_contact_page',
-            self._prepare_portal_values(employee)
+            self._prepare_portal_values(employee, {
+                'profile_status': (
+                    kwargs.get('profile_status') or ''
+                ).strip(),
+                'profile_message': (
+                    kwargs.get('profile_message') or ''
+                ).strip(),
+            })
+        )
+
+    @http.route(
+        '/my/hr/profile/emergency-contact/update',
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+    )
+    def my_hr_profile_emergency_contact_update(self, **post):
+        maintenance_response = (
+            self._redirect_if_hr_portal_maintenance()
+        )
+        if maintenance_response is not False:
+            return maintenance_response
+
+        if self._is_hr_manager():
+            return request.redirect('/my/hr/admin')
+
+        employee = self._get_employee()
+        redirect_response = self._redirect_if_no_employee(employee)
+        if redirect_response:
+            return redirect_response
+
+        values = {
+            'emergency_contact_name':
+                (post.get('emergency_contact_name') or '').strip()
+                or False,
+            'emergency_contact_number':
+                (post.get('emergency_contact_number') or '').strip()
+                or False,
+            'emergency_contact_relation':
+                (post.get('emergency_contact_relation') or '').strip()
+                or False,
+        }
+
+        try:
+            employee.sudo().write(values)
+        except ValidationError as error:
+            return request.redirect(
+                self._build_redirect_url(
+                    '/my/hr/profile/emergency-contact',
+                    {
+                        'profile_status': 'error',
+                        'profile_message': str(error),
+                    },
+                )
+            )
+
+        return request.redirect(
+            self._build_redirect_url(
+                '/my/hr/profile/emergency-contact',
+                {
+                    'profile_status': 'success',
+                    'profile_message':
+                        'Emergency contact updated successfully.',
+                },
+            )
         )
 
     @http.route('/my/hr/profile/employment-history', type='http', auth='user', website=True)

@@ -1519,6 +1519,128 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                             </div>
                         </div>
 
+                        <!-- PROFILE_CLEAN_EDIT_UI_V1 -->
+                        <div class="card hr-content-card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                    <div>
+                                        <div class="hr-subsection-title mb-1">
+                                            All Employees
+                                        </div>
+                                        <div class="hr-portal-subtle">
+                                            Today's Working Status and Emergency Contact Information
+                                        </div>
+                                    </div>
+
+                                    <span
+                                        class="badge bg-light text-dark border"
+                                        t-if="dashboard_status_date"
+                                        t-esc="dashboard_status_date.strftime('%d %b %Y')"
+                                    />
+                                </div>
+
+                                <div
+                                    class="table-responsive"
+                                    t-if="dashboard_employee_rows"
+                                >
+                                    <table class="table align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Working Status</th>
+                                                <th>Emergency Number</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <tr
+                                                t-foreach="dashboard_employee_rows"
+                                                t-as="employee_row"
+                                            >
+                                                <td>
+                                                    <div class="fw-semibold">
+                                                        <t t-esc="employee_row['employee_name']"/>
+                                                    </div>
+
+                                                    <small class="text-muted">
+                                                        <t t-esc="employee_row['employee_code']"/>
+                                                    </small>
+                                                </td>
+
+                                                <td>
+                                                    <span
+                                                        t-if="employee_row['working_status'] == 'WFH'"
+                                                        class="badge bg-info text-dark"
+                                                    >
+                                                        WFH
+                                                    </span>
+
+                                                    <span
+                                                        t-elif="employee_row['working_status'] == 'Leave'"
+                                                        class="badge bg-warning text-dark"
+                                                    >
+                                                        Leave
+                                                    </span>
+
+                                                    <span
+                                                        t-else=""
+                                                        class="badge bg-success"
+                                                    >
+                                                        Available
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <div
+                                                        class="fw-semibold"
+                                                        t-if="employee_row['emergency_contact_number']"
+                                                    >
+                                                        <i class="fa fa-phone me-1"/>
+                                                        <t t-esc="employee_row['emergency_contact_number']"/>
+                                                    </div>
+
+                                                    <div
+                                                        t-else=""
+                                                        class="text-muted"
+                                                    >
+                                                        Not Available
+                                                    </div>
+
+                                                    <small
+                                                        class="text-muted"
+                                                        t-if="employee_row['emergency_contact_relation'] or employee_row['emergency_contact_name']"
+                                                    >
+                                                        <t
+                                                            t-if="employee_row['emergency_contact_relation']"
+                                                            t-esc="employee_row['emergency_contact_relation']"
+                                                        />
+
+                                                        <t
+                                                            t-if="employee_row['emergency_contact_relation'] and employee_row['emergency_contact_name']"
+                                                        >
+                                                            ·
+                                                        </t>
+
+                                                        <t
+                                                            t-if="employee_row['emergency_contact_name']"
+                                                            t-esc="employee_row['emergency_contact_name']"
+                                                        />
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div
+                                    t-else=""
+                                    class="text-muted"
+                                >
+                                    No employee records are available.
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <div class="card hr-stat-card">
@@ -2502,6 +2624,10 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-call="portal.portal_layout">
         <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
+            <t
+                t-set="edit_mode"
+                t-value="request.params.get('edit') == '1'"
+            />
 
             <div class="container oe_structure mt-4 mb-5">
 
@@ -2511,9 +2637,27 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     </div>
 
                     <div class="hr-content-wrap">
-                        <div class="mb-3">
+                        <div class="mb-3 d-flex justify-content-between align-items-center gap-3">
                             <a href="/my/hr/profile" class="hr-back-link">
                                 <i class="fa fa-arrow-left"/> Back to My Profile
+                            </a>
+
+                            <a
+                                t-if="not edit_mode"
+                                href="/my/hr/profile/employee-record?edit=1"
+                                class="btn btn-primary btn-sm"
+                            >
+                                <i class="fa fa-pencil me-1"/>
+                                Edit
+                            </a>
+
+                            <a
+                                t-else=""
+                                href="/my/hr/profile/employee-record"
+                                class="btn btn-outline-secondary btn-sm"
+                            >
+                                <i class="fa fa-times me-1"/>
+                                Cancel
                             </a>
                         </div>
 
@@ -2529,7 +2673,24 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
                             </div>
 
-                            <div class="hr-detail-grid">
+                            <div
+                                t-if="profile_status == 'success'"
+                                class="alert alert-success mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                t-if="profile_status == 'error'"
+                                class="alert alert-danger mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                class="hr-detail-grid"
+                                t-if="not edit_mode"
+                            >
                                 <div class="card hr-detail-item-card">
                                     <div class="card-body">
                                         <div class="hr-detail-item-label">Father Name</div>
@@ -2576,6 +2737,81 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </div>
                                 </div>
                             </div>
+
+                            <div
+                                class="card hr-content-card mt-4"
+                                t-if="edit_mode"
+                            >
+                                <div class="card-body">
+                                    <form
+                                        action="/my/hr/profile/employee-record/update"
+                                        method="post"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            t-att-value="request.csrf_token()"
+                                        />
+
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Father Name
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="father_name"
+                                                    class="form-control"
+                                                    t-att-value="employee.father_name or ''"
+                                                />
+                                            </div>
+
+
+
+
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Contract Start Date
+                                                </label>
+
+                                                <input
+                                                    type="date"
+                                                    name="contract_start_date"
+                                                    class="form-control"
+                                                    t-att-value="employee.contract_start_date or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Contract End Date
+                                                </label>
+
+                                                <input
+                                                    type="date"
+                                                    name="contract_end_date"
+                                                    class="form-control"
+                                                    t-att-value="employee.contract_end_date or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-12 text-end">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary"
+                                                >
+                                                    <i class="fa fa-save me-1"/>
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
                         </t>
                     </div>
                 </div>
@@ -2588,6 +2824,10 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-call="portal.portal_layout">
         <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
+            <t
+                t-set="edit_mode"
+                t-value="request.params.get('edit') == '1'"
+            />
 
             <div class="container oe_structure mt-4 mb-5">
 
@@ -2597,9 +2837,27 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     </div>
 
                     <div class="hr-content-wrap">
-                        <div class="mb-3">
+                        <div class="mb-3 d-flex justify-content-between align-items-center gap-3">
                             <a href="/my/hr/profile" class="hr-back-link">
                                 <i class="fa fa-arrow-left"/> Back to My Profile
+                            </a>
+
+                            <a
+                                t-if="not edit_mode"
+                                href="/my/hr/profile/bank-account?edit=1"
+                                class="btn btn-primary btn-sm"
+                            >
+                                <i class="fa fa-pencil me-1"/>
+                                Edit
+                            </a>
+
+                            <a
+                                t-else=""
+                                href="/my/hr/profile/bank-account"
+                                class="btn btn-outline-secondary btn-sm"
+                            >
+                                <i class="fa fa-times me-1"/>
+                                Cancel
                             </a>
                         </div>
 
@@ -2615,7 +2873,24 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
                             </div>
 
-                            <div class="hr-detail-grid">
+                            <div
+                                t-if="profile_status == 'success'"
+                                class="alert alert-success mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                t-if="profile_status == 'error'"
+                                class="alert alert-danger mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                class="hr-detail-grid"
+                                t-if="not edit_mode"
+                            >
                                 <div class="card hr-detail-item-card">
                                     <div class="card-body">
                                         <div class="hr-detail-item-label">Account Title</div>
@@ -2644,6 +2919,66 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </div>
                                 </div>
                             </div>
+
+                            <div
+                                class="card hr-content-card mt-4"
+                                t-if="edit_mode"
+                            >
+                                <div class="card-body">
+                                    <form
+                                        action="/my/hr/profile/bank-account/update"
+                                        method="post"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            t-att-value="request.csrf_token()"
+                                        />
+
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Account Title
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="bank_account_title"
+                                                    class="form-control"
+                                                    t-att-value="employee.bank_account_title or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Bank Name
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="bank_name_custom"
+                                                    class="form-control"
+                                                    t-att-value="employee.bank_name_custom or ''"
+                                                />
+                                            </div>
+
+
+
+                                            <div class="col-12 text-end">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary"
+                                                >
+                                                    <i class="fa fa-save me-1"/>
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
                         </t>
                     </div>
                 </div>
@@ -2656,6 +2991,10 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-call="portal.portal_layout">
         <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
+            <t
+                t-set="edit_mode"
+                t-value="request.params.get('edit') == '1'"
+            />
 
             <div class="container oe_structure mt-4 mb-5">
 
@@ -2665,9 +3004,27 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     </div>
 
                     <div class="hr-content-wrap">
-                        <div class="mb-3">
+                        <div class="mb-3 d-flex justify-content-between align-items-center gap-3">
                             <a href="/my/hr/profile" class="hr-back-link">
                                 <i class="fa fa-arrow-left"/> Back to My Profile
+                            </a>
+
+                            <a
+                                t-if="not edit_mode"
+                                href="/my/hr/profile/personal-details?edit=1"
+                                class="btn btn-primary btn-sm"
+                            >
+                                <i class="fa fa-pencil me-1"/>
+                                Edit
+                            </a>
+
+                            <a
+                                t-else=""
+                                href="/my/hr/profile/personal-details"
+                                class="btn btn-outline-secondary btn-sm"
+                            >
+                                <i class="fa fa-times me-1"/>
+                                Cancel
                             </a>
                         </div>
 
@@ -2683,7 +3040,24 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
                             </div>
 
-                            <div class="hr-detail-grid">
+                            <div
+                                t-if="profile_status == 'success'"
+                                class="alert alert-success mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                t-if="profile_status == 'error'"
+                                class="alert alert-danger mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                class="hr-detail-grid"
+                                t-if="not edit_mode"
+                            >
                                 <div class="card hr-detail-item-card">
                                     <div class="card-body">
                                         <div class="hr-detail-item-label">Mobile Number</div>
@@ -2757,6 +3131,117 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </div>
                                 </div>
                             </div>
+
+                            <div
+                                class="card hr-content-card mt-4"
+                                t-if="edit_mode"
+                            >
+                                <div class="card-body">
+                                    <form
+                                        action="/my/hr/profile/personal-details/update"
+                                        method="post"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            t-att-value="request.csrf_token()"
+                                        />
+
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Mobile Number
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="mobile_phone"
+                                                    class="form-control"
+                                                    t-att-value="employee.mobile_phone or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Residence Number
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="residence_number"
+                                                    class="form-control"
+                                                    t-att-value="employee.residence_number or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Personal Email
+                                                </label>
+
+                                                <input
+                                                    type="email"
+                                                    name="personal_email"
+                                                    class="form-control"
+                                                    t-att-value="employee.personal_email or ''"
+                                                />
+                                            </div>
+
+
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    NTN Number
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="ntn_number"
+                                                    class="form-control"
+                                                    t-att-value="employee.ntn_number or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Date of Birth
+                                                </label>
+
+                                                <input
+                                                    type="date"
+                                                    name="date_of_birth_custom"
+                                                    class="form-control"
+                                                    t-att-value="employee.date_of_birth_custom or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label">
+                                                    Address
+                                                </label>
+
+                                                <textarea
+                                                    name="street_address"
+                                                    class="form-control"
+                                                    rows="3"
+                                                ><t t-esc="employee.street_address or ''"/></textarea>
+                                            </div>
+
+                                            <div class="col-12 text-end">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary"
+                                                >
+                                                    <i class="fa fa-save me-1"/>
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
                         </t>
                     </div>
                 </div>
@@ -2769,6 +3254,10 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
         <t t-call="portal.portal_layout">
         <t t-set="no_breadcrumbs" t-value="1"/>
             <t t-set="current_page" t-value="'profile'"/>
+            <t
+                t-set="edit_mode"
+                t-value="request.params.get('edit') == '1'"
+            />
 
             <div class="container oe_structure mt-4 mb-5">
 
@@ -2778,9 +3267,27 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                     </div>
 
                     <div class="hr-content-wrap">
-                        <div class="mb-3">
+                        <div class="mb-3 d-flex justify-content-between align-items-center gap-3">
                             <a href="/my/hr/profile" class="hr-back-link">
                                 <i class="fa fa-arrow-left"/> Back to My Profile
+                            </a>
+
+                            <a
+                                t-if="not edit_mode"
+                                href="/my/hr/profile/emergency-contact?edit=1"
+                                class="btn btn-primary btn-sm"
+                            >
+                                <i class="fa fa-pencil me-1"/>
+                                Edit
+                            </a>
+
+                            <a
+                                t-else=""
+                                href="/my/hr/profile/emergency-contact"
+                                class="btn btn-outline-secondary btn-sm"
+                            >
+                                <i class="fa fa-times me-1"/>
+                                Cancel
                             </a>
                         </div>
 
@@ -2796,7 +3303,24 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                 </div>
                             </div>
 
-                            <div class="hr-detail-grid">
+                            <div
+                                t-if="profile_status == 'success'"
+                                class="alert alert-success mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                t-if="profile_status == 'error'"
+                                class="alert alert-danger mb-4"
+                            >
+                                <t t-esc="profile_message"/>
+                            </div>
+
+                            <div
+                                class="hr-detail-grid"
+                                t-if="not edit_mode"
+                            >
                                 <div class="card hr-detail-item-card">
                                     <div class="card-body">
                                         <div class="hr-detail-item-label">Contact Name</div>
@@ -2824,6 +3348,77 @@ body:has(.hr-sidebar-wrap) a[href="/my/"] .fa-home {
                                     </div>
                                 </div>
                             </div>
+
+                            <div
+                                class="card hr-content-card mt-4"
+                                t-if="edit_mode"
+                            >
+                                <div class="card-body">
+                                    <form
+                                        action="/my/hr/profile/emergency-contact/update"
+                                        method="post"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            t-att-value="request.csrf_token()"
+                                        />
+
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Contact Name
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="emergency_contact_name"
+                                                    class="form-control"
+                                                    t-att-value="employee.emergency_contact_name or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Contact Number
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="emergency_contact_number"
+                                                    class="form-control"
+                                                    t-att-value="employee.emergency_contact_number or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Relation
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="emergency_contact_relation"
+                                                    class="form-control"
+                                                    t-att-value="employee.emergency_contact_relation or ''"
+                                                />
+                                            </div>
+
+                                            <div class="col-12 text-end">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary"
+                                                >
+                                                    <i class="fa fa-save me-1"/>
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
                         </t>
                     </div>
                 </div>
