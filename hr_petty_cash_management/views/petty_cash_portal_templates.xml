@@ -551,6 +551,13 @@
                                 </div>
                             </t>
 
+                            <t t-if="entry_deleted">
+                                <div class="pc-entry-message pc-entry-success">
+                                    <i class="fa fa-check-circle"/>
+                                    Petty cash entry deleted successfully.
+                                </div>
+                            </t>
+
                             <t t-if="entry_error">
                                 <div class="pc-entry-message pc-entry-error">
                                     <i class="fa fa-exclamation-circle"/>
@@ -559,7 +566,7 @@
                             </t>
 
                             <div class="pc-table-wrap">
-                                <table t-attf-class="pc-table #{'pc-table-no-actions' if not can_edit_entries else ''}">
+                                <table t-attf-class="pc-table #{'pc-table-no-actions' if not (can_edit_entries or can_delete_entries) else ''}">
 
                                     <thead>
                                         <tr>
@@ -571,7 +578,10 @@
                                             <th>Remarks</th>
                                             <th>Invoice Sharing Status</th>
                                             <th>Invoice</th>
-                                            <th t-if="can_edit_entries">Action</th>
+                                            <th
+                                                t-if="can_edit_entries or can_delete_entries"
+                                                style="min-width: 145px;"
+                                            >Action</th>
                                         </tr>
                                     </thead>
 
@@ -682,28 +692,84 @@
 
                                                 </td>
 
-                                                <td t-if="can_edit_entries" class="pc-action-cell">
-                                                    <t t-if="not entry.invoice_shared">
-                                                        <button
-                                                            type="button"
-                                                            class="pc-edit-button"
-                                                            data-bs-toggle="modal"
-                                                            t-att-data-bs-target="'#pettyCashEditModal%s' % entry.id"
-                                                        >
-                                                            <i class="fa fa-pencil"/>
-                                                            Edit
-                                                        </button>
-                                                    </t>
+                                                <td
+                                                    t-if="can_edit_entries or can_delete_entries"
+                                                    class="pc-action-cell"
+                                                    style="min-width: 145px; white-space: nowrap; padding: 6px 5px;"
+                                                >
+                                                    <div
+                                                        class="pc-action-buttons"
+                                                        style="display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: nowrap;"
+                                                    >
 
-                                                    <t t-else="">
-                                                        <span
-                                                            class="pc-locked-badge"
-                                                            title="Editing is disabled because the invoice has been shared."
+                                                        <t t-if="can_edit_entries">
+                                                            <t t-if="not entry.invoice_shared">
+                                                                <button
+                                                                    type="button"
+                                                                    class="pc-edit-button"
+                                                                    data-bs-toggle="modal"
+                                                                    t-att-data-bs-target="'#pettyCashEditModal%s' % entry.id"
+                                                                >
+                                                                    <i class="fa fa-pencil"/>
+                                                                    Edit
+                                                                </button>
+                                                            </t>
+
+                                                            <t t-else="">
+                                                                <span
+                                                                    class="pc-locked-badge"
+                                                                    title="Editing is disabled because the invoice has been shared."
+                                                                >
+                                                                    <i class="fa fa-lock"/>
+                                                                    Locked
+                                                                </span>
+                                                            </t>
+                                                        </t>
+
+                                                        <form
+                                                            t-if="can_delete_entries and entry.transaction_date == today_date"
+                                                            t-att-action="'%s/%s/delete' % (finance_page_url, entry.id)"
+                                                            method="post"
+                                                            class="pc-delete-form"
+                                                            style="display: inline-flex; margin: 0;"
+                                                            onsubmit="return confirm('Delete this petty cash entry? This cannot be undone.');"
                                                         >
-                                                            <i class="fa fa-lock"/>
-                                                            Locked
-                                                        </span>
-                                                    </t>
+                                                            <input
+                                                                type="hidden"
+                                                                name="csrf_token"
+                                                                t-att-value="request.csrf_token()"
+                                                            />
+
+                                                            <input
+                                                                type="hidden"
+                                                                name="cash_holder"
+                                                                t-att-value="cash_holder"
+                                                            />
+
+                                                            <input
+                                                                type="hidden"
+                                                                name="selected_fiscal_year"
+                                                                t-att-value="selected_fiscal_year"
+                                                            />
+
+                                                            <input
+                                                                type="hidden"
+                                                                name="selected_month"
+                                                                t-att-value="selected_month"
+                                                            />
+
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-danger btn-sm"
+                                                                style="min-width: 58px; height: 30px; padding: 5px 8px; font-size: 11px; font-weight: 800;"
+                                                                title="Delete today's entry"
+                                                            >
+                                                                <i class="fa fa-trash"/>
+                                                                Delete
+                                                            </button>
+                                                        </form>
+
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </t>
@@ -711,7 +777,7 @@
                                         <t t-else="">
                                             <tr>
                                                 <td
-                                                    t-att-colspan="9 if can_edit_entries else 8"
+                                                    t-att-colspan="9 if (can_edit_entries or can_delete_entries) else 8"
                                                     class="pc-empty-cell"
                                                 >
                                                     No petty cash entries exist for

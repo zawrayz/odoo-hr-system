@@ -204,6 +204,19 @@ class HrPettyCashPortal(http.Controller):
     def _can_edit_petty_cash(self):
         return self._get_finance_access() == 'full'
 
+    def _can_delete_petty_cash(self):
+        if (
+            self._is_super_admin()
+            or self._is_uzair()
+            or self._is_irfan()
+        ):
+            return True
+
+        return (
+            self._get_current_employee_code()
+            == 'BLMP43'
+        )
+
     def _parse_amount(self, value):
         cleaned_value = (
             (value or '')
@@ -793,6 +806,11 @@ class HrPettyCashPortal(http.Controller):
             'can_edit_entries':
                 finance_access == 'full',
 
+            'can_delete_entries':
+                self._can_delete_petty_cash(),
+
+            'today_date': today,
+
             'finance_page_url':
                 finance_page_url,
 
@@ -832,6 +850,9 @@ class HrPettyCashPortal(http.Controller):
 
             'entry_updated':
                 kwargs.get('entry_updated') == '1',
+
+            'entry_deleted':
+                kwargs.get('entry_deleted') == '1',
 
             'entry_error': (
                 kwargs.get('entry_error') or ''
@@ -1039,6 +1060,109 @@ class HrPettyCashPortal(http.Controller):
             ),
             'entry_added': '1',
         })
+    @http.route(
+        [
+            '/my/hr/finance/petty-cash/'
+            '<int:entry_id>/delete',
+            '/my/hr/admin/finance/petty-cash/'
+            '<int:entry_id>/delete',
+        ],
+        type='http',
+        auth='user',
+        methods=['POST'],
+        website=True,
+        csrf=True,
+    )
+    def admin_petty_cash_delete(
+        self,
+        entry_id,
+        **post
+    ):
+        if not self._can_delete_petty_cash():
+            return self._finance_redirect({
+                'entry_error': (
+                    'You do not have permission to '
+                    'delete petty cash entries.'
+                ),
+            })
+
+        cash_holder = self._resolve_cash_holder(
+            post.get('cash_holder')
+        )
+
+        if not cash_holder:
+            return request.redirect('/my/hr')
+
+        selected_fiscal_year = (
+            post.get('selected_fiscal_year') or ''
+        ).strip()
+
+        selected_month = (
+            post.get('selected_month') or ''
+        ).strip()
+
+        redirect_params = {
+            'holder': cash_holder,
+        }
+
+        if selected_fiscal_year:
+            redirect_params['fy'] = (
+                selected_fiscal_year
+            )
+
+        if selected_month:
+            redirect_params['month'] = (
+                selected_month
+            )
+
+        entry = request.env[
+            'hr.petty.cash.entry'
+        ].sudo().search(
+            [
+                ('id', '=', entry_id),
+                (
+                    'company_id',
+                    '=',
+                    request.env.company.id,
+                ),
+                *self._get_cash_holder_domain(
+                    cash_holder
+                ),
+            ],
+            limit=1,
+        )
+
+        if not entry:
+            redirect_params['entry_error'] = (
+                'The petty cash entry could not be found.'
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        today = fields.Date.context_today(
+            request.env.user
+        )
+
+        if entry.transaction_date != today:
+            redirect_params['entry_error'] = (
+                "Only today's petty cash entries "
+                "can be deleted. Past entries are locked."
+            )
+
+            return self._finance_redirect(
+                redirect_params
+            )
+
+        entry.unlink()
+
+        redirect_params['entry_deleted'] = '1'
+
+        return self._finance_redirect(
+            redirect_params
+        )
+
     @http.route(
         [
             '/my/hr/finance/petty-cash/'
