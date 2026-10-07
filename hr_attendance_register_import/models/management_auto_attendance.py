@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 PAKISTAN_TIMEZONE = timezone(timedelta(hours=5))
 MANAGEMENT_ATTENDANCE_START = date(2026, 7, 6)
+MANAGEMENT_EARLIEST_START = date(2026, 7, 1)
 
 MANAGEMENT_EMPLOYEE_NAMES = (
     "Muhammad Uzair",
@@ -17,7 +18,14 @@ MANAGEMENT_EMPLOYEE_NAMES = (
     "Darakhshan Uzair",
     "Faiza Saleem",
     "Administrator",
+    "Mudasir",
+    "Fatima Hussain",
 )
+
+MANAGEMENT_EMPLOYEE_START_DATES = {
+    "Mudasir": date(2026, 7, 1),
+    "Fatima Hussain": date(2026, 7, 1),
+}
 
 
 class HrAttendanceRegisterLine(models.Model):
@@ -60,11 +68,11 @@ class HrAttendanceRegisterLine(models.Model):
             "employees": 0,
             "missing_employees": [],
             "skipped_inactive_without_date": [],
-            "start_date": MANAGEMENT_ATTENDANCE_START,
+            "start_date": MANAGEMENT_EARLIEST_START,
             "final_date": final_date,
         }
 
-        if final_date < MANAGEMENT_ATTENDANCE_START:
+        if final_date < MANAGEMENT_EARLIEST_START:
             return result
 
         employee_env = (
@@ -93,7 +101,10 @@ class HrAttendanceRegisterLine(models.Model):
                 )
                 continue
 
-            effective_start = MANAGEMENT_ATTENDANCE_START
+            effective_start = MANAGEMENT_EMPLOYEE_START_DATES.get(
+                employee_name,
+                MANAGEMENT_ATTENDANCE_START,
+            )
 
             if (
                 employee.joining_date
